@@ -1,101 +1,87 @@
-LC0:
-	.ascii	"%d\000"
-	.align	2
-LC1:
-	.ascii	"%d\012\000"
-	@.text
-	@.align	1
-	.global	main   @ 使 main 函数全局可见
-	.syntax unified  @ 使用统一的语法
-	.thumb
-	.thumb_func   @ 指定 Thumb 架构 和上面那句不能同时删？
-	@.type	main, %function @ 声明main为一个函数而不是数据
+.arch armv7-a
+.text
+
+Fib:
+    push {lr}          @ 保存返回地址
+    cmp r0, #0
+    beq ifzero         @ 如果 r0 == 0，返回 0
+    cmp r0, #1				
+    beq ifone          @ 如果 r0 == 1，返回 1
+
+    push {r0}          @ 保存当前 r0 的值
+    sub r0, r0, #1
+    bl Fib             @ 第一次递归调用，计算 Fib(n-1)
+    mov r1, r0         @ 将 Fib(n-1) 的结果存入 r1
+    pop {r0}           @ 恢复原始的 r0
+
+    push {r1}          @ 保存 Fib(n-1) 的结果
+    sub r0, r0, #2
+    bl Fib             @ 第二次递归调用，计算 Fib(n-2)
+    pop {r1}           @ 恢复 Fib(n-1) 的结果
+    add r0, r0, r1     @ Fib(n) = Fib(n-1) + Fib(n-2)
+
+    pop {lr}           @ 恢复返回地址
+    bx lr              @ 返回
+
+ifzero:
+    mov r0, #0         @ 返回 0
+    pop {lr}
+    bx lr
+
+ifone:
+    mov r0, #1         @ 返回 1
+    pop {lr}
+    bx lr
+
+
+.globl main
 main:
-	push	{r7, lr} 		@ 保存使用的寄存器以及链接寄存器LR
-	sub	sp, sp, #24		@ 将栈指针 sp 减少 24 字节，为 n 和 t 预留栈空间
-	add	r7, sp, #0		@ r7 = sp
-	ldr	r2, L6		@从标签 L6 中加载一个值到寄存器 r2 ???????????
-LPIC4:
-	add	r2, pc
-	ldr	r3, L6+4
-	ldr	r3, [r2, r3]
-	ldr	r3, [r3]
-	str	r3, [r7, #20]
-	mov	r3, #0
-	movs	r3, #0
-	str	r3, [r7, #4]
-	movs	r3, #1
-	str	r3, [r7, #8]
-	movs	r3, #1
-	str	r3, [r7, #12]
-	mov	r3, r7
-	mov	r1, r3
-	ldr	r3, L6+8
-LPIC0:
-	add	r3, pc
-	mov	r0, r3
-	bl	__isoc99_scanf(PLT)
-	ldr	r1, [r7, #4]
-	ldr	r3, L6+12
-LPIC1:
-	add	r3, pc
-	mov	r0, r3
-	bl	printf(PLT)
-	ldr	r1, [r7, #8]
-	ldr	r3, L6+16
-LPIC2:
-	add	r3, pc
-	mov	r0, r3
-	bl	printf(PLT)
-	b	L2
-L3:
-	ldr	r3, [r7, #8]
-	str	r3, [r7, #16]
-	ldr	r2, [r7, #8]
-	ldr	r3, [r7, #4]
-	add	r3, r3, r2
-	str	r3, [r7, #8]
-	ldr	r1, [r7, #8]
-	ldr	r3, L6+20
-LPIC3:
-	add	r3, pc
-	mov	r0, r3
-	bl	printf(PLT)
-	ldr	r3, [r7, #16]
-	str	r3, [r7, #4]
-	ldr	r3, [r7, #12]
-	adds	r3, r3, #1
-	str	r3, [r7, #12]
-L2:
-	ldr	r3, [r7]
-	ldr	r2, [r7, #12]
-	cmp	r2, r3
-	blt	L3
-	movs	r3, #0
-	ldr	r1, L6+24
-LPIC5:
-	add	r1, pc
-	ldr	r2, L6+4
-	ldr	r2, [r1, r2]
-	ldr	r1, [r2]
-	ldr	r2, [r7, #20]
-	eors	r1, r2, r1
-	mov	r2, #0
-	beq	L5
-	bl	__stack_chk_fail(PLT)
-L5:
-	mov	r0, r3
-	adds	r7, r7, #24
-	mov	sp, r7
-	@ sp needed
-	pop	{r7, pc}
-L7:
-	.align	2
-L6:
-	.word	_GLOBAL_OFFSET_TABLE_-(LPIC4+4)
-	.word	__stack_chk_guard(GOT)
-	.word	LC0-(LPIC0+4)
-	.word	LC1-(LPIC1+4)
-	.word	LC1-(LPIC2+4)
-	.word	LC1-(LPIC3+4)
-	.word	_GLOBAL_OFFSET_TABLE_-(LPIC5+4)	
+    push {fp, lr}
+					@ add fp, sp, #4
+    sub sp, sp, #8
+
+    ldr r0, =prompt
+    bl printf
+
+				@ ldr r0, =debug
+				@ bl printf
+
+    ldr r0, =format			
+    add r1, sp, #4			@ r1 存储栈顶向下偏移4字节的位置
+    bl scanf    			@ 读取用户输入的整数值，并将其存储在寄存器 r1 指向的地址中
+
+    ldr r0, [sp, #4]        @ 将用户输入的 n 加载到 r0
+    cmp r0, #0      		@ if r0 <= 0
+    bge valid_input			@ 无符号大于或等于
+
+    ldr r0, =error_msg		
+    bl printf
+    add sp, sp, #8
+    pop {fp, lr}
+    bx lr
+
+
+valid_input:
+    bl Fib
+    mov r2, r0
+    ldr r0, =result
+    ldr r1, [sp, #4]     @按照寄存器先后顺序输出,第一个格式化字符串是r1,第二个是r2
+    bl printf
+
+
+end:
+    add sp, sp, #8
+    pop {fp, lr}
+	bx lr
+
+.data
+prompt:    
+	.asciz "需要计算斐波那契数列的第几位:"
+format:    
+	.asciz "%d"
+error_msg: 
+	.asciz "输入错误"
+result:    
+	.asciz "第%d项为:%d\n"
+debug:
+	.asciz "debug" 
