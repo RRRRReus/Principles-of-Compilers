@@ -37,6 +37,7 @@ ifone:
 .globl main
 main:
     push {fp, lr}
+    add fp, sp, #4          @ 设置新的帧指针
 					@ add fp, sp, #4
     sub sp, sp, #8
 

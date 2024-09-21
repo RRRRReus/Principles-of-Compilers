@@ -18,7 +18,7 @@ qemu-arm -L /usr/arm-linux-gnueabihf ./Fibonacci.out
 
 # Check if QEMU ran the program successfully
 if [ $? -ne 0 ]; then
-    echo "QEMU failed to run the program."
+     
     exit 1
 fi
 
