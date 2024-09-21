@@ -4,8 +4,7 @@
   .data
 .align 1
 pi: .float 3.14
-D: .float 0.0
-four: .float 4.0
+d: .float 0.0
 length_format: .asciz "周长为：%.2f"
 input_format: .asciz "%f"
 
@@ -20,12 +19,12 @@ main:
 
     @输入D的值
     ldr r0, =input_format  
-    ldr r1, =D              
+    ldr r1, =d              
     bl scanf               @ 读取用户输入
 
     @加载pi和D的值
     ldr r0, =pi
-    ldr r1, =D
+    ldr r1, =d
     vldr.32 s0, [r0]           @将pi加载到s0
     vldr.32 s1, [r1]            @将D加载到s1
 
