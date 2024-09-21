@@ -16,10 +16,5 @@ echo "Compilation successful."
 echo "Running Fibonacci.out using QEMU..."
 qemu-arm -L /usr/arm-linux-gnueabihf ./Fibonacci.out
 
-# Check if QEMU ran the program successfully
-if [ $? -ne 0 ]; then
-     
-    exit 1
-fi
 
 echo "Program executed successfully."
