@@ -4,6 +4,7 @@
 %top{
     #include <stdarg.h>
     #include "common.h"
+    
 }
 %{
     extern dump_type_t dump_type;
@@ -15,7 +16,39 @@
             vfprintf(yyout, format, args);
         va_end(args);
     }
+        #include <iostream>
+        #include <map>
+        #include <string>
 
+        // 符号表项结构
+        struct SymbolTableEntry {
+            std::string type; // 标识符的类型，例如 int, float 等
+            int lineNumber;   // 标识符出现的行号
+            // 你可以根据需要添加更多字段
+        };
+
+        // 符号表类
+        class SymbolTable {
+        public:
+            // 插入符号表项
+            void insert(const std::string& identifier, const SymbolTableEntry& entry) {
+                table[identifier] = entry;
+            }
+
+            // 查询符号表项
+            SymbolTableEntry* lookup(const std::string& identifier) {
+                auto it = table.find(identifier);
+                if (it != table.end()) {
+                    return &it->second;
+                } else {
+                    return nullptr;
+                }
+            }
+
+        private:
+            std::map<std::string, SymbolTableEntry> table;
+        };
+        SymbolTable symbolTable;
     /* Your code here, if desired (lab3). */
 %}
 
