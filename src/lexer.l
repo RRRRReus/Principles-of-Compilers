@@ -9,9 +9,9 @@
     extern dump_type_t dump_type;
 
     inline void dump_tokens(const char* format, ...){
-        va_list args;
-        va_start(args, format);
-        if (dump_type == TOKENS)
+        va_list args;       // 定义一个 va_list 类型的变量，用于存储可变参数
+        va_start(args, format);     // 初始化可变参数列表，`format` 是第一个参数
+        if (dump_type == TOKENS)    // 如果 dump_type 为 TOKENS，则将可变参数列表中的参数按照 format 格式输出到 yyout
             vfprintf(yyout, format, args);
         va_end(args);
     }
@@ -23,7 +23,7 @@
 DECIMIAL ([1-9][0-9]*|0)
 OCTAL 0[0-7]+               
 HEX 0[xX][0-9a-fA-F]+        
-ID [[:alpha:]_][[:alpha:][:digit:]_]*          
+ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)        
 WHITE [\t ]    
 /*  Your code here (lab3). */
