@@ -54,10 +54,13 @@
 /* definitions section */
 DECIMIAL ([1-9][0-9]*|0)
 OCTAL 0[0-7]+               
-HEX 0[xX][0-9a-fA-F]+        
+HEX 0[xX][0-9a-fA-F]+
+FLOAT ([0-9]+\.[0-9]*([eE][+-]?[0-9]+)?|[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?)   
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)        
-WHITE [\t ]    
+WHITE [\t ]  
+SINGLE_COMMENT "//".*(\r\n|\n|\r)
+MULTI_COMMENT "/\*".*"\*/"
 /*  Your code here (lab3). */
 
 %%  
@@ -92,6 +95,18 @@ WHITE [\t ]
 
 "+" {
     dump_tokens("ADD\t%s\n", yytext);
+}
+
+"-" {//????????????
+    dump_tokens("SUB\t%s\n", yytext);
+}
+
+"*" {//????????????
+    dump_tokens("MUL\t%s\n", yytext);
+}
+
+"/" {//???????
+    dump_tokens("DIV\t%s\n", yytext);
 }
 
 ";" {
@@ -132,12 +147,26 @@ WHITE [\t ]
         decimal = strtol(yytext, NULL, 16);  // 将十六进制字符串转换为十进制
         dump_tokens("HEX\t%s\t%d\n", yytext, decimal);      // 输出十进制数
     }
+{FLOAT} {
+    float value;
+    value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
+    dump_tokens("FLOAT\t%s\t%f\n", yytext, value);  // 输出浮点数
+    //dump_tokens("FLOAT\t%s\n", yytext);
+}
 
 {ID} {
     dump_tokens("ID\t%s\n", yytext);
 }
 
-{EOL} yylineno++;   
+{EOL} yylineno++;
+
+{SINGLE_COMMENT} {
+    dump_tokens("COMMENT\t%s\n", yytext);
+}
+
+{MULTI_COMMENT} {
+    dump_tokens("COMMENT\t%s\n", yytext);
+}
 
 {WHITE}
 
