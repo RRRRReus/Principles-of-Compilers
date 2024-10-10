@@ -86,9 +86,11 @@
 
     // 全局变量，用于区分当前是否在声明标识符
     bool isDeclaration = false;
+    bool StillDeclaration = false;
     /* Your code here, if desired (lab3). */
 %}
-
+%s DEFVAR
+%s TRY
 /* definitions section */
 DECIMIAL ([1-9][0-9]*|0)
 OCTAL 0[0-7]+               
@@ -99,17 +101,37 @@ EOL (\r\n|\n|\r)
 WHITE [\t ]  
 SINGLE_COMMENT "//".*(\r\n|\n|\r)
 MULTI_COMMENT "/\*".*"\*/"
+comma ","
+semicolon ";"
 /*  Your code here (lab3). */
 
 %%  
+
     /* rules section */     //规则部分
+<DEFVAR>"," {
+    isDeclaration=true;
+    dump_tokens("COMMA\t%s\t%d\n", yytext,yylineno);
+}
+
+<DEFVAR>";" {
+    isDeclaration=false;
+    BEGIN INITIAL;
+}
+
+
+
+
+
+
 "int" {
     isDeclaration=true;
     dump_tokens("INT\t%s\t%d\n", yytext,yylineno);//如果匹配到关键字 "int"，调用 dump_tokens() 输出 "INT"，并打印匹配的文本 yytext（当前的匹配字符串）。
+    BEGIN (DEFVAR);
 }
 
 "void" {
     isDeclaration=true;
+    BEGIN (DEFVAR);
 
     dump_tokens("VOID\t%s\t%d\n", yytext,yylineno);
 }
@@ -124,6 +146,9 @@ MULTI_COMMENT "/\*".*"\*/"
 
 "return" {
     dump_tokens("RETURN\t%s\t%d\n", yytext,yylineno);
+}
+"," {
+    dump_tokens("COMMA\t%s\t%d\n", yytext,yylineno);
 }
 
 "=" {
@@ -175,25 +200,25 @@ MULTI_COMMENT "/\*".*"\*/"
 {DECIMIAL} {
     int decimal;
     decimal = atoi(yytext); //将字符串转换为整数
-    dump_tokens("DECIMAL\t%d\t%d\n",  decimal,yylineno);
+    dump_tokens("DECIMAL\t%s\t%d\t%d\n", yytext, yylineno,decimal);
 }
 
 {OCTAL} {
         int decimal;
         decimal = strtol(yytext, NULL, 8);  // 将八进制字符串转换为十进制
-        dump_tokens("OCTAL\t%d\t%d\n", decimal,yylineno);    // 输出十进制数
+        dump_tokens("OCTAL\t%s\t%d\t%d\n", yytext, yylineno,decimal);    // 输出十进制数
     }
 
     
 {HEX} {
         int decimal;
         decimal = strtol(yytext, NULL, 16);  // 将十六进制字符串转换为十进制
-        dump_tokens("HEX\t%d\t%d\n",  decimal,yylineno);      // 输出十进制数
+        dump_tokens("HEX\t%s\t%d\t%d\n", yytext, yylineno,decimal);      // 输出十进制数
     }
 {FLOAT} {
     float value;
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
-    dump_tokens("FLOAT\t%s\t%f\n", yytext, value);  // 输出浮点数
+    dump_tokens("FLOAT\t%s\t%d\t%d\n", yytext, yylineno,value);  // 输出浮点数
     //dump_tokens("FLOAT\t%s\n", yytext);
 }
 
