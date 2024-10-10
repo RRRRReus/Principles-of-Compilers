@@ -2,12 +2,26 @@ int a;
 
 int main()
 {
-    int a;
+    int a,e;
     int b;
     int c;
-    b=0x011;
-    c=011;
+    int d;  //  */
+    e=0;
+    b=0x011;    //十六进制
+    c=011;      //八进制
+    d=10.233;   /*小数*/
+    d=1.23e4;   //  /*
+    d=1.23e-4;  //  /**/
+    d=1.23E-4;  /**/    //
     a = 1 + 2;
+    a = b/**//d;    // equivalent to a = b / d;
+
+    /*//*/  a=a+1;      //equivalent to a=a+1;
+
+    a = b//**/c
+    +d;     //equivalent to a = b+d
+
+    /* comment */ a = b + c * d / e     // equivalent to a = b + c * d / e
     if(a < 5)
         return 1;
     return 0;
