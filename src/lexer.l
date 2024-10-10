@@ -1,6 +1,7 @@
 %option noyywrap
 %option nounput
 %option noinput
+%option yylineno
 %top{
     #include <stdarg.h>
     #include "common.h"     //引入common.h头文件,含一个枚举类型dump_type_t
@@ -101,78 +102,78 @@ WHITE [\t ]
     /* rules section */     //规则部分
 "int" {
     isDeclaration=true;
-    dump_tokens("INT\t%s\n", yytext);//如果匹配到关键字 "int"，调用 dump_tokens() 输出 "INT"，并打印匹配的文本 yytext（当前的匹配字符串）。
+    dump_tokens("INT\t%s\t%d\n", yytext,yylineno);//如果匹配到关键字 "int"，调用 dump_tokens() 输出 "INT"，并打印匹配的文本 yytext（当前的匹配字符串）。
 }
 
 "void" {
     isDeclaration=true;
 
-    dump_tokens("VOID\t%s\n", yytext);
+    dump_tokens("VOID\t%s\t%d\n", yytext,yylineno);
 }
 
 "if" {
-    dump_tokens("IF\t%s\n", yytext);
+    dump_tokens("IF\t%s\t%d\n", yytext,yylineno);
 }
 
 "else" {
-    dump_tokens("ELSE\t%s\n", yytext);
+    dump_tokens("ELSE\t%s\t%d\n", yytext,yylineno);
 }
 
 "return" {
-    dump_tokens("RETURN\t%s\n", yytext);
+    dump_tokens("RETURN\t%s\t%d\n", yytext,yylineno);
 }
 
 "=" {
-    dump_tokens("ASSIGN\t%s\n", yytext);
+    dump_tokens("ASSIGN\t%s\t%d\n", yytext,yylineno);
 }
 
 "<" {
-    dump_tokens("LESS\t%s\n", yytext);
+    dump_tokens("LESS\t%s\t%d\n", yytext,yylineno);
 }
 
 "+" {
-    dump_tokens("ADD\t%s\n", yytext);
+    dump_tokens("ADD\t%s\t%d\n", yytext,yylineno);
 }
 
 ";" {
-    dump_tokens("SEMICOLON\t%s\n", yytext);
+    dump_tokens("SEMICOLON\t%s\t%d\n", yytext,yylineno);
 }
 
 "(" {
-    dump_tokens("LPAREN\t%s\n", yytext);
+    dump_tokens("LPAREN\t%s\t%d\n", yytext,yylineno);
 }
 
 ")" {
-    dump_tokens("RPAREN\t%s\n", yytext);
+    dump_tokens("RPAREN\t%s\t%d\n", yytext,yylineno);
 }
 
 "{" {
-    dump_tokens("LBRACE\t%s\n", yytext);
+    dump_tokens("LBRACE\t%s\t%d\n", yytext,yylineno);
     symbolTable.enterScope(); // 进入新的作用域
 }
 
 "}" {
-    dump_tokens("RBRACE\t%s\n", yytext);
+    dump_tokens("RBRACE\t%s\t%d\n", yytext,yylineno);
     symbolTable.exitScope(); // 退出当前作用域
 }
 
 {DECIMIAL} {
     int decimal;
     decimal = atoi(yytext); //将字符串转换为整数
-    dump_tokens("DECIMAL\t%s\t%d\n", yytext, decimal);
+    dump_tokens("DECIMAL\t%d\t%d\n",  decimal,yylineno);
 }
 
 {OCTAL} {
         int decimal;
         decimal = strtol(yytext, NULL, 8);  // 将八进制字符串转换为十进制
-        dump_tokens("OCTAL\t%s\t%d\n", yytext, decimal);    // 输出十进制数
+        dump_tokens("OCTAL\t%d\t%d\n", decimal,yylineno);    // 输出十进制数
     }
 
     
 {HEX} {
         int decimal;
         decimal = strtol(yytext, NULL, 16);  // 将十六进制字符串转换为十进制
-        dump_tokens("HEX\t%s\t%d\n", yytext, decimal);      // 输出十进制数
+        dump_tokens("HEX\t%d\t%d\n",  decimal,yylineno);      // 输出十进制数
     }
 
 {ID} {
@@ -190,7 +191,7 @@ WHITE [\t ]
         }
     }
  
-    dump_tokens("ID\t%s\t%p\n", yytext ,entry);
+    dump_tokens("ID\t%s\t%d\t%p\n", yytext ,yylineno,entry);
 }
 
 {EOL} yylineno++;   
