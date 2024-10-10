@@ -2,10 +2,14 @@ int a;
 
 int main()
 {
-    int a,e;
+    int a;
+    int e;
     int b;
     int c;
     int d;  //  */
+    int minus;
+    //    /*// int a=b+c*/
+    minus=-100;
     e=0;
     b=0x011;    //十六进制
     c=011;      //八进制

@@ -89,6 +89,9 @@
     /* Your code here, if desired (lab3). */
 %}
 
+/* 定义状态 */
+%x VAR_LIST
+
 /* definitions section */
 DECIMIAL ([1-9][0-9]*|0)
 OCTAL 0[0-7]+               
@@ -106,7 +109,10 @@ MULTI_COMMENT "/\*".*"\*/"
 "int" {
     isDeclaration=true;
     dump_tokens("INT\t%s\t%d\n", yytext,yylineno);//如果匹配到关键字 "int"，调用 dump_tokens() 输出 "INT"，并打印匹配的文本 yytext（当前的匹配字符串）。
+
 }
+
+
 
 "void" {
     isDeclaration=true;
