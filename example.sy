@@ -3,6 +3,10 @@ int a;
 int main()
 {
     int a;
+    int b;
+    int c;
+    b=0x011;
+    c=011;
     a = 1 + 2;
     if(a < 5)
         return 1;
