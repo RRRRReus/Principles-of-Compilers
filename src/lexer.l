@@ -18,6 +18,9 @@
 }
 %{
     int yycolno=0;
+    bool CanBeSINGLE_LINE_BLOCK=false;//真项表示接下来有出现单行代码块的可能
+    bool BeginFOR_PAREN=false;//真项表示这个(代表for的括号开始
+    int PAREN_LEVEL=0;
     int comment_level = 0; // 用于跟踪多行注释的嵌套级别
 
     extern dump_type_t dump_type;
@@ -35,8 +38,11 @@
 
     inline void token_out(const char* format)
     {
+        
+
         dump_tokens("%-10s", format);
         dump_tokens("%-10s %-5d %-5d\n", yytext, yylineno, yycolno);
+         
        
 
     }
@@ -111,6 +117,8 @@
 
 %s DEFVAR
 %s TRY
+%s FOR_PAREN
+%s SINGLE_LINE_BLOCK
 %x SINGLE_COMMENT
 %x MULTI_COMMENT
 
@@ -132,20 +140,15 @@ ANY .
 %%  
     /* rules section */     //规则部分
 
-YY_USE_ACTION2 { 
-    fprintf(stderr,"1000");
-    fflush(stderr);  // 确保输出显示
-    yycolno += yyleng; 
-    }
-
 <DEFVAR>"," {
     isDeclaration=true;
-    dump_tokens("COMMA\t%s", yytext);
+    token_out("COMMA");
     //dump_tokens("\t%d\t%d", yytext);
 
 }
 
 <DEFVAR>";" {
+    token_out("SEMICOLON");
     isDeclaration=false;
     BEGIN INITIAL;
 }
@@ -172,6 +175,45 @@ YY_USE_ACTION2 {
     BEGIN (DEFVAR);
 
     token_out("VOID");}
+"for" {
+    token_out("FOR");
+    BeginFOR_PAREN=true;
+    BEGIN(FOR_PAREN);
+}
+
+<FOR_PAREN>"(" {
+    if(BeginFOR_PAREN)
+    {
+        symbolTable.enterScope(); // 进入新的作用域
+        BeginFOR_PAREN=false;
+    }
+    PAREN_LEVEL++;
+    token_out("SEMICOLON");
+    
+    
+}
+<FOR_PAREN>")" {
+        token_out("RPAREN");
+        PAREN_LEVEL--;
+        if(PAREN_LEVEL==0)
+        CanBeSINGLE_LINE_BLOCK=true;
+    }
+<FOR_PAREN>"{" {
+    if(CanBeSINGLE_LINE_BLOCK)
+        BEGIN(INITIAL);
+
+    token_out("LPAREN");
+    }
+<FOR_PAREN>[^{}\n]+ {
+    if(CanBeSINGLE_LINE_BLOCK)
+        BEGIN(SINGLE_LINE_BLOCK);
+
+}
+<SINGLE_LINE_BLOCK>";" {
+    symbolTable.exitScope(); // 退出当前作用域
+    BEGIN(INITIAL);
+    token_out("SEMICOLON");
+}
 
 "if" {
     token_out("IF");
