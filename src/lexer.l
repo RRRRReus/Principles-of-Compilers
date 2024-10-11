@@ -10,9 +10,14 @@
     #include <vector>
     #include <iostream>
 
+    #define YY_USER_ACTION {           \
+    yycolno += yyleng;            \
+}
+    
 
 }
 %{
+    int yycolno=0;
 
     extern dump_type_t dump_type;
 
@@ -22,6 +27,17 @@
         if (dump_type == TOKENS)    // 如果 dump_type 为 TOKENS，则将可变参数列表中的参数按照 format 格式输出到 yyout
             vfprintf(yyout, format, args);
         va_end(args);
+    
+    
+    }
+
+
+    inline void token_out(const char* format)
+    {
+        dump_tokens("%-10s", format);
+        dump_tokens("%-10s %-5d %-5d\n", yytext, yylineno, yycolno);
+       
+
     }
              // 符号表项结构
         class SymbolTableEntry {
@@ -83,11 +99,13 @@
 
     // 创建一个全局符号表对象
     SymbolTable symbolTable;
-
     // 全局变量，用于区分当前是否在声明标识符
     bool isDeclaration = false;
     bool StillDeclaration = false;
     /* Your code here, if desired (lab3). */
+
+
+
 %}
 %s DEFVAR
 %s TRY
@@ -103,14 +121,22 @@ SINGLE_COMMENT "//".*(\r\n|\n|\r)
 MULTI_COMMENT "/\*".*"\*/"
 comma ","
 semicolon ";"
+ANY .
 /*  Your code here (lab3). */
-
 %%  
-
     /* rules section */     //规则部分
+
+YY_USE_ACTION2 { 
+    fprintf(stderr,"1000");
+    fflush(stderr);  // 确保输出显示
+    yycolno += yyleng; 
+    }
+
 <DEFVAR>"," {
     isDeclaration=true;
-    dump_tokens("COMMA\t%s\t%d\n", yytext,yylineno);
+    dump_tokens("COMMA\t%s", yytext);
+    //dump_tokens("\t%d\t%d", yytext);
+
 }
 
 <DEFVAR>";" {
@@ -125,103 +151,113 @@ semicolon ";"
 
 "int" {
     isDeclaration=true;
-    dump_tokens("INT\t%s\t%d\n", yytext,yylineno);//如果匹配到关键字 "int"，调用 dump_tokens() 输出 "INT"，并打印匹配的文本 yytext（当前的匹配字符串）。
+    //dump_tokens("INT\t%s\t%d\n", yytext,yylineno);//如果匹配到关键字 "int"，调用 dump_tokens() 输出 "INT"，并打印匹配的文本 yytext（当前的匹配字符串）。
+    token_out("INT");
     BEGIN (DEFVAR);
 }
-
 
 
 "void" {
     isDeclaration=true;
     BEGIN (DEFVAR);
 
-    dump_tokens("VOID\t%s\t%d\n", yytext,yylineno);
-}
+    token_out("VOID");}
 
 "if" {
-    dump_tokens("IF\t%s\t%d\n", yytext,yylineno);
+    token_out("IF");
 }
 
 "else" {
-    dump_tokens("ELSE\t%s\t%d\n", yytext,yylineno);
+    token_out("ELSE");
 }
 
 "return" {
-    dump_tokens("RETURN\t%s\t%d\n", yytext,yylineno);
+    token_out("RETURN");
 }
 "," {
-    dump_tokens("COMMA\t%s\t%d\n", yytext,yylineno);
+    token_out("COMMA");
 }
 
 "=" {
-    dump_tokens("ASSIGN\t%s\t%d\n", yytext,yylineno);
+    token_out("ASSIGN");
+    
 }
 
 "<" {
-    dump_tokens("LESS\t%s\t%d\n", yytext,yylineno);
+    token_out("LESS");
+    
 }
 
 "+" {
-    dump_tokens("ADD\t%s\t%d\n", yytext,yylineno);
+    token_out("ADD");
+    
 }
 
 "-" {//????????????
-    dump_tokens("SUB\t%s\n", yytext);
+    token_out("SUB");
 }
 
 "*" {//????????????
-    dump_tokens("MUL\t%s\n", yytext);
+    token_out("MUL");
 }
 
 "/" {//???????
-    dump_tokens("DIV\t%s\n", yytext);
+    token_out("DIV");
 }
-
 ";" {
-    dump_tokens("SEMICOLON\t%s\t%d\n", yytext,yylineno);
+    token_out("SEMICOLON");
 }
 
 "(" {
-    dump_tokens("LPAREN\t%s\t%d\n", yytext,yylineno);
+    token_out("LPAREN");
 }
 
 ")" {
-    dump_tokens("RPAREN\t%s\t%d\n", yytext,yylineno);
+    token_out("RPAREN");
 }
 
 "{" {
-    dump_tokens("LBRACE\t%s\t%d\n", yytext,yylineno);
+    token_out("LBRACE");
     symbolTable.enterScope(); // 进入新的作用域
 }
 
 "}" {
-    dump_tokens("RBRACE\t%s\t%d\n", yytext,yylineno);
+    token_out("RBRACE");
     symbolTable.exitScope(); // 退出当前作用域
 }
 
 {DECIMIAL} {
     int decimal;
     decimal = atoi(yytext); //将字符串转换为整数
-    dump_tokens("DECIMAL\t%s\t%d\t%d\n", yytext, yylineno,decimal);
+    dump_tokens("%-10s", "DECIMIAL");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20d\n", decimal);
+
+
 }
 
 {OCTAL} {
         int decimal;
         decimal = strtol(yytext, NULL, 8);  // 将八进制字符串转换为十进制
-        dump_tokens("OCTAL\t%s\t%d\t%d\n", yytext, yylineno,decimal);    // 输出十进制数
+    dump_tokens("%-10s", "OCTAL");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20d\n", decimal);
     }
 
     
 {HEX} {
         int decimal;
         decimal = strtol(yytext, NULL, 16);  // 将十六进制字符串转换为十进制
-        dump_tokens("HEX\t%s\t%d\t%d\n", yytext, yylineno,decimal);      // 输出十进制数
+    dump_tokens("%-10s", "HEX");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20d\n", decimal);
     }
 {FLOAT} {
     float value;
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
-    dump_tokens("FLOAT\t%s\t%d\t%d\n", yytext, yylineno,value);  // 输出浮点数
-    //dump_tokens("FLOAT\t%s\n", yytext);
+    dump_tokens("%-10s", "FLOAT");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20d\n", value);
 }
 
 {ID} {
@@ -239,22 +275,31 @@ semicolon ";"
         }
     }
  
-    dump_tokens("ID\t%s\t%d\t%p\n", yytext ,yylineno,entry);
-}
+    dump_tokens("%-10s", "ID");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20p\n", entry);
 
-{EOL} yylineno++;
+
+    }
+
 
 {SINGLE_COMMENT} {
-    dump_tokens("COMMENT\t%s\n", yytext);
+    token_out("COMMENT");
 }
 
 {MULTI_COMMENT} {
-    dump_tokens("COMMENT\t%s\n", yytext);
+    token_out("COMMENT");
 }
 
 {WHITE}
-
+{}
     /*  Your code here (lab3). */
+
+\n  { 
+    yycolno = 0;  // 遇到换行符，将列号重置为 0
+    //fprintf(stderr, "Newline detected. Reset column to: %d\n", yycolno);
+}
+
 %%
 
  /* user code section */
