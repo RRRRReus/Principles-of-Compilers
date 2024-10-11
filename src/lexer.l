@@ -115,10 +115,13 @@
 %x MULTI_COMMENT
 
 /* definitions section */
+
 DECIMIAL [-]?([1-9][0-9]*|0)
 OCTAL 0[0-7]+               
 HEX 0[xX][0-9a-fA-F]+
-FLOAT [-]?([0-9]+\.[0-9]*([eE][+-]?[0-9]+)?|[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?)   
+FLOAT_DECIMAL [-]?(([1-9][0-9]*\.[0-9]*([eE][+-]?[0-9]+)?)|(0?\.[0-9]+([eE][+-]?[0-9]+)?))
+FLOAT_OCTAL 0[0-7]+\.[0-7]*([eE][+-]?[0-9]+)?
+FLOAT_HEX 0[xX][0-9a-fA-F]+\.[0-9a-fA-F]*([pP][+-]?[0-9]+)?
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)        
 WHITE [\t ]  
@@ -195,6 +198,47 @@ YY_USE_ACTION2 {
     
 }
 
+">" {
+    token_out("GREATER");
+    
+}
+
+"<=" {
+    token_out("LESS_EQUAL");
+    
+}
+
+">=" {
+    token_out("GREATER_EQUAL");
+    
+}
+
+"==" {
+    token_out("EQUAL");
+    
+}
+
+"!=" {
+    token_out("NOT_EQUAL");
+    
+}
+
+"&&" {
+    token_out("AND");
+    
+}
+
+"||" {
+    token_out("OR");
+    
+}
+
+"!" {
+    token_out("NOT");
+    
+}
+
+
 "+" {
     token_out("ADD");
     
@@ -211,6 +255,13 @@ YY_USE_ACTION2 {
 "/" {
     token_out("DIV");
 }
+
+"%" {
+    token_out("MOD");
+}
+
+
+
 ";" {
     token_out("SEMICOLON");
 }
@@ -259,13 +310,48 @@ YY_USE_ACTION2 {
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", decimal);
     }
-{FLOAT} {
+
+
+{FLOAT_DECIMAL} {
     float value;
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
-    dump_tokens("%-10s", "FLOAT");
+    dump_tokens("%-10s", "FLOAT_DECIMAL");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
+
+{FLOAT_OCTAL} {
+     char* integer_part_str = strtok(yytext, ".");   // 分割整数部分
+    char* fractional_part_str = strtok(NULL, ".");  // 分割小数部分
+
+    // 转换整数部分
+    int integer_part = strtol(integer_part_str, NULL, 8);
+
+    // 转换小数部分
+    float fractional_part = 0.0;
+    if (fractional_part_str != NULL) {
+        float base = 1.0 / 8.0;  // 八进制小数的基数
+        for (int i = 0; fractional_part_str[i] != '\0'; ++i) {
+            fractional_part += (fractional_part_str[i] - '0') * base;
+            base /= 8.0;
+        }
+    }
+
+    // 组合整数部分和小数部分
+    float value = integer_part + fractional_part;
+    dump_tokens("%-10s", "FLOAT_OCTAL");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20f\n", value);
+}
+
+{FLOAT_HEX} {
+    float value;
+    value = (float)strtod(yytext, NULL);  // 使用 strtod 将十六进制浮点数转换为十进制浮点数
+    dump_tokens("%-10s", "FLOAT_HEX");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20f\n", value);
+}
+
 
 {ID} {
     SymbolTableEntry* entry = nullptr;
@@ -323,19 +409,7 @@ YY_USE_ACTION2 {
     token_out("MULTI_COMMENT");
 }
 
-<MULTI_COMMENT>"*" {
-//    // 手动读取下一个字符
-//     int next_char = yyout();  // 使用 yyinput() 替代 input()
-    
-//     if (next_char == '/') {
-//         token_out("MULTI_COMMENT_END"); // 如果是 /，则结束注释
-//         BEGIN INITIAL;
-//     } else {
-//         // 如果不是 /，将字符放回输入流（放回到当前状态）
-//         unput(next_char);  // 使用 yyunput() 替代 unput()
-//         token_out("MULTI_COMMENT");  // 如果是其他字符，继续在多行注释中
-//     }
-}
+
 
 
 
