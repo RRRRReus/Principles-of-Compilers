@@ -8,23 +8,38 @@ int main()
     {
         k+=i;
     }
+
+    //定义测试
+
     int a,e=4;
     int ae=e;
     //int e;
     int b;
     int c;
-    int d;  //  */
+    float d;  //  */
     int minus;
     //    /*// int a=b+c*/
+
+    //负数测试
+
     minus=-100;
+    d=-1.23;
+    a=5-4;
+
+    // 进制测试
     e=0;
     b=0x011;    //;;;;++++++十六进制
     c=011;      //八进制
     d=10.233;   /*小数*/
-    d=1.23e4;   //  /*
+    d=1.23e4;   //
     d=1.23e-4;  //  /**/
     d=1.23E-4;  /**/    //
     a = 1 + 2;
+
+    //  注释测试
+
+    /*aaa*/ */
+
     a = b/**//d;    // equivalent to a = b / d;
 
     /*//*/  a=a+1;      //equivalent to a=a+1;

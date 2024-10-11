@@ -21,6 +21,8 @@
     bool CanBeSINGLE_LINE_BLOCK=false;//真项表示接下来有出现单行代码块的可能
     bool BeginFOR_PAREN=false;//真项表示这个(代表for的括号开始
     int PAREN_LEVEL=0;
+    int comment_level = 0; // 用于跟踪多行注释的嵌套级别
+
     extern dump_type_t dump_type;
 
     inline void dump_tokens(const char* format, ...){
@@ -112,20 +114,22 @@
 
 
 %}
+
 %s DEFVAR
 %s TRY
 %s FOR_PAREN
 %s SINGLE_LINE_BLOCK
+%x SINGLE_COMMENT
+%x MULTI_COMMENT
+
 /* definitions section */
-DECIMIAL ([1-9][0-9]*|0)
+DECIMIAL [-]?([1-9][0-9]*|0)
 OCTAL 0[0-7]+               
 HEX 0[xX][0-9a-fA-F]+
-FLOAT ([0-9]+\.[0-9]*([eE][+-]?[0-9]+)?|[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?)   
+FLOAT [-]?([0-9]+\.[0-9]*([eE][+-]?[0-9]+)?|[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?)   
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)        
 WHITE [\t ]  
-SINGLE_COMMENT "//".*(\r\n|\n|\r)
-MULTI_COMMENT "/\*".*"\*/"
 comma ","
 semicolon ";"
 ANY .
@@ -148,14 +152,18 @@ ANY .
 
 
 
-
-
-
 "int" {
     isDeclaration=true;
     //dump_tokens("INT\t%s\t%d\n", yytext,yylineno);//如果匹配到关键字 "int"，调用 dump_tokens() 输出 "INT"，并打印匹配的文本 yytext（当前的匹配字符串）。
     token_out("INT");
     BEGIN (DEFVAR);
+}
+
+"float" {
+    isDeclaration=true;
+    token_out("FLOAT");
+    BEGIN (DEFVAR);
+    
 }
 
 
@@ -234,15 +242,15 @@ ANY .
     
 }
 
-"-" {//????????????
-    token_out("SUB");
+"-" {
+        token_out("SUB");
 }
 
-"*" {//????????????
+"*" {
     token_out("MUL");
 }
 
-"/" {//???????
+"/" {
     token_out("DIV");
 }
 ";" {
@@ -298,7 +306,7 @@ ANY .
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
     dump_tokens("%-10s", "FLOAT");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
-    dump_tokens("%-20d\n", value);
+    dump_tokens("%-20f\n", value);
 }
 
 {ID} {
@@ -323,14 +331,61 @@ ANY .
 
     }
 
-
-{SINGLE_COMMENT} {
-    token_out("COMMENT");
+"//" {
+    token_out("SINGLE_COMMENT_START");
+    BEGIN SINGLE_COMMENT;
 }
 
-{MULTI_COMMENT} {
-    token_out("COMMENT");
+<SINGLE_COMMENT>.* {
+    token_out("SINGLE_COMMENT");
+    // 处理单行注释的内容
 }
+
+<SINGLE_COMMENT>\n {
+    token_out("SINGLE_COMMENT_END");
+    BEGIN INITIAL;
+}
+
+"/*" {
+
+    token_out("MULTI_COMMENT_START");
+    BEGIN MULTI_COMMENT;
+}
+
+<MULTI_COMMENT>"*/" {
+        token_out("MULTI_COMMENT_END");
+        BEGIN INITIAL;
+    
+}
+
+
+<MULTI_COMMENT>[^*|\n]+ {
+    // 处理没有结束符的情况，匹配直到遇到 *
+    // 如果注释里有*呢
+    token_out("MULTI_COMMENT");
+}
+
+<MULTI_COMMENT>"*" {
+//    // 手动读取下一个字符
+//     int next_char = yyout();  // 使用 yyinput() 替代 input()
+    
+//     if (next_char == '/') {
+//         token_out("MULTI_COMMENT_END"); // 如果是 /，则结束注释
+//         BEGIN INITIAL;
+//     } else {
+//         // 如果不是 /，将字符放回输入流（放回到当前状态）
+//         unput(next_char);  // 使用 yyunput() 替代 unput()
+//         token_out("MULTI_COMMENT");  // 如果是其他字符，继续在多行注释中
+//     }
+}
+
+
+
+<MULTI_COMMENT>\n {
+    yycolno = 0;  // 遇到换行符，将列号重置为 0
+}
+
+
 
 {WHITE}
 {}
