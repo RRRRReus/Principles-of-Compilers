@@ -19,7 +19,7 @@
 %{
     int yycolno=0;
     bool CanBeSINGLE_LINE_BLOCK=false;//真项表示接下来有出现单行代码块的可能
-    bool BeginFOR_PAREN=false;//真项表示这个(代表for的括号开始
+    bool BeginFUNCTION=false;//真项表示这个(代表for的括号开始
     int PAREN_LEVEL=0;
     int comment_level = 0; // 用于跟踪多行注释的嵌套级别
 
@@ -40,7 +40,7 @@
     {
         
 
-        dump_tokens("%-10s", format);
+        dump_tokens("%-20s", format);
         dump_tokens("%-10s %-5d %-5d\n", yytext, yylineno, yycolno);
          
        
@@ -84,6 +84,11 @@
         // 插入符号表项
         void insert(const std::string& identifier, SymbolTableEntry* entry) {
             if (!tables.empty()) {
+                if(tables.back().find(identifier) != tables.back().end())
+                {
+                    fprintf(stderr, "Error: Duplicate identifier '%s' at line %d\n", identifier.c_str(), entry->lineNumber);
+                    return;
+                }
                 tables.back()[identifier] = entry;
             } else {
                 std::cerr << "Error: No scope to insert into" << std::endl;
@@ -121,6 +126,7 @@
 %s SINGLE_LINE_BLOCK
 %x SINGLE_COMMENT
 %x MULTI_COMMENT
+%s FUNCTION
 
 /* definitions section */
 DECIMIAL [-]?([1-9][0-9]*|0)
@@ -133,10 +139,12 @@ WHITE [\t ]
 comma ","
 semicolon ";"
 ANY .
+FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
+    
 /*  Your code here (lab3). */
 %%  
-    /* rules section */     //规则部分
-
+  /* rules section */     //规则部分
+ 
 <DEFVAR>"," {
     isDeclaration=true;
     token_out("COMMA");
@@ -172,46 +180,42 @@ ANY .
     BEGIN (DEFVAR);
 
     token_out("VOID");}
-"for" {
-    token_out("FOR");
-    BeginFOR_PAREN=true;
-    BEGIN(FOR_PAREN);
-}
 
-<FOR_PAREN>"(" {
-    if(BeginFOR_PAREN)
+
+<FUNCTION>"(" {
+    if(BeginFUNCTION)
     {
         symbolTable.enterScope(); // 进入新的作用域
-        BeginFOR_PAREN=false;
+        BeginFUNCTION=false;
     }
     PAREN_LEVEL++;
-    token_out("SEMICOLON");
+    token_out("LPAREN");
     
     
 }
-<FOR_PAREN>")" {
+<FUNCTION>")" {
         token_out("RPAREN");
         PAREN_LEVEL--;
         if(PAREN_LEVEL==0)
         CanBeSINGLE_LINE_BLOCK=true;
     }
-<FOR_PAREN>"{" {
-    if(CanBeSINGLE_LINE_BLOCK)
-        BEGIN(INITIAL);
-
+<FUNCTION>"{" {
+    
+    BEGIN(INITIAL);
     token_out("LPAREN");
     }
-<FOR_PAREN>[^{}\n]+ {
-    if(CanBeSINGLE_LINE_BLOCK)
-        BEGIN(SINGLE_LINE_BLOCK);
-
-}
 <SINGLE_LINE_BLOCK>";" {
     symbolTable.exitScope(); // 退出当前作用域
     BEGIN(INITIAL);
     token_out("SEMICOLON");
 }
-
+ {FUNCTION_START} {
+    token_out("FUNCTION_START");
+    symbolTable.enterScope(); // 进入新的作用域
+    BEGIN FUNCTION;
+    yyless(yyleng - 1);
+}
+ 
 "if" {
     token_out("IF");
 }
@@ -269,7 +273,6 @@ ANY .
     token_out("LBRACE");
     symbolTable.enterScope(); // 进入新的作用域
 }
-
 "}" {
     token_out("RBRACE");
     symbolTable.exitScope(); // 退出当前作用域
@@ -278,7 +281,7 @@ ANY .
 {DECIMIAL} {
     int decimal;
     decimal = atoi(yytext); //将字符串转换为整数
-    dump_tokens("%-10s", "DECIMIAL");
+    dump_tokens("%-20s", "DECIMIAL");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", decimal);
 
@@ -288,7 +291,7 @@ ANY .
 {OCTAL} {
         int decimal;
         decimal = strtol(yytext, NULL, 8);  // 将八进制字符串转换为十进制
-    dump_tokens("%-10s", "OCTAL");
+    dump_tokens("%-20s", "OCTAL");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", decimal);
     }
@@ -297,18 +300,17 @@ ANY .
 {HEX} {
         int decimal;
         decimal = strtol(yytext, NULL, 16);  // 将十六进制字符串转换为十进制
-    dump_tokens("%-10s", "HEX");
+    dump_tokens("%-20s", "HEX");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", decimal);
     }
 {FLOAT} {
     float value;
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
-    dump_tokens("%-10s", "FLOAT");
+    dump_tokens("%-20s", "FLOAT");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
-
 {ID} {
     SymbolTableEntry* entry = nullptr;
     if (isDeclaration) {
@@ -324,7 +326,7 @@ ANY .
         }
     }
  
-    dump_tokens("%-10s", "ID");
+    dump_tokens("%-20s", "ID");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20p\n", entry);
 
