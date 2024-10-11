@@ -1,0 +1,39 @@
+"for"{
+    //token_out("FOR");
+    //BeginFOR_PAREN=true;
+    //BEGIN(FOR_PAREN);
+}
+
+
+<FOR_PAREN>"("{
+    if(BeginFOR_PAREN)
+    {
+        symbolTable.enterScope(); // 进入新的作用域
+        BeginFOR_PAREN=false;
+    }
+    PAREN_LEVEL++;
+    token_out("LPAREN");
+}
+<FOR_PAREN>")"{
+    token_out("RPAREN");
+    PAREN_LEVEL--;
+    if(PAREN_LEVEL==0)
+    CanBeSINGLE_LINE_BLOCK=true;
+}
+
+<FOR_PAREN>"{"{
+    if(CanBeSINGLE_LINE_BLOCK)
+    BEGIN(INITIAL);
+
+    token_out("LPAREN");
+}
+<FOR_PAREN>[^{}\n]+ {
+    if(CanBeSINGLE_LINE_BLOCK)
+        BEGIN(SINGLE_LINE_BLOCK);
+
+}
+<SINGLE_LINE_BLOCK>";"{
+    symbolTable.exitScope(); // 退出当前作用域
+    BEGIN(INITIAL);
+    token_out("SEMICOLON")
+}
