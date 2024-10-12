@@ -480,7 +480,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
                 base /= 8.0;
             } else {
                 // 如果出现非八进制数字，处理错误
-                fprintf(stderr, "Error: Invalid octal digit in fractional part\n");
+                fprintf(stderr, "line:%d col:%d Error: Invalid octal digit in fractional part\n", yylineno,yycolno);
                 break;
             }
         }
