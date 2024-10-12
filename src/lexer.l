@@ -113,7 +113,6 @@
     SymbolTable symbolTable;
     // 全局变量，用于区分当前是否在声明标识符
     bool isDeclaration = false;
-    bool StillDeclaration = false;
     /* Your code here, if desired (lab3). */
 
 
@@ -244,13 +243,6 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     token_out("IF");
 }
 
-"else" {
-    token_out("ELSE");
-}
-
-"return" {
-    token_out("RETURN");
-}
 "," {
     token_out("COMMA");
 }
@@ -421,6 +413,15 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     dump_tokens("%-20s", "FLOAT_HEX");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
+}
+
+
+
+ {FUNCTION_START} {
+    token_out("FUNCTION_START");
+    symbolTable.enterScope(); // 进入新的作用域
+    BEGIN FUNCTION;
+    yyless(yyleng - 1);
 }
 
 
