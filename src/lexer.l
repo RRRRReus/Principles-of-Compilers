@@ -421,7 +421,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     }
     else{
 
-    dump_tokens("%-20s", "DECIMIAL");
+    dump_tokens("%-20s", "OCTAL");
     dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", (int)decimal);
 
@@ -446,7 +446,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     }
     else{
 
-    dump_tokens("%-20s", "DECIMIAL");
+    dump_tokens("%-20s", "HEX");
     dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", (int)decimal);
 
