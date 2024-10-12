@@ -142,6 +142,7 @@ comma ","
 semicolon ";"
 ANY .
 IF_START "if"[[:space:]]*\(
+WHILE_START "while"[[:space:]]*\(
 FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     
 /*  Your code here (lab3). */
@@ -184,19 +185,9 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
 
     token_out("VOID");}
 
- 
-"if" {
-    token_out("IF");
+"const" {
+    token_out("CONST");
 }
-
-"else" {
-    token_out("ELSE");
-}
-
-"return" {
-    token_out("RETURN");
-}
-
 <FUNCTION>"(" {
     if(BeginFUNCTION)
     {
@@ -204,7 +195,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
         BeginFUNCTION=false;
     }
     PAREN_LEVEL++;
-    token_out("LPAREN");
+    token_out("FUNCTION_LPAREN");
     
     
 }
@@ -215,14 +206,34 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
         CanBeSINGLE_LINE_BLOCK=true;
     }
 <FUNCTION>"{" {
-    
+    token_out("FUNCTION_LPAREN");
     BEGIN(INITIAL);
-    token_out("LPAREN");
+
     }
 <SINGLE_LINE_BLOCK>";" {
     symbolTable.exitScope(); // 退出当前作用域
     BEGIN(INITIAL);
     token_out("SEMICOLON");
+}
+ {IF_START} {
+    token_out("IF_START");
+    //yyless(yyleng - 1);
+}
+ {WHILE_START} {
+    token_out("WHILE_START");
+    //yyless(yyleng - 1);
+
+ }
+
+ {FUNCTION_START} {
+    token_out("FUNCTION_START");
+    symbolTable.enterScope(); // 进入新的作用域
+    BEGIN FUNCTION;
+    //yyless(yyleng - 1);
+}
+ 
+"if" {
+    token_out("IF");
 }
 
 "," {
@@ -315,7 +326,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     token_out("RPAREN");
 }
 
-"{" {
+<INITIAL>"{" {
     token_out("LBRACE");
     symbolTable.enterScope(); // 进入新的作用域
 }
