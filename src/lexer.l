@@ -186,7 +186,9 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
 
     token_out("VOID");}
 
-
+"const" {
+    token_out("CONST");
+}
 <FUNCTION>"(" {
     if(BeginFUNCTION)
     {
@@ -194,7 +196,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
         BeginFUNCTION=false;
     }
     PAREN_LEVEL++;
-    token_out("LPAREN");
+    token_out("FUNCTION_LPAREN");
     
     
 }
@@ -205,9 +207,9 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
         CanBeSINGLE_LINE_BLOCK=true;
     }
 <FUNCTION>"{" {
-    
+    token_out("FUNCTION_LPAREN");
     BEGIN(INITIAL);
-    token_out("LPAREN");
+
     }
 <SINGLE_LINE_BLOCK>";" {
     symbolTable.exitScope(); // 退出当前作用域
@@ -228,7 +230,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     token_out("FUNCTION_START");
     symbolTable.enterScope(); // 进入新的作用域
     BEGIN FUNCTION;
-    yyless(yyleng - 1);
+    //yyless(yyleng - 1);
 }
  
 "if" {
@@ -332,7 +334,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     token_out("RPAREN");
 }
 
-"{" {
+<INITIAL>"{" {
     token_out("LBRACE");
     symbolTable.enterScope(); // 进入新的作用域
 }

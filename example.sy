@@ -59,5 +59,10 @@ int main()
     /* comment */ a = b + c * d / e     // equivalent to a = b + c * d / e
     if(a < 5)
         return 1;
+    if(1)
+    {
+        int a=9;
+        a=a-4;
+    }
     return 0;
 }
