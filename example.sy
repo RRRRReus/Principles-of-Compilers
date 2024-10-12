@@ -1,68 +1,29 @@
-int a=(1+1);
+const float RADIUS = 5.5, PI = 03.141592653589793, EPS = 1e-6, FACT = -.33E+5, PI_HEX = 0x1.921fb6p+1, HEX2 = 0x.AP-3,CONV1 = 233, CONV2 = 0xfff, MAX = 1e9;
 
-int sum ( int ap,int b)
-{
-    int c;
-    c=a+b;
-    return c;
+int limit1 = -2147483648;
+int limit2 = -/*cirno*/2147483648;
+int limit3 = - 1 - -
+/*
+*/
 
+2147483648 - + 2 ;
+
+/*/skipher/*/
+//int main(){
+int main(){
+	////return 0;}/*
+	/*}
+	//}return 1;*/
+	//}return 2;*//*
+	float i = -0111;
+	while(i < 0x2f.a5p+5){
+		i = i + 0x3.ap-2;
+		i = i - -3 + +2 -+2 + 1 - 1;
+	}
+
+    return - /*cirno            */ 02000000000;
+	return -  0x80000000;
+    return /*                              */0x3f3f3f3f * 07 % 010 / 0x10;
+	//*/
 }
-int main()
-{
-
-    //定义测试
-
-    int a,e=4;
-    int ae=e;
-    //int e;
-    int b;
-    int c;
-    float d;  //  */
-    int minus;
-    //    /*// int a=b+c*/
-
-    //负数测试
-
-    minus=--1;
-    minus=--2147483648;
-    minus=-100;
-    minus=-100.4;
-    minus=-2147483648；
-    d=-1.23;
-    a=5-4;
-
-    // 进制测试
-    e=0;
-    b=0x011;    //;;;;++++++十六进制
-    b=0x0.p3;    
-    b=0x2.4;    //十六进制浮点数 2.25
-    c=011;      //八进制整数
-    c=02.5;     //2.625
-    c=01.4; //八进制浮点数 2.3
-    d=10.233;   /*小数*/
-    d=1.23e4;   //
-    d=1.23e-4;  //  /**/
-    d=1.23E-4;  /**/    //
-    a = 1 + 2;
-
-    //  注释测试
-
-    /**aaa*/ */
-
-    a = b/**//d;    // equivalent to a = b / d;
-
-    /*//*/  a=a+1;      //equivalent to a=a+1;
-
-    a = b//**/c
-    +d;     //equivalent to a = b+d
-
-    /* comment */ a = b + c * d / e     // equivalent to a = b + c * d / e
-    if(a < 5)
-        return 1;
-    if(1)
-    {
-        int a=9;
-        a=a-4;
-    }
-    return 0;
-}
+//
