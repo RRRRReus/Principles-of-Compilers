@@ -1,5 +1,7 @@
 const float RADIUS = 5.5, PI = 03.141592653589793, EPS = 1e-6, FACT = -.33E+5, PI_HEX = 0x1.921fb6p+1, HEX2 = 0x.AP-3,CONV1 = 233, CONV2 = 0xfff, MAX = 1e9;
 
+int test=2147483648;
+
 int limit1 = -2147483648;
 int limit2 = -/*cirno*/2147483648;
 int limit3 = - 1 - -

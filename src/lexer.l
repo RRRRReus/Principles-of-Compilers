@@ -9,7 +9,10 @@
     #include <string>
     #include <vector>
     #include <iostream>
-
+    #include<cmath>
+    #include<stdint.h>
+    #include <limits.h>
+    #include <inttypes.h>
     #define YY_USER_ACTION {           \
     yycolno += yyleng;            \
 }
@@ -377,30 +380,77 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
 }
 
 {DECIMIAL} {
-    int decimal;
-    decimal = atoi(yytext); //将字符串转换为整数
+    int64_t decimal;
+    decimal = strtoll(yytext,nullptr,10); //将字符串转换为longlong
+    if(decimal > 0 && decimal > INT_MAX)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+    }
+    else if(decimal<0&&decimal<INT_MIN)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+    }
+    else{
+
     dump_tokens("%-20s", "DECIMIAL");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
-    dump_tokens("%-20d\n", decimal);
+    dump_tokens("%-20d\n", (int)decimal);
 
-
+    }
+    
 }
 
 {OCTAL} {
-        int decimal;
-        decimal = strtol(yytext, NULL, 8);  // 将八进制字符串转换为十进制
-    dump_tokens("%-20s", "OCTAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
-    dump_tokens("%-20d\n", decimal);
+       int64_t decimal;
+    decimal = strtoll(yytext,nullptr,8); //将字符串转换为longlong
+    if(decimal > 0 && decimal > INT_MAX)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
     }
+    else if(decimal<0&&decimal<INT_MIN)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+    }
+    else{
+
+    dump_tokens("%-20s", "DECIMIAL");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20d\n", (int)decimal);
+
+    }
+}
 
     
 {HEX} {
-        int decimal;
-        decimal = strtol(yytext, NULL, 16);  // 将十六进制字符串转换为十进制
-    dump_tokens("%-20s", "HEX");
+        int64_t decimal;
+    decimal = strtoll(yytext,nullptr,16); //将字符串转换为longlong
+    if(decimal > 0 && decimal > INT_MAX)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+    }
+    else if(decimal<0&&decimal<INT_MIN)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+    }
+    else{
+
+    dump_tokens("%-20s", "DECIMIAL");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
-    dump_tokens("%-20d\n", decimal);
+    dump_tokens("%-20d\n", (int)decimal);
+
+    }
     }
 
 
@@ -468,7 +518,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     }
 
 "//" {
-    //token_out("SINGLE_COMMENT_START");
+    token_out("SINGLE_COMMENT_START");
     BEGIN SINGLE_COMMENT;
 }
 
@@ -478,18 +528,18 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
 }
 
 <SINGLE_COMMENT>\n {
-    //token_out("SINGLE_COMMENT_END");
+    token_out("SINGLE_COMMENT_END");
     BEGIN INITIAL;
 }
 
 "/*" {
 
-    //token_out("MULTI_COMMENT_START");
+    token_out("MULTI_COMMENT_START");
     BEGIN MULTI_COMMENT;
 }
 
 <MULTI_COMMENT>"*/" {
-        //token_out("MULTI_COMMENT_END");
+        token_out("MULTI_COMMENT_END");
         BEGIN INITIAL;
     
 }
