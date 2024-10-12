@@ -374,7 +374,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
     dump_tokens("%-20s", "FLOAT_DECIMAL");
     dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
-    dump_tokens("%-20f\n", value);
+    dump_tokens("%-20.4f\n", value);
 }
 
 {FLOAT_OCTAL} {
