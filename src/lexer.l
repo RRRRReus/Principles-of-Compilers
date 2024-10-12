@@ -131,8 +131,8 @@
 /* definitions section */
 
 DECIMIAL [-]?([1-9][0-9]*|0)
-OCTAL 0[0-7]+               
-HEX 0[xX][0-9a-fA-F]+
+OCTAL [-]?0[0-7]+               
+HEX [-]?[[:space:]]*0[xX][0-9a-fA-F]+
 FLOAT_DECIMAL [-]?(([1-9][0-9]*\.[0-9]*([eE][+-]?[0-9]+)?)|(0?\.[0-9]+([eE][+-]?[0-9]+)?)|([1-9][0-9]*([eE][+-]?[0-9]+)))
 FLOAT_OCTAL 0[0-7]+\.[0-7]*([eE][+-]?[0-9]+)?
 FLOAT_HEX 0[xX]([0-9a-fA-F]+)?\.[0-9a-fA-F]*([pP][+-]?[0-9]+)?
@@ -447,28 +447,28 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     }
 
 "//" {
-    token_out("SINGLE_COMMENT_START");
+    //token_out("SINGLE_COMMENT_START");
     BEGIN SINGLE_COMMENT;
 }
 
 <SINGLE_COMMENT>.* {
-    token_out("SINGLE_COMMENT");
+    //token_out("SINGLE_COMMENT");
     // 处理单行注释的内容
 }
 
 <SINGLE_COMMENT>\n {
-    token_out("SINGLE_COMMENT_END");
+    //token_out("SINGLE_COMMENT_END");
     BEGIN INITIAL;
 }
 
 "/*" {
 
-    token_out("MULTI_COMMENT_START");
+    //token_out("MULTI_COMMENT_START");
     BEGIN MULTI_COMMENT;
 }
 
 <MULTI_COMMENT>"*/" {
-        token_out("MULTI_COMMENT_END");
+        //token_out("MULTI_COMMENT_END");
         BEGIN INITIAL;
     
 }
@@ -477,7 +477,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
 <MULTI_COMMENT>[^*|\n]+ {
     // 处理没有结束符的情况，匹配直到遇到 *
     // 如果注释里有*呢
-    token_out("MULTI_COMMENT");
+    //token_out("MULTI_COMMENT");
 }
 
 
