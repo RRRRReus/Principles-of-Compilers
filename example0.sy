@@ -1,0 +1,68 @@
+int a=(1+1);
+
+int sum ( int ap,int b)
+{
+    int c;
+    c=a+b;
+    return c;
+
+}
+int main()
+{
+
+    //定义测试
+
+    int a,e=4;
+    int ae=e;
+    //int e;
+    int b;
+    int c;
+    float d;  //  */
+    int minus;
+    //    /*// int a=b+c*/
+
+    //负数测试
+
+    minus=--1;
+    minus=--2147483648;
+    minus=-100;
+    minus=-100.4;
+    minus=-2147483648；
+    d=-1.23;
+    a=5-4;
+
+    // 进制测试
+    e=0;
+    b=0x011;    //;;;;++++++十六进制
+    b=0x0.p3;    
+    b=0x2.4;    //十六进制浮点数 2.25
+    c=011;      //八进制整数
+    c=02.5;     //2.625
+    c=01.4; //八进制浮点数 2.3
+    d=10.233;   /*小数*/
+    d=1.23e4;   //
+    d=1.23e-4;  //  /**/
+    d=1.23E-4;  /**/    //
+    a = 1 + 2;
+
+    //  注释测试
+
+    /**aaa*/ */
+
+    a = b/**//d;    // equivalent to a = b / d;
+
+    /*//*/  a=a+1;      //equivalent to a=a+1;
+
+    a = b//**/c
+    +d;     //equivalent to a = b+d
+
+    /* comment */ a = b + c * d / e     // equivalent to a = b + c * d / e
+    if(a < 5)
+        return 1;
+    if(1)
+    {
+        int a=9;
+        a=a-4;
+    }
+    return 0;
+}
