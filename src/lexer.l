@@ -142,6 +142,8 @@ WHITE [\t ]
 comma ","
 semicolon ";"
 ANY .
+IF_START "if"[[:space:]]*\(
+WHILE_START "while"[[:space:]]*\(
 FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     
 /*  Your code here (lab3). */
@@ -212,6 +214,16 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     BEGIN(INITIAL);
     token_out("SEMICOLON");
 }
+ {IF_START} {
+    token_out("IF_START");
+    //yyless(yyleng - 1);
+}
+ {WHILE_START} {
+    token_out("WHILE_START");
+    //yyless(yyleng - 1);
+
+ }
+
  {FUNCTION_START} {
     token_out("FUNCTION_START");
     symbolTable.enterScope(); // 进入新的作用域
