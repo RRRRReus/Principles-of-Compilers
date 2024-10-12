@@ -1,0 +1,124 @@
+const 'const'    [StartOfLine]  Loc=<try.c:1:1>
+float 'float'    [LeadingSpace] Loc=<try.c:1:7>
+identifier 'RADIUS'      [LeadingSpace] Loc=<try.c:1:13>
+equal '='        [LeadingSpace] Loc=<try.c:1:20>
+numeric_constant '5.5'   [LeadingSpace] Loc=<try.c:1:22>
+comma ','               Loc=<try.c:1:25>
+identifier 'PI'  [LeadingSpace] Loc=<try.c:1:27>
+equal '='        [LeadingSpace] Loc=<try.c:1:30>
+numeric_constant '03.141592653589793'    [LeadingSpace] Loc=<try.c:1:32>
+comma ','               Loc=<try.c:1:50>
+identifier 'EPS'         [LeadingSpace] Loc=<try.c:1:52>
+equal '='        [LeadingSpace] Loc=<try.c:1:56>
+numeric_constant '1e-6'  [LeadingSpace] Loc=<try.c:1:58>
+comma ','               Loc=<try.c:1:62>
+identifier 'FACT'        [LeadingSpace] Loc=<try.c:1:64>
+equal '='        [LeadingSpace] Loc=<try.c:1:69>
+minus '-'        [LeadingSpace] Loc=<try.c:1:71>
+numeric_constant '.33E+5'               Loc=<try.c:1:72>
+comma ','               Loc=<try.c:1:78>
+identifier 'PI_HEX'      [LeadingSpace] Loc=<try.c:1:80>
+equal '='        [LeadingSpace] Loc=<try.c:1:87>
+numeric_constant '0x1.921fb6p+1'         [LeadingSpace] Loc=<try.c:1:89>
+comma ','               Loc=<try.c:1:102>
+identifier 'HEX2'        [LeadingSpace] Loc=<try.c:1:104>
+equal '='        [LeadingSpace] Loc=<try.c:1:109>
+numeric_constant '0x.AP-3'       [LeadingSpace] Loc=<try.c:1:111>
+comma ','               Loc=<try.c:1:118>
+identifier 'CONV1'              Loc=<try.c:1:119>
+equal '='        [LeadingSpace] Loc=<try.c:1:125>
+numeric_constant '233'   [LeadingSpace] Loc=<try.c:1:127>
+comma ','               Loc=<try.c:1:130>
+identifier 'CONV2'       [LeadingSpace] Loc=<try.c:1:132>
+equal '='        [LeadingSpace] Loc=<try.c:1:138>
+numeric_constant '0xfff'         [LeadingSpace] Loc=<try.c:1:140>
+comma ','               Loc=<try.c:1:145>
+identifier 'MAX'         [LeadingSpace] Loc=<try.c:1:147>
+equal '='        [LeadingSpace] Loc=<try.c:1:151>
+numeric_constant '1e9'   [LeadingSpace] Loc=<try.c:1:153>
+semi ';'                Loc=<try.c:1:156>
+int 'int'        [StartOfLine]  Loc=<try.c:3:1>
+identifier 'limit1'      [LeadingSpace] Loc=<try.c:3:5>
+equal '='        [LeadingSpace] Loc=<try.c:3:12>
+minus '-'        [LeadingSpace] Loc=<try.c:3:14>
+numeric_constant '2147483648'           Loc=<try.c:3:15>
+semi ';'                Loc=<try.c:3:25>
+int 'int'        [StartOfLine]  Loc=<try.c:4:1>
+identifier 'limit2'      [LeadingSpace] Loc=<try.c:4:5>
+equal '='        [LeadingSpace] Loc=<try.c:4:12>
+minus '-'        [LeadingSpace] Loc=<try.c:4:14>
+numeric_constant '2147483648'    [LeadingSpace] Loc=<try.c:4:24>
+semi ';'                Loc=<try.c:4:34>
+int 'int'        [StartOfLine]  Loc=<try.c:5:1>
+identifier 'limit3'      [LeadingSpace] Loc=<try.c:5:5>
+equal '='        [LeadingSpace] Loc=<try.c:5:12>
+minus '-'        [LeadingSpace] Loc=<try.c:5:14>
+numeric_constant '1'     [LeadingSpace] Loc=<try.c:5:16>
+minus '-'        [LeadingSpace] Loc=<try.c:5:18>
+minus '-'        [LeadingSpace] Loc=<try.c:5:20>
+numeric_constant '2147483648'    [StartOfLine]  Loc=<try.c:9:1>
+minus '-'        [LeadingSpace] Loc=<try.c:9:12>
+plus '+'         [LeadingSpace] Loc=<try.c:9:14>
+numeric_constant '2'     [LeadingSpace] Loc=<try.c:9:16>
+semi ';'         [LeadingSpace] Loc=<try.c:9:18>
+int 'int'        [StartOfLine]  Loc=<try.c:13:1>
+identifier 'main'        [LeadingSpace] Loc=<try.c:13:5>
+l_paren '('             Loc=<try.c:13:9>
+r_paren ')'             Loc=<try.c:13:10>
+l_brace '{'             Loc=<try.c:13:11>
+float 'float'    [StartOfLine] [LeadingSpace]   Loc=<try.c:18:2>
+identifier 'i'   [LeadingSpace] Loc=<try.c:18:8>
+equal '='        [LeadingSpace] Loc=<try.c:18:10>
+minus '-'        [LeadingSpace] Loc=<try.c:18:12>
+numeric_constant '0111'         Loc=<try.c:18:13>
+semi ';'                Loc=<try.c:18:17>
+while 'while'    [StartOfLine] [LeadingSpace]   Loc=<try.c:19:2>
+l_paren '('             Loc=<try.c:19:7>
+identifier 'i'          Loc=<try.c:19:8>
+less '<'         [LeadingSpace] Loc=<try.c:19:10>
+numeric_constant '0x2f.a5p+5'    [LeadingSpace] Loc=<try.c:19:12>
+r_paren ')'             Loc=<try.c:19:22>
+l_brace '{'             Loc=<try.c:19:23>
+identifier 'i'   [StartOfLine] [LeadingSpace]   Loc=<try.c:20:3>
+equal '='        [LeadingSpace] Loc=<try.c:20:5>
+identifier 'i'   [LeadingSpace] Loc=<try.c:20:7>
+plus '+'         [LeadingSpace] Loc=<try.c:20:9>
+numeric_constant '0x3.ap-2'      [LeadingSpace] Loc=<try.c:20:11>
+semi ';'                Loc=<try.c:20:19>
+identifier 'i'   [StartOfLine] [LeadingSpace]   Loc=<try.c:21:3>
+equal '='        [LeadingSpace] Loc=<try.c:21:5>
+identifier 'i'   [LeadingSpace] Loc=<try.c:21:7>
+minus '-'        [LeadingSpace] Loc=<try.c:21:9>
+minus '-'        [LeadingSpace] Loc=<try.c:21:11>
+numeric_constant '3'            Loc=<try.c:21:12>
+plus '+'         [LeadingSpace] Loc=<try.c:21:14>
+plus '+'         [LeadingSpace] Loc=<try.c:21:16>
+numeric_constant '2'            Loc=<try.c:21:17>
+minus '-'        [LeadingSpace] Loc=<try.c:21:19>
+plus '+'                Loc=<try.c:21:20>
+numeric_constant '2'            Loc=<try.c:21:21>
+plus '+'         [LeadingSpace] Loc=<try.c:21:23>
+numeric_constant '1'     [LeadingSpace] Loc=<try.c:21:25>
+minus '-'        [LeadingSpace] Loc=<try.c:21:27>
+numeric_constant '1'     [LeadingSpace] Loc=<try.c:21:29>
+semi ';'                Loc=<try.c:21:30>
+r_brace '}'      [StartOfLine] [LeadingSpace]   Loc=<try.c:22:2>
+return 'return'  [StartOfLine] [LeadingSpace]   Loc=<try.c:24:5>
+minus '-'        [LeadingSpace] Loc=<try.c:24:12>
+numeric_constant '02000000000'   [LeadingSpace] Loc=<try.c:24:36>
+semi ';'                Loc=<try.c:24:47>
+return 'return'  [StartOfLine] [LeadingSpace]   Loc=<try.c:25:2>
+minus '-'        [LeadingSpace] Loc=<try.c:25:9>
+numeric_constant '0x80000000'    [LeadingSpace] Loc=<try.c:25:12>
+semi ';'                Loc=<try.c:25:22>
+return 'return'  [StartOfLine] [LeadingSpace]   Loc=<try.c:26:5>
+numeric_constant '0x3f3f3f3f'    [LeadingSpace] Loc=<try.c:26:46>
+star '*'         [LeadingSpace] Loc=<try.c:26:57>
+numeric_constant '07'    [LeadingSpace] Loc=<try.c:26:59>
+percent '%'      [LeadingSpace] Loc=<try.c:26:62>
+numeric_constant '010'   [LeadingSpace] Loc=<try.c:26:64>
+slash '/'        [LeadingSpace] Loc=<try.c:26:68>
+numeric_constant '0x10'  [LeadingSpace] Loc=<try.c:26:70>
+semi ';'                Loc=<try.c:26:74>
+r_brace '}'      [StartOfLine]  Loc=<try.c:28:1>
+eof ''          Loc=<try.c:29:3>

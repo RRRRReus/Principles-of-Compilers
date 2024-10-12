@@ -44,7 +44,7 @@
         
 
         dump_tokens("%-20s", format);
-        dump_tokens("%-10s %-5d %-5d\n", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d\n", yytext, yylineno, yycolno);
          
        
 
@@ -237,8 +237,27 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
  }
 
  {FUNCTION_START} {
+    SymbolTableEntry* entry = nullptr;
     token_out("FUNCTION_START");
     symbolTable.enterScope(); // 进入新的作用域
+
+        if (isDeclaration) {
+        // 插入符号表项
+        entry = new SymbolTableEntry{"identifier", yylineno};
+        symbolTable.insert(yytext, entry);
+        isDeclaration = false; // 重置声明标识符标志
+    } else {
+        // 查找符号表项
+        entry = symbolTable.lookup(yytext);
+        if (entry == nullptr) {
+            fprintf(stderr, "Error: Undeclared identifier '%s' at line %d\n", yytext, yylineno);
+        }
+    }
+ 
+    dump_tokens("%-20s", "ID");
+    dump_tokens("%-20s %-5d %-5d ", yytext-'(', yylineno, yycolno);
+    dump_tokens("%-20p\n", entry);
+
     BEGIN FUNCTION;
     //yyless(yyleng - 1);
 }
@@ -437,7 +456,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     float value;
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
     dump_tokens("%-20s", "FLOAT_DECIMAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -461,7 +480,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     // 组合整数部分和小数部分
     float value = integer_part + fractional_part;
     dump_tokens("%-20s", "FLOAT_OCTAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -469,7 +488,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     float value;
     value = (float)strtod(yytext, NULL);  // 使用 strtod 将十六进制浮点数转换为十进制浮点数
     dump_tokens("%-20s", "FLOAT_HEX");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -490,7 +509,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     }
  
     dump_tokens("%-20s", "ID");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20p\n", entry);
 
 
