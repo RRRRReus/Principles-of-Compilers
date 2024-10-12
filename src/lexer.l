@@ -137,7 +137,7 @@ DECIMIAL [-]?([1-9][0-9]*|0)
 OCTAL [-]?0[0-7]+               
 HEX [-]?0[xX][0-9a-fA-F]+
 FLOAT_DECIMAL [-]?(([1-9][0-9]*\.[0-9]*([eE][+-]?[0-9]+)?)|(0?\.[0-9]+([eE][+-]?[0-9]+)?)|([1-9][0-9]*([eE][+-]?[0-9]+)))
-FLOAT_OCTAL 0[0-7]+\.[0-7]*([eE][+-]?[0-9]+)?
+FLOAT_OCTAL 0[0-7]+(\.[0-9]+)?([eE][+-]?[0-9]+)?
 FLOAT_HEX 0[xX]([0-9a-fA-F]+)?\.[0-9a-fA-F]*([pP][+-]?[0-9]+)?
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)        
@@ -461,32 +461,39 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
 }
 
 {FLOAT_OCTAL} {
-     char* integer_part_str = strtok(yytext, ".");   // 分割整数部分
+
+    dump_tokens("%-20s", "FLOAT_OCTAL");
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    char* integer_part_str = strtok(yytext, ".");   // 分割整数部分,会破坏yytext
     char* fractional_part_str = strtok(NULL, ".");  // 分割小数部分
+    int integer_part = strtol(integer_part_str, NULL, 8); // 转换整数部分，八进制转十进制
 
-    // 转换整数部分
-    int integer_part = strtol(integer_part_str, NULL, 8);
-
-    // 转换小数部分
+    // 转换小数部分，假设它也是八进制数
     float fractional_part = 0.0;
     if (fractional_part_str != NULL) {
         float base = 1.0 / 8.0;  // 八进制小数的基数
         for (int i = 0; fractional_part_str[i] != '\0'; ++i) {
-            fractional_part += (fractional_part_str[i] - '0') * base;
-            base /= 8.0;
+            if (fractional_part_str[i] >= '0' && fractional_part_str[i] <= '7') {
+                fractional_part += (fractional_part_str[i] - '0') * base;
+                base /= 8.0;
+            } else {
+                // 如果出现非八进制数字，处理错误
+                fprintf(stderr, "Error: Invalid octal digit in fractional part\n");
+                break;
+            }
         }
     }
 
     // 组合整数部分和小数部分
     float value = integer_part + fractional_part;
-    dump_tokens("%-20s", "FLOAT_OCTAL");
-    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    
     dump_tokens("%-20f\n", value);
 }
 
+
 {FLOAT_HEX} {
     float value;
-    value = (float)strtod(yytext, NULL);  // 使用 strtod 将十六进制浮点数转换为十进制浮点数
+    value = (float)strtod(yytext, NULL);  // 使用 strtof 将十六进制浮点数转换为十进制浮点数
     dump_tokens("%-20s", "FLOAT_HEX");
     dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
