@@ -44,7 +44,7 @@
         
 
         dump_tokens("%-20s", format);
-        dump_tokens("%-10s %-5d %-5d\n", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d\n", yytext, yylineno, yycolno);
          
        
 
@@ -256,7 +256,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     int wei=strlen(yytext)-1;
     yytext[wei]='\0';
     dump_tokens("%-20s", "FUNCTION_START");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20p\n", entry);
     
     yytext[wei]='(';
@@ -385,19 +385,19 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     if(decimal > 0 && decimal > INT_MAX)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else if(decimal<0&&decimal<INT_MIN)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else{
 
     dump_tokens("%-20s", "DECIMIAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", (int)decimal);
 
     }
@@ -410,19 +410,19 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     if(decimal > 0 && decimal > INT_MAX)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else if(decimal<0&&decimal<INT_MIN)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else{
 
     dump_tokens("%-20s", "DECIMIAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", (int)decimal);
 
     }
@@ -435,19 +435,19 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     if(decimal > 0 && decimal > INT_MAX)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else if(decimal<0&&decimal<INT_MIN)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else{
 
     dump_tokens("%-20s", "DECIMIAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", (int)decimal);
 
     }
@@ -458,7 +458,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     float value;
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
     dump_tokens("%-20s", "FLOAT_DECIMAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -482,7 +482,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     // 组合整数部分和小数部分
     float value = integer_part + fractional_part;
     dump_tokens("%-20s", "FLOAT_OCTAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -490,7 +490,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     float value;
     value = (float)strtod(yytext, NULL);  // 使用 strtod 将十六进制浮点数转换为十进制浮点数
     dump_tokens("%-20s", "FLOAT_HEX");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -511,7 +511,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     }
  
     dump_tokens("%-20s", "ID");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20p\n", entry);
 
 
