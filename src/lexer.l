@@ -211,13 +211,13 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     
 }
 <FUNCTION>")" {
-        token_out("RPAREN");
+        token_out("FUNCTION_RPAREN");
         PAREN_LEVEL--;
         if(PAREN_LEVEL==0)
         CanBeSINGLE_LINE_BLOCK=true;
     }
 <FUNCTION>"{" {
-    token_out("FUNCTION_LPAREN");
+    token_out("LBRACE");
     BEGIN(INITIAL);
 
     }
@@ -237,11 +237,11 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
  }
 
  {FUNCTION_START} {
-    SymbolTableEntry* entry = nullptr;
-    token_out("FUNCTION_START");
+    //token_out("FUNCTION_START");
     symbolTable.enterScope(); // 进入新的作用域
-
-        if (isDeclaration) {
+    BEGIN FUNCTION;
+        SymbolTableEntry* entry = nullptr;
+    if (isDeclaration) {
         // 插入符号表项
         entry = new SymbolTableEntry{"identifier", yylineno};
         symbolTable.insert(yytext, entry);
@@ -253,13 +253,15 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
             fprintf(stderr, "Error: Undeclared identifier '%s' at line %d\n", yytext, yylineno);
         }
     }
- 
-    dump_tokens("%-20s", "ID");
-    dump_tokens("%-20s %-5d %-5d ", yytext-'(', yylineno, yycolno);
+    int wei=strlen(yytext)-1;
+    yytext[wei]='\0';
+    dump_tokens("%-20s", "FUNCTION_START");
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20p\n", entry);
+    
+    yytext[wei]='(';
 
-    BEGIN FUNCTION;
-    //yyless(yyleng - 1);
+    yyless(yyleng - 1);
 }
  
 "if" {
@@ -383,19 +385,19 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     if(decimal > 0 && decimal > INT_MAX)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else if(decimal<0&&decimal<INT_MIN)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else{
 
     dump_tokens("%-20s", "DECIMIAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", (int)decimal);
 
     }
@@ -408,19 +410,19 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     if(decimal > 0 && decimal > INT_MAX)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else if(decimal<0&&decimal<INT_MIN)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else{
 
     dump_tokens("%-20s", "DECIMIAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", (int)decimal);
 
     }
@@ -433,19 +435,19 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     if(decimal > 0 && decimal > INT_MAX)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else if(decimal<0&&decimal<INT_MIN)
     {
         dump_tokens("%-20s", "LONGLONG");
-        dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
     }
     else{
 
     dump_tokens("%-20s", "DECIMIAL");
-    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", (int)decimal);
 
     }
