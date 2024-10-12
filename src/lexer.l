@@ -41,7 +41,7 @@
         
 
         dump_tokens("%-20s", format);
-        dump_tokens("%-20s %-5d %-5d\n", yytext, yylineno, yycolno);
+        dump_tokens("%-10s %-5d %-5d\n", yytext, yylineno, yycolno);
          
        
 
@@ -132,7 +132,7 @@
 
 DECIMIAL [-]?([1-9][0-9]*|0)
 OCTAL [-]?0[0-7]+               
-HEX [-]?[[:space:]]*0[xX][0-9a-fA-F]+
+HEX [-]?0[xX][0-9a-fA-F]+
 FLOAT_DECIMAL [-]?(([1-9][0-9]*\.[0-9]*([eE][+-]?[0-9]+)?)|(0?\.[0-9]+([eE][+-]?[0-9]+)?)|([1-9][0-9]*([eE][+-]?[0-9]+)))
 FLOAT_OCTAL 0[0-7]+\.[0-7]*([eE][+-]?[0-9]+)?
 FLOAT_HEX 0[xX]([0-9a-fA-F]+)?\.[0-9a-fA-F]*([pP][+-]?[0-9]+)?
@@ -208,13 +208,13 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     
 }
 <FUNCTION>")" {
-        token_out("RPAREN");
+        token_out("FUNCTION_RPAREN");
         PAREN_LEVEL--;
         if(PAREN_LEVEL==0)
         CanBeSINGLE_LINE_BLOCK=true;
     }
 <FUNCTION>"{" {
-    token_out("FUNCTION_LPAREN");
+    token_out("LBRACE");
     BEGIN(INITIAL);
 
     }
@@ -234,11 +234,11 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
  }
 
  {FUNCTION_START} {
-    SymbolTableEntry* entry = nullptr;
-    token_out("FUNCTION_START");
+    //token_out("FUNCTION_START");
     symbolTable.enterScope(); // 进入新的作用域
-
-        if (isDeclaration) {
+    BEGIN FUNCTION;
+        SymbolTableEntry* entry = nullptr;
+    if (isDeclaration) {
         // 插入符号表项
         entry = new SymbolTableEntry{"identifier", yylineno};
         symbolTable.insert(yytext, entry);
@@ -250,13 +250,15 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
             fprintf(stderr, "Error: Undeclared identifier '%s' at line %d\n", yytext, yylineno);
         }
     }
- 
-    dump_tokens("%-20s", "ID");
-    dump_tokens("%-20s %-5d %-5d ", yytext-'(', yylineno, yycolno);
+    int wei=strlen(yytext)-1;
+    yytext[wei]='\0';
+    dump_tokens("%-20s", "FUNCTION_START");
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20p\n", entry);
+    
+    yytext[wei]='(';
 
-    BEGIN FUNCTION;
-    //yyless(yyleng - 1);
+    yyless(yyleng - 1);
 }
  
 "if" {
@@ -378,7 +380,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     int decimal;
     decimal = atoi(yytext); //将字符串转换为整数
     dump_tokens("%-20s", "DECIMIAL");
-    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", decimal);
 
 
@@ -388,7 +390,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
         int decimal;
         decimal = strtol(yytext, NULL, 8);  // 将八进制字符串转换为十进制
     dump_tokens("%-20s", "OCTAL");
-    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", decimal);
     }
 
@@ -397,7 +399,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
         int decimal;
         decimal = strtol(yytext, NULL, 16);  // 将十六进制字符串转换为十进制
     dump_tokens("%-20s", "HEX");
-    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20d\n", decimal);
     }
 
@@ -406,7 +408,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     float value;
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
     dump_tokens("%-20s", "FLOAT_DECIMAL");
-    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -430,7 +432,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     // 组合整数部分和小数部分
     float value = integer_part + fractional_part;
     dump_tokens("%-20s", "FLOAT_OCTAL");
-    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -438,7 +440,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     float value;
     value = (float)strtod(yytext, NULL);  // 使用 strtod 将十六进制浮点数转换为十进制浮点数
     dump_tokens("%-20s", "FLOAT_HEX");
-    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
 }
 
@@ -459,7 +461,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     }
  
     dump_tokens("%-20s", "ID");
-    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-10s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20p\n", entry);
 
 
