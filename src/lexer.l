@@ -189,6 +189,13 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
 "const" {
     token_out("CONST");
 }
+"break" {
+    token_out("BREAK");
+}
+"continue" {
+    token_out("CONTINUE");
+}
+
 <FUNCTION>"(" {
     if(BeginFUNCTION)
     {
@@ -320,7 +327,12 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     token_out("MOD");
 }
 
-
+"[" {
+    token_out("LBRACKET");
+}
+"]" {
+    token_out("RBRACKET");
+}
 
 ";" {
     token_out("SEMICOLON");
