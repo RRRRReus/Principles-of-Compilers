@@ -22,7 +22,7 @@ TESTCASE = $(shell find $(TEST_PATH) -name "*.sy")
 OUTPUT_LAB1 = $(addsuffix .toks, $(basename $(TESTCASE)))
 OUTPUT_LAB2 = $(addsuffix .ast, $(basename $(TESTCASE)))
 
-.phony:all app run gdb testlab1 testlab2 clean 
+.phony:all app run runt gdb testlab1 testlab2 clean 
 
 all:app
 
@@ -43,6 +43,9 @@ app:$(LEXER) $(PARSER) $(BINARY)
 
 run:app
 	@$(BINARY) -o example.ast -a example.sy
+runt:app
+
+	@$(BINARY) -o example.tok -t example.sy
 
 gdb:app
 	@gdb $(BINARY)
@@ -62,4 +65,4 @@ testlab1:app $(OUTPUT_LAB1)
 testlab2:app $(OUTPUT_LAB2)
 
 clean:
-	@rm -rf $(BUILD_PATH) $(PARSER) $(LEXER) $(PARSERH) $(OUTPUT_LAB1) $(OUTPUT_LAB2) *.out *.toks *.ast
+	@rm -rf $(BUILD_PATH) $(PARSER) $(LEXER) $(PARSERH) $(OUTPUT_LAB1) $(OUTPUT_LAB2) *.out *.toks *.ast *.tok
