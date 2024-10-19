@@ -5,18 +5,18 @@
 
 class SymbolEntry;
 
-class Node
+class Node//节点类
 {
 private:
-    static int counter;
-    int seq;
+    static int counter;//计数器
+    int seq;//序号
 public:
     Node();
     int getSeq() const {return seq;};
-    virtual void output(int level) = 0;
+    virtual void output(int level) = 0;//输出函数
 };
 
-class ExprNode : public Node
+class ExprNode : public Node//表达式节点类
 {
 protected:
     SymbolEntry *symbolEntry;
@@ -24,7 +24,7 @@ public:
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
 };
 
-class BinaryExpr : public ExprNode
+class BinaryExpr : public ExprNode//二元表达式类
 {
 private:
     int op;
@@ -35,24 +35,24 @@ public:
     void output(int level);
 };
 
-class Constant : public ExprNode
+class Constant : public ExprNode//常数类
 {
 public:
     Constant(SymbolEntry *se) : ExprNode(se){};
     void output(int level);
 };
 
-class Id : public ExprNode
+class Id : public ExprNode//标识符类
 {
 public:
     Id(SymbolEntry *se) : ExprNode(se){};
     void output(int level);
 };
 
-class StmtNode : public Node
+class StmtNode : public Node//语句节点类
 {};
 
-class CompoundStmt : public StmtNode
+class CompoundStmt : public StmtNode//复合语句类
 {
 private:
     StmtNode *stmt;
@@ -61,7 +61,7 @@ public:
     void output(int level);
 };
 
-class SeqNode : public StmtNode
+class SeqNode : public StmtNode//序列语句类
 {
 private:
     StmtNode *stmt1, *stmt2;
@@ -70,7 +70,7 @@ public:
     void output(int level);
 };
 
-class DeclStmt : public StmtNode
+class DeclStmt : public StmtNode//声明语句类
 {
 private:
     Id *id;
@@ -79,7 +79,7 @@ public:
     void output(int level);
 };
 
-class IfStmt : public StmtNode
+class IfStmt : public StmtNode//if语句类
 {
 private:
     ExprNode *cond;
@@ -89,7 +89,7 @@ public:
     void output(int level);
 };
 
-class IfElseStmt : public StmtNode
+class IfElseStmt : public StmtNode//if-else语句类
 {
 private:
     ExprNode *cond;
@@ -100,7 +100,7 @@ public:
     void output(int level);
 };
 
-class ReturnStmt : public StmtNode
+class ReturnStmt : public StmtNode//返回语句类
 {
 private:
     ExprNode *retValue;
@@ -109,7 +109,7 @@ public:
     void output(int level);
 };
 
-class AssignStmt : public StmtNode
+class AssignStmt : public StmtNode//赋值语句类
 {
 private:
     ExprNode *lval;
@@ -119,7 +119,7 @@ public:
     void output(int level);
 };
 
-class FunctionDef : public StmtNode
+class FunctionDef : public StmtNode//函数定义类
 {
 private:
     SymbolEntry *se;
@@ -129,7 +129,7 @@ public:
     void output(int level);
 };
 
-class Ast
+class Ast//抽象语法树类
 {
 private:
     Node* root;
