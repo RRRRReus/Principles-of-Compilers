@@ -2,6 +2,7 @@
 #define __AST_H__
 
 #include <fstream>
+#include <vector> 
 
 class SymbolEntry;
 
@@ -12,8 +13,8 @@ private:
     int seq;//序号
 public:
     Node();
-    int getSeq() const {return seq;};
-    virtual void output(int level) = 0;//输出函数
+    int getSeq() const {return seq;};   //返回节点的序号
+    virtual void output(int level) = 0;//输出函数，纯虚函数，要求所有派生类实现该函数
 };
 
 class ExprNode : public Node//表达式节点类
@@ -22,6 +23,7 @@ protected:
     SymbolEntry *symbolEntry;
 public:
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
+    SymbolEntry* getSymbolEntry() const { return symbolEntry; } // 添加访问器方法
 };
 
 class BinaryExpr : public ExprNode//二元表达式类
@@ -30,7 +32,7 @@ private:
     int op;
     ExprNode *expr1, *expr2;
 public:
-    enum {ADD, SUB, AND, OR, LESS};
+    enum {ADD, SUB, AND, OR, LESS}; //枚举所有可能的二元运算符
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
     void output(int level);
 };
@@ -48,6 +50,28 @@ public:
     Id(SymbolEntry *se) : ExprNode(se){};
     void output(int level);
 };
+
+
+class FuncCall : public ExprNode // 函数调用类
+{
+private:
+    Id *func;   // 函数名
+    std::vector<ExprNode*> args;    // 函数参数
+public:
+    FuncCall(SymbolEntry *se, Id *func, std::vector<ExprNode*> args) : ExprNode(se), func(func), args(args) {};
+    void output(int level);
+};
+
+class ExprStmt : public StmtNode // 表达式语句类？？？？？？？？？？？？？？
+{
+private:
+    ExprNode *expr;
+public:
+    ExprStmt(ExprNode *expr) : expr(expr) {};
+    void output(int level);
+};
+
+
 
 class StmtNode : public Node//语句节点类
 {};
@@ -119,15 +143,27 @@ public:
     void output(int level);
 };
 
-class FunctionDef : public StmtNode//函数定义类
+class FunctionDef : public StmtNode//函数定义类（参数呢？）
 {
 private:
-    SymbolEntry *se;
-    StmtNode *stmt;
+    SymbolEntry *se;    // 函数符号表项
+    StmtNode *stmt;    // 函数体
 public:
     FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
     void output(int level);
 };
+
+
+class WhileStmt : public StmtNode // while语句类
+{
+private:
+    ExprNode *cond;     // 条件
+    StmtNode *body;     // 循环体
+public:
+    WhileStmt(ExprNode *cond, StmtNode *body) : cond(cond), body(body) {};
+    void output(int level);
+};
+
 
 class Ast//抽象语法树类
 {

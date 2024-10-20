@@ -19,6 +19,7 @@
     StmtNode* stmttype;
     ExprNode* exprtype;
     Type* type;
+    std::vector<ExprNode*>* arglisttype; // 添加 arglisttype
 }
 
 %start Program
@@ -29,33 +30,92 @@
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON
 %token ADD SUB OR AND LESS ASSIGN
 %token RETURN
+%token WHILE
+%token COMMA
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef
-%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp
+
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt
+%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall
+%nterm <arglisttype> ArgList // 声明 ArgList 的类型
 %nterm <type> Type
 
 %precedence THEN
 %precedence ELSE
+
+
 %%
 Program
     : Stmts {
         ast.setRoot($1);
     }
     ;
+
 Stmts
     : Stmt {$$=$1;}
     | Stmts Stmt{
         $$ = new SeqNode($1, $2);
     }
     ;
-Stmt
-    : AssignStmt {$$=$1;}
+
+Stmt    
+    : AssignStmt {$$=$1;}   //
     | BlockStmt {$$=$1;}
     | IfStmt {$$=$1;}
     | ReturnStmt {$$=$1;}
     | DeclStmt {$$=$1;}
     | FuncDef {$$=$1;}
+    | WhileStmt { $$ = $1; }
+    | FuncCallStmt { $$ = $1; }
     ;
+
+WhileStmt
+    : WHILE LPAREN Cond RPAREN Stmt {
+        $$ = new WhileStmt($3, $5);
+    }
+    ;
+
+FuncCallStmt
+    : FuncCall SEMICOLON {
+        $$ = new ExprStmt($1);
+    }
+    ;
+
+
+
+FuncCall
+    : ID LPAREN RPAREN {
+        SymbolEntry *se = identifiers->lookup($1);
+        if (se == nullptr) {
+            fprintf(stderr, "Function \"%s\" is undefined\n", $1);
+            assert(se != nullptr);
+        }
+        $$ = new FuncCall(se, new Id(se), {});
+    }
+    | ID LPAREN ArgList RPAREN {
+        SymbolEntry *se = identifiers->lookup($1);
+        if (se == nullptr) {
+            fprintf(stderr, "Function \"%s\" is undefined\n", $1);
+            assert(se != nullptr);
+        }
+        $$ = new FuncCall(se, new Id(se), *$3); // 使用 *$3 解引用指针
+        delete $3; // 释放 ArgList
+    }
+    ;
+
+ArgList   
+    : Exp {
+        $$ = new std::vector<ExprNode*>();
+        $$->push_back($1);
+    }
+    | ArgList COMMA Exp {
+        $$ = $1;    // 使用 $1 而不是 $$->push_back($3);
+        $$->push_back($3);
+    }
+    ;
+
+
+
+
 LVal
     : ID {
         SymbolEntry *se;

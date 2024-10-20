@@ -2,6 +2,7 @@
 #include "SymbolTable.h"
 #include <string>
 #include "Type.h"
+#include <cstdio>
 
 extern FILE *yyout;
 int Node::counter = 0;
@@ -64,6 +65,18 @@ void Id::output(int level)
             name.c_str(), scope, type.c_str());
 }
 
+
+
+void FuncCall::output(int level)    // 函数调用输出
+{
+    fprintf(yyout, "%*cFuncCall\tname: %s\n", level, ' ', func->getSymbolEntry()->toStr().c_str()); // 输出函数名
+    for (auto arg : args)   // 遍历参数
+    {
+        arg->output(level + 4); // 输出参数
+    }
+}
+
+
 void CompoundStmt::output(int level)
 {
     fprintf(yyout, "%*cCompoundStmt\n", level, ' ');
@@ -118,4 +131,12 @@ void FunctionDef::output(int level)
     fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
             name.c_str(), type.c_str());
     stmt->output(level + 4);
+}
+
+
+void WhileStmt::output(int level)   // While语句输出
+{
+    fprintf(yyout, "%*cWhileStmt\n", level, ' ');   // 输出WhileStmt
+    cond->output(level + 4);    // 输出条件
+    body->output(level + 4);    // 输出循环体
 }
