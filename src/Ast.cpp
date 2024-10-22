@@ -140,3 +140,9 @@ void WhileStmt::output(int level)   // While语句输出
     cond->output(level + 4);    // 输出条件
     body->output(level + 4);    // 输出循环体
 }
+
+void ExprStmt::output(int level)
+{
+    fprintf(yyout, "%*cExprStmt\n", level, ' ');
+    expr->output(level + 4);
+}

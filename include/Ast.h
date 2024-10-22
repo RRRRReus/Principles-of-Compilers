@@ -62,6 +62,14 @@ public:
     void output(int level);
 };
 
+
+
+
+
+class StmtNode : public Node//语句节点类
+{};
+
+
 class ExprStmt : public StmtNode // 表达式语句类？？？？？？？？？？？？？？
 {
 private:
@@ -70,11 +78,6 @@ public:
     ExprStmt(ExprNode *expr) : expr(expr) {};
     void output(int level);
 };
-
-
-
-class StmtNode : public Node//语句节点类
-{};
 
 class CompoundStmt : public StmtNode//复合语句类
 {

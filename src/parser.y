@@ -58,14 +58,14 @@ Stmts
     ;
 
 Stmt    
-    : AssignStmt {$$=$1;}   //
+    : AssignStmt {$$=$1;} 
     | BlockStmt {$$=$1;}
     | IfStmt {$$=$1;}
     | ReturnStmt {$$=$1;}
     | DeclStmt {$$=$1;}
     | FuncDef {$$=$1;}
-    | WhileStmt { $$ = $1; }
-    | FuncCallStmt { $$ = $1; }
+    | WhileStmt {$$=$1;}
+    | FuncCallStmt {$$=$1;}
     ;
 
 WhileStmt
