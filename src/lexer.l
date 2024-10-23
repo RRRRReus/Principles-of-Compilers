@@ -7,6 +7,7 @@
     #include "parser.h"
 }
 %{
+    int yycolno = 0;
     extern dump_type_t dump_type;
 
     inline void dump_tokens(const char* format, ...){
@@ -16,9 +17,21 @@
             vfprintf(yyout, format, args);
         va_end(args);
     }
+    inline void token_out(const char* format)
+    {
+        
+
+        dump_tokens("%-20s", format);
+        dump_tokens("%-20s %-5d %-5d\n", yytext, yylineno, yycolno);
+         
+       
+
+    }
 
     /* Your code here, if desired (lab1). */
 %}
+%x SINGLE_COMMENT
+%x MULTI_COMMENT
 
 /* definitions section */
 DECIMIAL ([1-9][0-9]*|0)
@@ -116,6 +129,49 @@ WHITE [\t ]
 }
 
 {EOL} yylineno++;
+"//" {
+    //token_out("SINGLE_COMMENT_START");
+    BEGIN SINGLE_COMMENT;
+}
+
+<SINGLE_COMMENT>.* {
+    //token_out("SINGLE_COMMENT");
+    // 处理单行注释的内容
+}
+
+<SINGLE_COMMENT>\n {
+    //token_out("SINGLE_COMMENT_END");
+    BEGIN INITIAL;
+}
+
+"/*" {
+
+    //token_out("MULTI_COMMENT_START");
+    BEGIN MULTI_COMMENT;
+}
+
+<MULTI_COMMENT>"*/" {
+        //token_out("MULTI_COMMENT_END");
+        BEGIN INITIAL;
+    
+}
+
+
+<MULTI_COMMENT>[^*|\n]+ {
+    // 处理没有结束符的情况，匹配直到遇到 *
+    // 如果注释里有*呢
+    //token_out("MULTI_COMMENT");
+}
+
+
+
+
+
+<MULTI_COMMENT>\n {
+    yycolno = 0;  // 遇到换行符，将列号重置为 0
+}
+
+
 
 {WHITE}
 
