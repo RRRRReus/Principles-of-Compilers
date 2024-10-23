@@ -38,6 +38,10 @@ WHITE [\t ]
     dump_tokens("VOID\t%s\n", yytext);
     return VOID;
 }
+"while" {
+    dump_tokens("WHILE\t%s\n", yytext);
+    return WHILE;
+}
 
 "if" {
     dump_tokens("IF\t%s\n", yytext);
