@@ -151,6 +151,15 @@ BlockStmt
             identifiers = identifiers->getPrev();
             delete top;
         }
+    |   LBRACE 
+        {identifiers = new SymbolTable(identifiers);} 
+        RBRACE 
+        {
+            $$ = new CompoundStmt(new EmptyStmt());
+            SymbolTable *top = identifiers;
+            identifiers = identifiers->getPrev();
+            delete top;
+        }
     ;
 IfStmt
     : IF LPAREN Cond RPAREN Stmt %prec THEN {

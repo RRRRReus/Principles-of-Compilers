@@ -1,6 +1,7 @@
 int a;
 int main()
 {
+    {}
     int a;
     a = 1 + 2;
     while(1);
