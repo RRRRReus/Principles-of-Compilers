@@ -19,6 +19,7 @@
     StmtNode* stmttype;
     ExprNode* exprtype;
     Type* type;
+    float floattype;
     std::vector<ExprNode*>* arglisttype; // 添加 arglisttype
     std::vector<Id*>* paramlisttype; // 添加 stmtlisttype
 }
@@ -26,6 +27,7 @@
 %start Program
 %token <strtype> ID 
 %token <itype> INTEGER
+%token <floattype> FLOAT
 %token IF ELSE
 %token INT VOID
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON
@@ -184,6 +186,15 @@ BlockStmt
             identifiers = identifiers->getPrev();
             delete top;
         }
+    |   LBRACE 
+        {identifiers = new SymbolTable(identifiers);} 
+        RBRACE 
+        {
+            $$ = new CompoundStmt(new EmptyStmt());
+            SymbolTable *top = identifiers;
+            identifiers = identifiers->getPrev();
+            delete top;
+        }
     ;
 IfStmt
     : IF LPAREN Cond RPAREN Stmt %prec THEN {
@@ -214,6 +225,12 @@ PrimaryExp
     }
     | INTEGER {
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, $1);
+        $$ = new Constant(se);
+    }
+    | FLOAT {
+        printf("1now is float%f\n", $1);
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
+        //printf("2now is float%f\n", se->fvalue);
         $$ = new Constant(se);
     }
     ;
@@ -270,6 +287,7 @@ Type
     | VOID {
         $$ = TypeSystem::voidType;
     }
+
     ;
 DeclStmt
     :

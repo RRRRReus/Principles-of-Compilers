@@ -35,6 +35,7 @@
 
 /* definitions section */
 DECIMIAL ([1-9][0-9]*|0)
+FLOAT_DECIMAL [-]?(([1-9][0-9]*\.[0-9]*([eE][+-]?[0-9]+)?)|(0?\.[0-9]+([eE][+-]?[0-9]+)?)|([1-9][0-9]*([eE][+-]?[0-9]+)))
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
 WHITE [\t ]
@@ -117,6 +118,15 @@ WHITE [\t ]
     dump_tokens("DECIMAL\t%s\t%d\n", yytext, decimal);
     yylval.itype = decimal;
     return INTEGER;
+}
+{FLOAT_DECIMAL} {
+    float value;
+    value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
+    dump_tokens("%-20s", "FLOAT_DECIMAL");
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20f\n", value);
+    yylval.floattype = value;
+    return FLOAT;
 }
 
 {ID} {

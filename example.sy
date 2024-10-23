@@ -5,9 +5,9 @@ int one(int a)
 }
 int main()
 {
+    {}
     int a;
-    a = 1 + 2;
-    one(a);
+    a = 3.14;
     while(1);
     if(a < 5)
         return 1;
