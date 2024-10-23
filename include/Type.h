@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-class Type
+class Type//类型基类
 {
 private:
     int kind;
@@ -18,7 +18,7 @@ public:
     bool isFunc() const {return kind == FUNC;};
 };
 
-class IntType : public Type
+class IntType : public Type//整型类型
 {
 private:
     int size;
@@ -27,14 +27,14 @@ public:
     std::string toStr();
 };
 
-class VoidType : public Type
+class VoidType : public Type//空类型
 {
 public:
     VoidType() : Type(Type::VOID){};
     std::string toStr();
 };
 
-class FunctionType : public Type
+class FunctionType : public Type//函数类型
 {
 private:
     Type *returnType;
@@ -45,7 +45,7 @@ public:
     std::string toStr();
 };
 
-class TypeSystem
+class TypeSystem//类型系统
 {
 private:
     static IntType commonInt;
