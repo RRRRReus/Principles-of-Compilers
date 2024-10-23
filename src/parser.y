@@ -34,7 +34,7 @@
 %token COMMA
 
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall
 %nterm <arglisttype> ArgList // 声明 ArgList 的类型
 %nterm <type> Type
@@ -66,8 +66,13 @@ Stmt
     | FuncDef {$$=$1;}
     | WhileStmt {$$=$1;}
     | FuncCallStmt {$$=$1;}
+    | EmptyStmt {$$=$1;}
     ;
-
+EmptyStmt
+    : SEMICOLON{
+        $$ = new EmptyStmt();
+    }
+    ;
 WhileStmt
     : WHILE LPAREN Cond RPAREN Stmt {
         $$ = new WhileStmt($3, $5);

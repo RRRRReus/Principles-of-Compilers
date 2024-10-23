@@ -167,7 +167,12 @@ public:
     void output(int level);
 };
 
-
+class EmptyStmt : public StmtNode // 空语句类
+{
+public:
+    EmptyStmt() {};
+    void output(int level);
+};
 class Ast//抽象语法树类
 {
 private:
