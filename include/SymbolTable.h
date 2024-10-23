@@ -37,9 +37,11 @@ class ConstantSymbolEntry : public SymbolEntry
 {
 private:
     int value;
+    float fvalue;
 
 public:
     ConstantSymbolEntry(Type *type, int value);
+    ConstantSymbolEntry(Type *type, float fvalue);
     virtual ~ConstantSymbolEntry() {};
     int getValue() const {return value;};
     std::string toStr();

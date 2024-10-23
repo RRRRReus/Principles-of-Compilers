@@ -463,7 +463,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
 }
 
 {FLOAT_OCTAL} {
-
+    //不存在八进制浮点数！！！
     dump_tokens("%-20s", "FLOAT_OCTAL");
     dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     char* integer_part_str = strtok(yytext, ".");   // 分割整数部分,会破坏yytext

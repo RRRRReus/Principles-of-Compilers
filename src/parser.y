@@ -19,12 +19,14 @@
     StmtNode* stmttype;
     ExprNode* exprtype;
     Type* type;
+    float floattype;
     std::vector<ExprNode*>* arglisttype; // 添加 arglisttype
 }
 
 %start Program
 %token <strtype> ID 
 %token <itype> INTEGER
+%token <floattype> FLOAT
 %token IF ELSE
 %token INT VOID
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON
@@ -192,6 +194,12 @@ PrimaryExp
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, $1);
         $$ = new Constant(se);
     }
+    | FLOAT {
+        printf("1now is float%f\n", $1);
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
+        //printf("2now is float%f\n", se->fvalue);
+        $$ = new Constant(se);
+    }
     ;
 AddExp
     :
@@ -246,6 +254,7 @@ Type
     | VOID {
         $$ = TypeSystem::voidType;
     }
+
     ;
 DeclStmt
     :

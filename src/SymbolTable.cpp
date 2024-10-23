@@ -1,4 +1,5 @@
 #include "SymbolTable.h"
+#include "Type.h"
 #include <iostream>
 #include <sstream>
 
@@ -13,11 +14,31 @@ ConstantSymbolEntry::ConstantSymbolEntry(Type *type, int value) : SymbolEntry(ty
     this->value = value;
 }
 
+ConstantSymbolEntry::ConstantSymbolEntry(Type *type, float fvalue): SymbolEntry(type, SymbolEntry::CONSTANT)
+{
+    this->fvalue = fvalue;
+}
+
 std::string ConstantSymbolEntry::toStr()
 {
     std::ostringstream buffer;
+
+    if((this->getType())->isInt())
+    {
     buffer << value;
+    printf("lookINT!!!%d\n",value);
+    
+    }
+    
+    if((this->getType())->isFloat())
+    {
+    
+    buffer << fvalue;
+    printf("look!!!%f\n",fvalue);
+
+    }
     return buffer.str();
+
 }
 
 IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, int scope) : SymbolEntry(type, SymbolEntry::VARIABLE), name(name)
