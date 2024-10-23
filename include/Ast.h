@@ -20,7 +20,7 @@ public:
 class ExprNode : public Node//表达式节点类
 {
 protected:
-    SymbolEntry *symbolEntry;
+    SymbolEntry *symbolEntry;   //符号表项
 public:
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
     SymbolEntry* getSymbolEntry() const { return symbolEntry; } // 添加访问器方法
@@ -150,9 +150,11 @@ class FunctionDef : public StmtNode//函数定义类（参数呢？）
 {
 private:
     SymbolEntry *se;    // 函数符号表项
+    std::vector<Id*> params;    //  增加参数列表
     StmtNode *stmt;    // 函数体
 public:
-    FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
+     FunctionDef(SymbolEntry *se, std::vector<Id*> params, StmtNode *stmt) 
+        : se(se), params(params), stmt(stmt) {};
     void output(int level);
 };
 

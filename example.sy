@@ -1,8 +1,13 @@
 int a;
+int one(int a)
+{
+    return 1;
+}
 int main()
 {
     int a;
     a = 1 + 2;
+    one(a);
     while(1);
     if(a < 5)
         return 1;
