@@ -41,7 +41,7 @@
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
 %nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
-%nterm <type> Type
+%nterm <type> Type  // 声明 值 的类型 int void
 
 %precedence THEN
 %precedence ELSE
@@ -89,6 +89,7 @@ WhileStmt
     }
     ;
 
+// 函数调用语句（函数调用 + ）
 FuncCallStmt
     : FuncCall SEMICOLON {
         $$ = new ExprStmt($1);
@@ -96,7 +97,7 @@ FuncCallStmt
     ;
 
 
-
+// 函数调用
 FuncCall
     : ID LPAREN RPAREN {
         SymbolEntry *se = identifiers->lookup($1);// 在符号表里查找函数名
@@ -114,6 +115,77 @@ FuncCall
         }
         $$ = new FuncCall(se, new Id(se), *$3); // 使用 *$3 解引用指针
         delete $3; // 释放 ArgList
+    }
+    ;
+
+
+/* FuncDef
+    : Type ID FuncDefRest{
+        Type *funcType;
+        funcType = new FunctionType($1, {});
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+    }
+    ;
+
+FuncDefRest
+    : LPAREN RPAREN BlockStmt {
+        SymbolEntry *se = identifiers->lookup($-2);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, {}, $3);
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+    }
+    | LPAREN ParamList RPAREN BlockStmt {
+        SymbolEntry *se = identifiers->lookup($4);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, *$2, $4);
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+    }
+    ; */
+
+
+
+FuncDef
+    : Type ID
+    LPAREN RPAREN BlockStmt {
+
+        Type *funcType;
+        funcType = new FunctionType($1, {});
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+
+
+        SymbolEntry *se = identifiers->lookup($2);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, {}, $5); // 无参函数传入空参数列表
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+        delete []$2;
+    }
+    | Type ID
+    LPAREN ParamList RPAREN BlockStmt { 
+
+        Type *funcType;
+        funcType = new FunctionType($1, {});
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+
+
+        SymbolEntry *se = identifiers->lookup($2);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, *$4, $6); // 使用参数列表
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+        delete []$2;
     }
     ;
 
@@ -299,40 +371,7 @@ DeclStmt
         delete []$2;
     }
     ;
-FuncDef
-    : Type ID {
-        Type *funcType;
-        funcType = new FunctionType($1, {});
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
-    }
-    LPAREN RPAREN BlockStmt {
-        SymbolEntry *se = identifiers->lookup($2);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, {}, $6); // 无参函数传入空参数列表
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-        delete []$2;
-    }
-    | Type ID {
-        Type *funcType;
-        funcType = new FunctionType($1, {});
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
-    }
-    LPAREN ParamList RPAREN BlockStmt { // 在这里添加 <paramlisttype>
-        SymbolEntry *se = identifiers->lookup($2);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, *$4, $7); // 使用参数列表
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-        delete []$2;
-    }
-    ;
+
 %%
 
 int yyerror(char const* message)
