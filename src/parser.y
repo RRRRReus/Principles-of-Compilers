@@ -30,7 +30,7 @@
 %token <floattype> FLOAT
 %token IF ELSE
 %token INT VOID
-%token LPAREN RPAREN LBRACE RBRACE SEMICOLON
+%token LPAREN RPAREN LBRACE RBRACE SEMICOLON LBRACKET RBRACKET
 %token ADD SUB OR AND LESS ASSIGN
 %token RETURN
 %token WHILE
@@ -38,7 +38,7 @@
 
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt
-%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall
+%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
 %nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
 //%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
@@ -281,6 +281,22 @@ FuncFParam
 
 /* // 形参列表(注意应新建一个符号表，再进行插入！！！)
 ParamList 
+
+Array
+    : ID LBRACKET INTEGER RBRACKET {
+        SymbolEntry *se = identifiers->lookup($1);
+        if (se == nullptr) {
+            fprintf(stderr, "Array \"%s\" is undefined\n", $1);
+            assert(se != nullptr);
+        }
+        //$$ = new Array(se, $3);
+        $$ = new Id(se);
+
+        delete []$1;
+    }
+    ;
+// 形参列表
+ParamList
     : Type ID {
         Type *type = $1;//获取类型
         SymbolEntry *se = new IdentifierSymbolEntry(type, $2, identifiers->getLevel());//生成新的符号表项
@@ -301,8 +317,6 @@ ParamList
     ; */
 
 
-
-
 LVal
     : ID {
         SymbolEntry *se;
@@ -315,6 +329,9 @@ LVal
         }
         $$ = new Id(se);
         delete []$1;
+    }
+    | Array {
+        $$ = $1;
     }
     ;
 
@@ -437,7 +454,15 @@ Type
     | VOID {
         $$ = TypeSystem::voidType;
     }
+    | FLOAT {
+        $$ = TypeSystem::floatType;
+    }
 
+    ;
+InitVal
+    : Exp{
+        $$ =$1;
+    }
     ;
 DeclStmt
     :
@@ -448,7 +473,13 @@ DeclStmt
         $$ = new DeclStmt(new Id(se));
         delete []$2;
     }
-    ;
+    | Type ID ASSIGN InitVal SEMICOLON {
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new DeclStmt(new Id(se), $4);
+        delete []$2;
+    }
 
 %%
 

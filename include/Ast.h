@@ -101,8 +101,10 @@ class DeclStmt : public StmtNode//声明语句类
 {
 private:
     Id *id;
+    ExprNode *expr;
 public:
-    DeclStmt(Id *id) : id(id){};
+    DeclStmt(Id *id, ExprNode *expr) : id(id), expr(expr) {};
+    DeclStmt(Id *id) : id(id), expr(nullptr) {};
     void output(int level);
 };
 

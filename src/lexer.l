@@ -101,7 +101,14 @@ WHITE [\t ]
     dump_tokens("RPAREN\t%s\n", yytext);
     return RPAREN;
 }
-
+"[" {
+    dump_tokens("LBRACKET\t%s\n", yytext);
+    return LBRACKET;
+}
+"]" {
+    dump_tokens("RBRACKET\t%s\n", yytext);
+    return RBRACKET;
+}
 "{" {
     dump_tokens("LBRACE\t%s\n", yytext);
     return LBRACE;
