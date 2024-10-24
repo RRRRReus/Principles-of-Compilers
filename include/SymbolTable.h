@@ -76,7 +76,7 @@ class IdentifierSymbolEntry : public SymbolEntry
 private:
     enum {GLOBAL, PARAM, LOCAL};
     std::string name;
-    int scope;
+    int scope;  //作用域
     // You can add any field you need here.
 
 public:
@@ -121,10 +121,10 @@ public:
 class SymbolTable
 {
 private:
-    std::map<std::string, SymbolEntry*> symbolTable;
-    SymbolTable *prev;
-    int level;
-    static int counter;
+    std::map<std::string, SymbolEntry*> symbolTable;//符号表
+    SymbolTable *prev;  //上一层符号表
+    int level;  //当前符号表的层次
+    static int counter; //计数器
 public:
     SymbolTable();
     SymbolTable(SymbolTable *prev);

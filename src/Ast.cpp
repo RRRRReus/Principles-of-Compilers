@@ -136,8 +136,16 @@ void FunctionDef::output(int level)
     for (auto param : params) {
         std::string paramName = param->getSymbolEntry()->toStr();   // 通过参数获取参数名
         std::string paramType = param->getSymbolEntry()->getType()->toStr();
-        fprintf(yyout, "%*c%s: %s\n", level + 8, ' ', paramName.c_str(), paramType.c_str());
+        int paramScope = dynamic_cast<IdentifierSymbolEntry*>(param->getSymbolEntry())->getScope(); // 获取参数的作用域
+        fprintf(yyout, "%*c%s: %s, scope: %d\n", level + 8, ' ', paramName.c_str(), paramType.c_str(), paramScope); //输出参数名和参数类型
+        //fprintf(yyout, "%*c%s: %s\n", level + 8, ' ', paramName.c_str(), paramType.c_str());
     }
+    //获取函数参数的作用域并输出
+
+
+
+
+    //scope = dynamic_cast<IdentifierSymbolEntry*>(se)->getScope();//获取函数参数的作用域
     
     // 输出函数体
     stmt->output(level + 4);

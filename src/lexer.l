@@ -112,6 +112,11 @@ WHITE [\t ]
     return RBRACE;
 }
 
+"," {
+    dump_tokens("COMMA\t%s\n", yytext);
+    return COMMA;
+}
+
 {DECIMIAL} {
     int decimal;
     decimal = atoi(yytext);
