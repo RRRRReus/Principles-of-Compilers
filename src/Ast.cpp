@@ -128,10 +128,20 @@ void AssignStmt::output(int level)
 void FunctionDef::output(int level)
 {
     std::string name, type;
-    name = se->toStr();
+    name = se->toStr(); // se是函数符号表项，toStr()函数返回函数名
     type = se->getType()->toStr();
     fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
             name.c_str(), type.c_str());
+    
+    // 输出参数列表
+    fprintf(yyout, "%*cParameters:\n", level + 4, ' ');
+    for (auto param : params) {
+        std::string paramName = param->getSymbolEntry()->toStr();   // 通过参数获取参数名
+        std::string paramType = param->getSymbolEntry()->getType()->toStr();
+        fprintf(yyout, "%*c%s: %s\n", level + 8, ' ', paramName.c_str(), paramType.c_str());
+    }
+    
+    // 输出函数体
     stmt->output(level + 4);
 }
 

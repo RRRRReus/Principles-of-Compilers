@@ -21,6 +21,7 @@
     Type* type;
     float floattype;
     std::vector<ExprNode*>* arglisttype; // 添加 arglisttype
+    std::vector<Id*>* paramlisttype; // 添加 stmtlisttype
 }
 
 %start Program
@@ -38,8 +39,9 @@
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal
-%nterm <arglisttype> ArgList // 声明 ArgList 的类型
-%nterm <type> Type
+%nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
+%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
+%nterm <type> Type  // 声明 值 的类型 int void
 
 %precedence THEN
 %precedence ELSE
@@ -52,13 +54,16 @@ Program
     }
     ;
 
-Stmts
-    : Stmt {$$=$1;}
-    | Stmts Stmt{
+// 语句序列
+Stmts   
+    : Stmt {$$=$1;} // 语句序列只有一个语句
+    | Stmts Stmt{   // 语句序列有多个语句
         $$ = new SeqNode($1, $2);
     }
     ;
 
+
+// 语句
 Stmt    
     : AssignStmt {$$=$1;} 
     | BlockStmt {$$=$1;}
@@ -70,17 +75,21 @@ Stmt
     | FuncCallStmt {$$=$1;}
     | EmptyStmt {$$=$1;}
     ;
+
+// 空语句
 EmptyStmt
     : SEMICOLON{
         $$ = new EmptyStmt();
     }
     ;
+// while 语句    
 WhileStmt
     : WHILE LPAREN Cond RPAREN Stmt {
         $$ = new WhileStmt($3, $5);
     }
     ;
 
+// 函数调用语句（函数调用 + ）
 FuncCallStmt
     : FuncCall SEMICOLON {
         $$ = new ExprStmt($1);
@@ -88,15 +97,15 @@ FuncCallStmt
     ;
 
 
-
+// 函数调用
 FuncCall
     : ID LPAREN RPAREN {
-        SymbolEntry *se = identifiers->lookup($1);
+        SymbolEntry *se = identifiers->lookup($1);// 在符号表里查找函数名
         if (se == nullptr) {
             fprintf(stderr, "Function \"%s\" is undefined\n", $1);
             assert(se != nullptr);
         }
-        $$ = new FuncCall(se, new Id(se), {});
+        $$ = new FuncCall(se, new Id(se), {});//new Id(se) 创建一个表示函数名的 Id 对象
     }
     | ID LPAREN ArgList RPAREN {
         SymbolEntry *se = identifiers->lookup($1);
@@ -109,6 +118,79 @@ FuncCall
     }
     ;
 
+
+/* FuncDef
+    : Type ID FuncDefRest{
+        Type *funcType;
+        funcType = new FunctionType($1, {});
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+    }
+    ;
+
+FuncDefRest
+    : LPAREN RPAREN BlockStmt {
+        SymbolEntry *se = identifiers->lookup($-2);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, {}, $3);
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+    }
+    | LPAREN ParamList RPAREN BlockStmt {
+        SymbolEntry *se = identifiers->lookup($4);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, *$2, $4);
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+    }
+    ; */
+
+
+
+FuncDef
+    : Type ID
+    LPAREN RPAREN BlockStmt {
+
+        Type *funcType;
+        funcType = new FunctionType($1, {});
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+
+
+        //SymbolEntry *se = identifiers->lookup($2);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, {}, $5); // 无参函数传入空参数列表
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+        delete []$2;
+    }
+    | Type ID
+    LPAREN ParamList RPAREN BlockStmt { 
+
+        Type *funcType;
+        funcType = new FunctionType($1, {});
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+
+
+       //SymbolEntry *se = identifiers->lookup($2);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, *$4, $6); // 使用参数列表
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+        delete []$2;
+    }
+    ;
+
+
+// 实参列表
 ArgList   
     : Exp {
         $$ = new std::vector<ExprNode*>();
@@ -152,12 +234,15 @@ LVal
         $$ = $1;
     }
     ;
+
+// 赋值语句
 AssignStmt
     :
     LVal ASSIGN Exp SEMICOLON {
         $$ = new AssignStmt($1, $3);
     }
     ;
+// 复合语句
 BlockStmt
     :   LBRACE 
         {identifiers = new SymbolTable(identifiers);} 
@@ -295,28 +380,7 @@ DeclStmt
         $$ = new DeclStmt(new Id(se), $4);
         delete []$2;
     }
-FuncDef
-    :
-    Type ID {
-        Type *funcType;
-        funcType = new FunctionType($1,{});
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
-    }
-    LPAREN RPAREN
-    BlockStmt
-    {
-        SymbolEntry *se;
-        se = identifiers->lookup($2);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, $6);
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-        delete []$2;
-    }
-    ;
+
 %%
 
 int yyerror(char const* message)

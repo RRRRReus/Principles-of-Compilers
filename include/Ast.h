@@ -20,7 +20,7 @@ public:
 class ExprNode : public Node//表达式节点类
 {
 protected:
-    SymbolEntry *symbolEntry;
+    SymbolEntry *symbolEntry;   //符号表项
 public:
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
     SymbolEntry* getSymbolEntry() const { return symbolEntry; } // 添加访问器方法
@@ -56,7 +56,7 @@ class FuncCall : public ExprNode // 函数调用类
 {
 private:
     Id *func;   // 函数名
-    std::vector<ExprNode*> args;    // 函数参数
+    std::vector<ExprNode*> args;    // 函数参数（注意类型应为 表达式 ）
 public:
     FuncCall(SymbolEntry *se, Id *func, std::vector<ExprNode*> args) : ExprNode(se), func(func), args(args) {};
     void output(int level);
@@ -70,10 +70,10 @@ class StmtNode : public Node//语句节点类
 {};
 
 
-class ExprStmt : public StmtNode // 表达式语句类？？？？？？？？？？？？？？
+class ExprStmt : public StmtNode 
 {
 private:
-    ExprNode *expr;
+    ExprNode *expr; //表达式
 public:
     ExprStmt(ExprNode *expr) : expr(expr) {};
     void output(int level);
@@ -141,8 +141,8 @@ public:
 class AssignStmt : public StmtNode//赋值语句类
 {
 private:
-    ExprNode *lval;
-    ExprNode *expr;
+    ExprNode *lval; //左值
+    ExprNode *expr; //右值
 public:
     AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
     void output(int level);
@@ -152,9 +152,11 @@ class FunctionDef : public StmtNode//函数定义类（参数呢？）
 {
 private:
     SymbolEntry *se;    // 函数符号表项
+    std::vector<Id*> params;    //  增加参数列表  //？？？？？？？？？？？？？？？？？Id还是DeclStmt
     StmtNode *stmt;    // 函数体
 public:
-    FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
+     FunctionDef(SymbolEntry *se, std::vector<Id*> params, StmtNode *stmt) 
+        : se(se), params(params), stmt(stmt) {};
     void output(int level);
 };
 
