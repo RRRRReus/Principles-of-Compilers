@@ -216,6 +216,26 @@ Array
         delete []$1;
     }
     ;
+// 形参列表
+ParamList
+    : Type ID {
+        Type *type = $1;
+        SymbolEntry *se = new IdentifierSymbolEntry(type, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new std::vector<Id*>();
+        $$->push_back(new Id(se));
+        delete []$2;
+    }
+    | ParamList COMMA Type ID {
+        Type *type = $3;
+        SymbolEntry *se = new IdentifierSymbolEntry(type, $4, identifiers->getLevel());
+        identifiers->install($4, se);
+        $$ = $1;
+        $$->push_back(new Id(se));
+        delete []$4;
+    }
+    ;
+
 
 LVal
     : ID {

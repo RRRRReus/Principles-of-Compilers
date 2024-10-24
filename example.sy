@@ -1,5 +1,5 @@
 int a;
-int one(int a,int b)
+int one(int a)
 {
     return 1;
 }
