@@ -161,7 +161,7 @@ FuncDef
         identifiers = new SymbolTable(identifiers);
 
 
-        SymbolEntry *se = identifiers->lookup($2);
+        //SymbolEntry *se = identifiers->lookup($2);
         assert(se != nullptr);
         $$ = new FunctionDef(se, {}, $5); // 无参函数传入空参数列表
         SymbolTable *top = identifiers;
@@ -179,7 +179,7 @@ FuncDef
         identifiers = new SymbolTable(identifiers);
 
 
-        SymbolEntry *se = identifiers->lookup($2);
+       //SymbolEntry *se = identifiers->lookup($2);
         assert(se != nullptr);
         $$ = new FunctionDef(se, *$4, $6); // 使用参数列表
         SymbolTable *top = identifiers;
