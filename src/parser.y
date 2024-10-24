@@ -40,8 +40,8 @@
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
-%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
-//%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
+//%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
+%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
 %nterm <type> Type  // 声明 值 的类型 int void
 
 %precedence THEN
@@ -151,7 +151,7 @@ FuncDefRest
 
 
 
-/* FuncDef
+FuncDef
     : Type ID
     LPAREN RPAREN BlockStmt {
 
@@ -192,9 +192,9 @@ FuncDefRest
         delete top;
         delete []$2;
     }
-    ; */
+    ;
 
-//函数定义
+/* //函数定义
 FuncDef
     : Type ID LPAREN RPAREN BlockStmt {
         // 无参数的函数定义
@@ -218,7 +218,7 @@ FuncDef
         $$ = new FunctionDef(se, $4, $6); //
         delete []$2; // 释放 ID 字符串的内存
     }
-    ;
+    ; */
 
 
 
@@ -234,7 +234,7 @@ ArgList
     }
     ;
 
-//形参列表（多个形参）
+/* //形参列表（多个形参）
 FuncFParams
     : FuncFParam { 
         $$ = new std::vector<Id*>(); // 创建一个新的形参列表
@@ -244,9 +244,9 @@ FuncFParams
         $$ = $1; // 使用现有的形参列表
         $$->push_back($3); // 将下一个形参添加到列表中
     }
-    ;
+    ; */
 
-//单个形参（包含类型、标识符和可选数组部分）
+/* //单个形参（包含类型、标识符和可选数组部分）
 FuncFParam
     : Type ID { 
         // 形参为标量
@@ -276,11 +276,7 @@ FuncFParam
         delete []$2; // 释放 ID 字符串的内存
         delete $6; // 释放表达式对象
     }
-    ;
-
-
-/* // 形参列表(注意应新建一个符号表，再进行插入！！！)
-ParamList 
+    ; */
 
 Array
     : ID LBRACKET INTEGER RBRACKET {
@@ -295,7 +291,7 @@ Array
         delete []$1;
     }
     ;
-// 形参列表
+// 形参列表(注意应新建一个符号表，再进行插入！！！)
 ParamList
     : Type ID {
         Type *type = $1;//获取类型
@@ -314,7 +310,7 @@ ParamList
         $$->push_back(new Id(se));
         delete []$4;
     }
-    ; */
+    ;
 
 
 LVal
