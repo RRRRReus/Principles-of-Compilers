@@ -38,3 +38,12 @@ std::string ConstFloatType::toStr()
 {
     return "const float";
 }
+
+std::string IntArrayType::toStr()
+{
+    return "int[]";
+}
+std::string FloatArrayType::toStr()
+{
+    return "float[]";
+}

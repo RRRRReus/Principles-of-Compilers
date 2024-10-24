@@ -29,7 +29,7 @@
 %token <floattype> FLOAT
 %token IF ELSE
 %token INT VOID
-%token LPAREN RPAREN LBRACE RBRACE SEMICOLON
+%token LPAREN RPAREN LBRACE RBRACE SEMICOLON LBRACKET RBRACKET
 %token ADD SUB OR AND LESS ASSIGN
 %token RETURN
 %token WHILE
@@ -37,7 +37,7 @@
 
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt
-%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall
+%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal
 %nterm <arglisttype> ArgList // 声明 ArgList 的类型
 %nterm <type> Type
 
@@ -121,7 +121,19 @@ ArgList
     ;
 
 
+Array
+    : ID LBRACKET INTEGER RBRACKET {
+        SymbolEntry *se = identifiers->lookup($1);
+        if (se == nullptr) {
+            fprintf(stderr, "Array \"%s\" is undefined\n", $1);
+            assert(se != nullptr);
+        }
+        //$$ = new Array(se, $3);
+        $$ = new Id(se);
 
+        delete []$1;
+    }
+    ;
 
 LVal
     : ID {
@@ -135,6 +147,9 @@ LVal
         }
         $$ = new Id(se);
         delete []$1;
+    }
+    | Array {
+        $$ = $1;
     }
     ;
 AssignStmt
@@ -254,7 +269,15 @@ Type
     | VOID {
         $$ = TypeSystem::voidType;
     }
+    | FLOAT {
+        $$ = TypeSystem::floatType;
+    }
 
+    ;
+InitVal
+    : Exp{
+        $$ =$1;
+    }
     ;
 DeclStmt
     :
@@ -265,7 +288,13 @@ DeclStmt
         $$ = new DeclStmt(new Id(se));
         delete []$2;
     }
-    ;
+    | Type ID ASSIGN InitVal SEMICOLON {
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new DeclStmt(new Id(se), $4);
+        delete []$2;
+    }
 FuncDef
     :
     Type ID {
