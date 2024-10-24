@@ -20,7 +20,7 @@ public:
     bool isConstant() const {return kind == CONSTANT;};
     bool isTemporary() const {return kind == TEMPORARY;};
     bool isVariable() const {return kind == VARIABLE;};
-    Type* getType() {return type;};
+    Type* getType() {return type;};//返回类型
     virtual std::string toStr() = 0;
     // You can add any function you need here.
 };
@@ -135,7 +135,7 @@ public:
     static int getLabel() {return counter++;};
 };
 
-extern SymbolTable *identifiers;
-extern SymbolTable *globals;
+extern SymbolTable *identifiers;    //标识符符号表，全局变量
+extern SymbolTable *globals;    //全局符号表，全局变量
 
 #endif

@@ -37,11 +37,11 @@
 %token COMMA
 
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
 //%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
-%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
+//%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
 %nterm <type> Type  // 声明 值 的类型 int void
 
 %precedence THEN
@@ -120,38 +120,9 @@ FuncCall
     ;
 
 
+
+
 /* FuncDef
-    : Type ID FuncDefRest{
-        Type *funcType;
-        funcType = new FunctionType($1, {});
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
-    }
-    ;
-
-FuncDefRest
-    : LPAREN RPAREN BlockStmt {
-        SymbolEntry *se = identifiers->lookup($-2);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, {}, $3);
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-    }
-    | LPAREN ParamList RPAREN BlockStmt {
-        SymbolEntry *se = identifiers->lookup($4);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, *$2, $4);
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-    }
-    ; */
-
-
-
-FuncDef
     : Type ID
     LPAREN RPAREN BlockStmt {
 
@@ -192,7 +163,7 @@ FuncDef
         delete top;
         delete []$2;
     }
-    ;
+    ; */
 
 /* //函数定义
 FuncDef
@@ -205,7 +176,7 @@ FuncDef
         $$ = new FunctionDef(se, {}, $5); // 创建函数定义节点，函数体为
         delete []$2; // 释放 ID 字符串的内存
     }
-    | Type ID LPAREN FuncFParams RPAREN BlockStmt {
+    | Type ID LPAREN ParamList RPAREN BlockStmt {
         // 带参数的函数定义
         Type *returnType = $1; // 获取函数的返回类型
         std::vector<Type*> paramTypes; // 用于存储参数的类型
@@ -220,6 +191,46 @@ FuncDef
     }
     ; */
 
+FuncDef
+    :
+    Type ID LPAREN {
+        Type *funcType;
+        funcType = new FunctionType($1,std::vector<Type*>());//必须先创建函数类型，这样才能创建函数符号表项
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+    }
+    ParamList RPAREN funcStmt {
+
+        std::vector<Type*> paramsType;
+        DeclStmt* params = (DeclStmt*)$5;//参数列表
+        //遍历所有参数，并且获取参数类型
+        //如何获取参数类型：遍历所有的定义语句，找出Id，然后获取Id的符号表项，再获取此符号表项的类型
+        while(params != nullptr)
+        {
+            paramsType.push_back(params->getId()->getSymbolEntry()->getType());
+            params = (DeclStmt*)(params->getNext());
+        }//获取所有的参数类型
+        SymbolEntry *se;
+        se = identifiers->lookup($2);// se为函数名的符号表项
+        assert(se != nullptr);//断言函数名一定存在
+        FunctionType* tmp = (FunctionType*)(se->getType());//(FunctionType*)将se->getType()转换为FunctionType*类型，se->getType()本身为Type*类型，因为FunctionType继承自Type
+        tmp->setParamsType(paramsType);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!能否不要这个函数，直接在FunctionType的构造函数中传入参数类型
+        $$ = new FunctionDef(se, (DeclStmt*)$5, new CompoundStmt($7));//se,参数列表，函数体(复合语句)
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();//返回上一层符号表
+        delete top;
+        delete []$2;
+    }
+    ;
+funcStmt 
+    : LBRACE Stmts RBRACE {
+        $$ = $2;
+    }
+    | LBRACE RBRACE {//空函数
+        $$ = new EmptyStmt();
+    }
+    ;
 
 
 // 实参列表
@@ -278,20 +289,8 @@ FuncFParam
     }
     ; */
 
-Array
-    : ID LBRACKET INTEGER RBRACKET {
-        SymbolEntry *se = identifiers->lookup($1);
-        if (se == nullptr) {
-            fprintf(stderr, "Array \"%s\" is undefined\n", $1);
-            assert(se != nullptr);
-        }
-        //$$ = new Array(se, $3);
-        $$ = new Id(se);
 
-        delete []$1;
-    }
-    ;
-// 形参列表(注意应新建一个符号表，再进行插入！！！)
+/* // 形参列表(注意应新建一个符号表，再进行插入！！！)
 ParamList
     : Type ID {
         Type *type = $1;//获取类型
@@ -309,6 +308,53 @@ ParamList
         $$ = $1;
         $$->push_back(new Id(se));
         delete []$4;
+    }
+    ; */
+
+
+ParamList
+    : %empty { $$ = nullptr; }
+    | Param {
+        $$ = $1;
+    }
+    | ParamList COMMA Param {
+        $$ = $1;
+        $$->addNodeList($3);//将下一个参数的指针赋值给当前参数的next
+    }
+    ;
+Param
+    : Type ID {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new DeclStmt(new Id(se));//创建一个声明语句
+        delete []$2;
+    }
+    | Type ID ASSIGN Exp {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new DeclStmt(new Id(se), $4);
+        delete []$2;
+    }
+    ;
+
+
+
+
+
+
+Array
+    : ID LBRACKET INTEGER RBRACKET {
+        SymbolEntry *se = identifiers->lookup($1);
+        if (se == nullptr) {
+            fprintf(stderr, "Array \"%s\" is undefined\n", $1);
+            assert(se != nullptr);
+        }
+        //$$ = new Array(se, $3);
+        $$ = new Id(se);
+
+        delete []$1;
     }
     ;
 

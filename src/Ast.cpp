@@ -135,16 +135,25 @@ void FunctionDef::output(int level)
     
     // 输出参数列表
     fprintf(yyout, "%*cParameters:\n", level + 4, ' ');
-    for (auto param : params) {
-        std::string paramName = param->getSymbolEntry()->toStr();   // 通过参数获取参数名
-        std::string paramType = param->getSymbolEntry()->getType()->toStr();
-        int paramScope = dynamic_cast<IdentifierSymbolEntry*>(param->getSymbolEntry())->getScope(); // 获取参数的作用域
-        fprintf(yyout, "%*c%s: %s, scope: %d\n", level + 8, ' ', paramName.c_str(), paramType.c_str(), paramScope); //输出参数名和参数类型
-        //fprintf(yyout, "%*c%s: %s\n", level + 8, ' ', paramName.c_str(), paramType.c_str());
-    }
+
+    while(params != nullptr)//遍历参数列表
+        {
+            std::string paramName = params->getId()->getSymbolEntry()->toStr();   // 通过参数获取参数名(必须先从DeclStmt提取出Id，才能获取其符号表项，进而输出)
+            std::string paramType = params->getId()->getSymbolEntry()->getType()->toStr();// 通过参数获取参数类型
+            int paramScope = dynamic_cast<IdentifierSymbolEntry*>(params->getId()->getSymbolEntry())->getScope(); // 获取参数的作用域
+            fprintf(yyout, "%*c%s: %s, scope: %d\n", level + 8, ' ', paramName.c_str(), paramType.c_str(), paramScope); //输出参数名和参数类型
+            params = (DeclStmt*)(params->getNext());
+        }
+
+
+    // for (auto param : params) {
+    //     std::string paramName = param->getSymbolEntry()->toStr();   // 通过参数获取参数名
+    //     std::string paramType = param->getSymbolEntry()->getType()->toStr();// 通过参数获取参数类型
+    //     int paramScope = dynamic_cast<IdentifierSymbolEntry*>(param->getSymbolEntry())->getScope(); // 获取参数的作用域
+    //     fprintf(yyout, "%*c%s: %s, scope: %d\n", level + 8, ' ', paramName.c_str(), paramType.c_str(), paramScope); //输出参数名和参数类型
+    //     //fprintf(yyout, "%*c%s: %s\n", level + 8, ' ', paramName.c_str(), paramType.c_str());
+    // }
     //获取函数参数的作用域并输出
-
-
 
 
     //scope = dynamic_cast<IdentifierSymbolEntry*>(se)->getScope();//获取函数参数的作用域

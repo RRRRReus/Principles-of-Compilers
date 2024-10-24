@@ -14,6 +14,16 @@ private:
 public:
     Node();
     int getSeq() const {return seq;};   //返回节点的序号
+    Node *next; //指向下一个节点
+    Node* getNext() {return next;}
+    void addNodeList(Node *n) {
+        Node *p = this;
+        while(p->next != nullptr) 
+        {
+            p = p->next;
+        }
+        p->next = n;//将n添加到链表的末尾
+    }
     virtual void output(int level) = 0;//输出函数，纯虚函数，要求所有派生类实现该函数
 };
 
@@ -97,7 +107,7 @@ public:
     void output(int level);
 };
 
-class DeclStmt : public StmtNode//声明语句类
+class DeclStmt : public StmtNode//声明语句类    标识符+表达式
 {
 private:
     Id *id;
@@ -105,6 +115,7 @@ private:
 public:
     DeclStmt(Id *id, ExprNode *expr) : id(id), expr(expr) {};
     DeclStmt(Id *id) : id(id), expr(nullptr) {};
+    Id *getId() { return id; }  //返回标识符
     void output(int level);
 };
 
@@ -152,10 +163,11 @@ class FunctionDef : public StmtNode//函数定义类（参数呢？）
 {
 private:
     SymbolEntry *se;    // 函数符号表项
-    std::vector<Id*> params;    //  增加参数列表  //？？？？？？？？？？？？？？？？？Id还是DeclStmt
+    //std::vector<Id*> params;    //  增加参数列表  //？？？？？？？？？？？？？？？？？Id还是DeclStmt
+    DeclStmt *params;
     StmtNode *stmt;    // 函数体
 public:
-     FunctionDef(SymbolEntry *se, std::vector<Id*> params, StmtNode *stmt) 
+     FunctionDef(SymbolEntry *se, DeclStmt *params, StmtNode *stmt) 
         : se(se), params(params), stmt(stmt) {};
     void output(int level);
 };
