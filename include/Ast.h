@@ -50,8 +50,28 @@ public:
     Id(SymbolEntry *se) : ExprNode(se){};
     void output(int level);
 };
+class ArrayIndex //数组索引类
+{
+private:
+    
+public:
+    std::vector<ExprNode*> index;
+    ArrayIndex(std::vector<ExprNode*> index) :  index(index) {};
+    ArrayIndex() {};
+    void output(int level);
 
+};
 
+class Array : public ExprNode//数组类
+{
+private:
+    std::string name;
+    Id *id;
+    ArrayIndex *arrayIndex;
+    public:
+    Array( Id *id, ArrayIndex *arrayIndex) : ExprNode(id->getSymbolEntry()), id(id), arrayIndex(arrayIndex) {};
+    void output(int level);
+};
 class FuncCall : public ExprNode // 函数调用类
 {
 private:
@@ -101,9 +121,11 @@ class DeclStmt : public StmtNode//声明语句类
 {
 private:
     Id *id;
+    Array *array;
     ExprNode *expr;
 public:
     DeclStmt(Id *id, ExprNode *expr) : id(id), expr(expr) {};
+    DeclStmt(Array *array) : array(array), expr(nullptr) {};
     DeclStmt(Id *id) : id(id), expr(nullptr) {};
     void output(int level);
 };

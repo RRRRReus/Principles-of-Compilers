@@ -8,6 +8,8 @@ FloatType TypeSystem::commonFloat = FloatType(32);
 Type* TypeSystem::intType = &commonInt;
 Type* TypeSystem::voidType = &commonVoid;
 Type* TypeSystem::floatType= &commonFloat;
+// Type* TypeSystem::constIntType = &commonConstInt;
+// Type* TypeSystem::constFloatType = &commonConstFloat;
 
 std::string IntType::toStr()
 {
@@ -41,7 +43,15 @@ std::string ConstFloatType::toStr()
 
 std::string IntArrayType::toStr()
 {
-    return "int[]";
+    std::ostringstream buffer;
+    buffer << "int[";
+    for(int i = 0; i < dim; i++)
+    {
+        if(i != dim - 1)
+            buffer << "][";
+    }
+    buffer << "]";
+    return buffer.str();
 }
 std::string FloatArrayType::toStr()
 {

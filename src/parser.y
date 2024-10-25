@@ -22,6 +22,7 @@
     float floattype;
     std::vector<ExprNode*>* arglisttype; // 添加 arglisttype
     std::vector<Id*>* paramlisttype; // 添加 stmtlisttype
+    ArrayIndex* ArrayIndextype;
 }
 
 %start Program
@@ -42,7 +43,7 @@
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
 %nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
 %nterm <type> Type  // 声明 值 的类型 int void
-
+%nterm <ArrayIndextype> ArrayDim // 声明 数组 的类型
 %precedence THEN
 %precedence ELSE
 
@@ -202,16 +203,28 @@ ArgList
     }
     ;
 
+ArrayDim
+    :LBRACKET Exp RBRACKET{
+        ArrayIndex *IndexDim = new ArrayIndex();
+        IndexDim->index.push_back($2);
+        $$ = IndexDim;
+    }
+    |ArrayDim LBRACKET Exp RBRACKET{
+        $$ = $1;
+        $$->index.push_back($3);
+    }
 
 Array
-    : ID LBRACKET INTEGER RBRACKET {
+    : ID ArrayDim {
         SymbolEntry *se = identifiers->lookup($1);
         if (se == nullptr) {
             fprintf(stderr, "Array \"%s\" is undefined\n", $1);
             assert(se != nullptr);
         }
-        //$$ = new Array(se, $3);
-        $$ = new Id(se);
+        ArrayIndex *IndexDim = $2;
+        Id *name= new Id(se);
+        $$ = new Array(name, IndexDim);
+        
 
         delete []$1;
     }
@@ -315,7 +328,7 @@ PrimaryExp
         $$ = new Constant(se);
     }
     | FLOAT {
-        printf("1now is float%f\n", $1);
+        //printf("1now is float%f\n", $1);
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
         //printf("2now is float%f\n", se->fvalue);
         $$ = new Constant(se);
@@ -398,6 +411,44 @@ DeclStmt
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
         identifiers->install($2, se);
         $$ = new DeclStmt(new Id(se), $4);
+        delete []$2;
+    }
+    | Type ID ArrayDim SEMICOLON {
+        SymbolEntry *se;
+        std::vector<ExprNode*> IndexDim= $3->index;
+        if($1->isInt())
+        {
+            IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+            se = new IdentifierSymbolEntry(intArrayType, $2, identifiers->getLevel());
+        }
+        // else if($1->getType() == TypeSystem::floatType)
+        // {
+        //     se = new IdentifierSymbolEntry(TypeSystem::intArrayType, $2, identifiers->getLevel());
+        // }
+        else
+        {
+            fprintf(stderr, "Error: unknown type\n");
+            assert(false);
+        }
+        // se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        Id *name=new Id(se);
+        identifiers->install($2, se);
+        // std::vector<ExprNode*> IndexDim;
+        // IndexDim.push_back($3);
+        if (name == nullptr) {
+    printf("Error: id is nullptr\n");
+} else {
+    printf("id is valid\n");
+    if (name->getSymbolEntry() == nullptr) {
+        printf("Error: id->getSymbolEntry() is nullptr\n");
+    } else {
+        printf("id->getSymbolEntry() is valid\n");
+    }
+}
+
+        $$ = new DeclStmt(new Array(name, $3));
+        
+        printf("what?");
         delete []$2;
     }
 

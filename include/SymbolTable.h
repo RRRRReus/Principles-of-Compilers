@@ -84,6 +84,7 @@ public:
     virtual ~IdentifierSymbolEntry() {};
     std::string toStr();
     int getScope() const {return scope;};
+    std::string getName() const {return name;};
     // You can add any function you need here.
 };
 
