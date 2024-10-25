@@ -36,9 +36,12 @@
 %token RETURN
 %token WHILE
 %token COMMA
-
+%token BREAK
+%token CONST
+%token CONTINUE
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
+%nterm <stmttype> BreakStmt ContinueStmt
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
 //%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
@@ -76,8 +79,19 @@ Stmt
     | WhileStmt {$$=$1;}
     | FuncCallStmt {$$=$1;}
     | EmptyStmt {$$=$1;}
+    | BreakStmt {$$=$1;}
+    | ContinueStmt {$$=$1;}
     ;
-
+BreakStmt
+    : BREAK SEMICOLON{
+        $$ = new BreakStmt();
+    }
+    ;
+ContinueStmt
+    : CONTINUE SEMICOLON{
+        $$ = new ContinueStmt();
+    }
+    ;
 // 空语句
 EmptyStmt
     : SEMICOLON{
@@ -368,19 +382,6 @@ Param
 
 
 
-Array
-    : ID LBRACKET INTEGER RBRACKET {
-        SymbolEntry *se = identifiers->lookup($1);
-        if (se == nullptr) {
-            fprintf(stderr, "Array \"%s\" is undefined\n", $1);
-            assert(se != nullptr);
-        }
-        //$$ = new Array(se, $3);
-        $$ = new Id(se);
-
-        delete []$1;
-    }
-    ;
 
 // 左值
 LVal
@@ -575,6 +576,11 @@ Type
     | FLOAT {
         $$ = TypeSystem::floatType;
     }
+    | CONST Type {
+        $$ = $2;
+        $$->setConst(true);
+    }
+
 
     ;
 InitVal

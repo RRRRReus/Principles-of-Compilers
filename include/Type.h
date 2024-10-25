@@ -7,9 +7,13 @@ class Type//类型基类
 {
 private:
     int kind;
+    bool isConst;
 protected:
+    
     enum {INT, VOID, FUNC,FLOAT,INTARRAY,FLOATARRAY};
 public:
+    void setConst(bool isConst) {this->isConst = isConst;}
+    bool getConst() {return isConst;}
     Type(int kind) : kind(kind) {};
     virtual ~Type() {};
     virtual std::string toStr() = 0;

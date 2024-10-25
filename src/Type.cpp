@@ -13,7 +13,10 @@ Type* TypeSystem::floatType= &commonFloat;
 
 std::string IntType::toStr()
 {
-    return "int";
+    if(getConst())
+        return "const int";
+    else
+        return "int";
 }
 
 std::string VoidType::toStr()
@@ -30,7 +33,10 @@ std::string FunctionType::toStr()
 
 std::string FloatType::toStr()
 {
-    return "float";
+    if(getConst())
+        return "const void";
+    else
+        return "float";
 }
 std::string ConstIntType::toStr()
 {

@@ -170,6 +170,18 @@ public:
     ReturnStmt(ExprNode*retValue) : retValue(retValue) {};
     void output(int level);
 };
+class BreakStmt : public StmtNode//break语句类
+{
+public:
+    BreakStmt() {};
+    void output(int level);
+};
+class ContinueStmt : public StmtNode//continue语句类
+{
+public:
+    ContinueStmt() {};
+    void output(int level);
+};
 
 class AssignStmt : public StmtNode//赋值语句类
 {
