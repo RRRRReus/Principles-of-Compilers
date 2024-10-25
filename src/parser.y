@@ -31,14 +31,15 @@
 %token IF ELSE
 %token INT VOID
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON LBRACKET RBRACKET
-%token ADD SUB MUL DIV OR AND LESS ASSIGN
+%token ADD SUB MUL DIV MOD OR AND ASSIGN LESS LESSOREQUAL GREATER GREATEROREQUAL EQUAL NOTEQUAL
 %token RETURN
 %token WHILE
 %token COMMA
+%token NOT // 添加 PLUS, MINUS, NOT 作为一元运算符
 
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
-%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal
+%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal UnaryExp MulExp EqExp
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
 //%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
 //%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
@@ -66,15 +67,15 @@ Stmts
 
 // 语句
 Stmt    
-    : AssignStmt {$$=$1;} 
-    | BlockStmt {$$=$1;}
-    | IfStmt {$$=$1;}
-    | ReturnStmt {$$=$1;}
-    | DeclStmt {$$=$1;}
-    | FuncDef {$$=$1;}
-    | WhileStmt {$$=$1;}
-    | FuncCallStmt {$$=$1;}
-    | EmptyStmt {$$=$1;}
+    : AssignStmt {$$=$1;} // 赋值语句
+    | BlockStmt {$$=$1;}    // 复合语句
+    | IfStmt {$$=$1;}   // if 语句
+    | ReturnStmt {$$=$1;}       // return 语句
+    | DeclStmt {$$=$1;} // 声明语句
+    | FuncDef {$$=$1;}  // 函数定义
+    | WhileStmt {$$=$1;}    // while 语句
+    | FuncCallStmt {$$=$1;} // 函数调用语句
+    | EmptyStmt {$$=$1;}    // 空语句
     ;
 
 // 空语句
@@ -421,10 +422,13 @@ ReturnStmt
 Exp
     :
     AddExp {$$ = $1;}
+    | FuncCall {$$ = $1;} //???????????????????????？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？
     ;
+// 条件表达式
 Cond
     :
     LOrExp {$$ = $1;}
+    //| EqExp {$$ = $1;}
     ;
 // 基本表达式(包含一个标识符一个常量)
 PrimaryExp
@@ -443,12 +447,70 @@ PrimaryExp
         $$ = new Constant(se);
     }
     ;
-// 二元表达式
+
+// 一元运算符
+/* UnaryOp
+    : '+' { $$ = '+'; }
+    | '-' { $$ = '-'; }
+    ; */
+
+//一元表达式 (函数调用、+、-、!，注：!仅出现在条件表达式中！！！怎么修改)
+UnaryExp
+    :PrimaryExp {$$ = $1;}
+    | ADD UnaryExp {//PLUS是 加号 +
+        SymbolEntry *se = $2->getSymbolEntry();
+        $$ = new UnaryExpr(se, UnaryExpr::POS, $2);//需要新建一个一元表达式对象，一元表达式需要一个单独的类，因为和二元表达式的符号含义不同
+    }
+    | SUB UnaryExp {
+        SymbolEntry *se = $2->getSymbolEntry();
+        $$ = new UnaryExpr(se, UnaryExpr::NEG, $2);
+    }
+    | NOT UnaryExp {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new UnaryExpr(se, UnaryExpr::NOT, $2);
+    }
+    ;
+
+
+//乘除模表达式
+MulExp
+    : UnaryExp { $$ = $1; }
+    | MulExp MUL UnaryExp {
+        if ($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat()) {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
+        } else {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
+        }
+    }
+    | MulExp DIV UnaryExp {
+        if ($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat()) {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
+        } else {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
+        }
+    }
+    | MulExp MOD UnaryExp {
+        if ($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat()) {
+            fprintf(stderr, "Error: float type can't use MOD operator\n");
+            assert(false);
+        } else {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::MOD, $1, $3);
+        }
+    }
+    ;
+
+
+// 加减二元表达式
 AddExp
     :
-    PrimaryExp {$$ = $1;}
+    MulExp {$$ = $1;}
     |
-    AddExp ADD PrimaryExp
+    AddExp ADD MulExp
     {
         //PrimaryExp是一个左值/整数/浮点数，若为整数或浮点数，其是一个Exprnode子类Constant，需调用getSymbolEntry()访问其符号表项，再调用getType()访问其类型
         if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())//注意，只要有一个是浮点数，结果就是浮点数！！！！
@@ -464,7 +526,7 @@ AddExp
         
     }
     |
-    AddExp SUB PrimaryExp
+    AddExp SUB MulExp
     {
         if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
         {
@@ -475,40 +537,11 @@ AddExp
         {
             SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
             $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
-        }
-    }
-    |
-    AddExp MUL PrimaryExp
-    {
-        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
-        {
-            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
-            $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
-        }
-        else
-        {
-            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-            $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
-        }
-
-    }
-    |
-    AddExp DIV PrimaryExp
-    {
-        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
-        {
-            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
-            $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
-        }
-        else
-        {
-            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-            $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
         }
     }
     ;
 
-// 逻辑表达式
+// 逻辑表达式(目前只有整数！！！)
 RelExp
     :
     AddExp {$$ = $1;}
@@ -518,12 +551,47 @@ RelExp
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::LESS, $1, $3);
     }
+    |
+    RelExp LESSOREQUAL AddExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::LESSOREQUAL, $1, $3);
+    }
+    |
+    RelExp GREATER AddExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::GREATER, $1, $3);
+    }
+    |
+    RelExp GREATEROREQUAL AddExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::GREATEROREQUAL, $1, $3);
+    }
     ;
-LAndExp
+
+
+EqExp
     :
     RelExp {$$ = $1;}
+    | EqExp EQUAL RelExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());//???????????????????什么意思
+        $$ = new BinaryExpr(se, BinaryExpr::EQUAL, $1, $3);
+    }
+    | EqExp NOTEQUAL RelExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::NOTEQUAL, $1, $3);
+    }
+    ;
+
+LAndExp
+    :
+    EqExp {$$ = $1;}//相等性的优先级高于逻辑与
     |
-    LAndExp AND RelExp
+    LAndExp AND EqExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::AND, $1, $3);
@@ -531,7 +599,7 @@ LAndExp
     ;
 LOrExp
     :
-    LAndExp {$$ = $1;}
+    LAndExp {$$ = $1;}//逻辑与的优先级高于逻辑或
     |
     LOrExp OR LAndExp
     {
@@ -539,6 +607,9 @@ LOrExp
         $$ = new BinaryExpr(se, BinaryExpr::OR, $1, $3);
     }
     ;
+
+
+
 Type
     : INT {
         $$ = TypeSystem::intType;

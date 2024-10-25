@@ -3,19 +3,28 @@ int add(int a=2,int b)
 {
     return a + b;
 }
-int no()
+int test(int a,int b)
 {
     return 0;
 }
 int main()
 {
-    {}
     int a;
     int b;
     float c=1.0;
     float d=2.1;
-    a = 3.14;
-    c=c*d;
+    a=2;
+    b=1;
+    a=add(a,b);
+    test(a,b);
+    b = b % a;
+    b = b % 2;
+    if(a && b || a == b)
+    {
+        a=a+b;
+    }
+    a=+a;//!!!!!!!!!!!!!!!!!!有问题！！！！！
+    a=-a;
     add(a,b);
     while(1);
     if(a < 5)
@@ -23,7 +32,3 @@ int main()
     return 0;
 }
 
-int test(int a,int b)
-{
-    return 0;
-}
