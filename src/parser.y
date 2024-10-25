@@ -32,16 +32,17 @@
 %token IF ELSE
 %token INT VOID
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON LBRACKET RBRACKET
-%token ADD SUB OR AND LESS ASSIGN
+%token ADD SUB MUL DIV OR AND LESS ASSIGN
 %token RETURN
 %token WHILE
 %token COMMA
 
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
-%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
+//%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
+//%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
 %nterm <type> Type  // 声明 值 的类型 int void
 %nterm <ArrayIndextype> ArrayDim // 声明 数组 的类型
 %precedence THEN
@@ -120,49 +121,21 @@ FuncCall
     ;
 
 
+
+
 /* FuncDef
-    : Type ID FuncDefRest{
-        Type *funcType;
-        funcType = new FunctionType($1, {});
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
-    }
-    ;
-
-FuncDefRest
-    : LPAREN RPAREN BlockStmt {
-        SymbolEntry *se = identifiers->lookup($-2);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, {}, $3);
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-    }
-    | LPAREN ParamList RPAREN BlockStmt {
-        SymbolEntry *se = identifiers->lookup($4);
-        assert(se != nullptr);
-        $$ = new FunctionDef(se, *$2, $4);
-        SymbolTable *top = identifiers;
-        identifiers = identifiers->getPrev();
-        delete top;
-    }
-    ; */
-
-
-
-FuncDef
     : Type ID
     LPAREN RPAREN BlockStmt {
 
         Type *funcType;
         funcType = new FunctionType($1, {});
+
         SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
+        identifiers->install($2, se);//在符号表中安装一个符号
+        identifiers = new SymbolTable(identifiers);//新建一个符号表（新作用域）（函数本身的符号表）
 
 
-        //SymbolEntry *se = identifiers->lookup($2);
+        //SymbolEntry *se_this = identifiers->lookup($2);
         assert(se != nullptr);
         $$ = new FunctionDef(se, {}, $5); // 无参函数传入空参数列表
         SymbolTable *top = identifiers;
@@ -174,19 +147,89 @@ FuncDef
     LPAREN ParamList RPAREN BlockStmt { 
 
         Type *funcType;
-        funcType = new FunctionType($1, {});
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
+        funcType = new FunctionType($1, {});//第二个参数还需要传入参数的类型
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());//getLevel()返回当前符号表的层次，直接赋值给scope
+        identifiers->install($2, se);   //在符号表中安装一个符号
+        //identifiers = new SymbolTable(identifiers);//新建一个符号表（新作用域）
 
+         // 新建符号表，用于存储函数形参，这一步要在函数体之前
+        SymbolTable *paramScope = new SymbolTable(identifiers);
+        identifiers = paramScope;
 
-       //SymbolEntry *se = identifiers->lookup($2);
+        //SymbolEntry *se_this = identifiers->lookup($2);
         assert(se != nullptr);
         $$ = new FunctionDef(se, *$4, $6); // 使用参数列表
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();
         delete top;
         delete []$2;
+    }
+    ; */
+
+/* //函数定义
+FuncDef
+    : Type ID LPAREN RPAREN BlockStmt {
+        // 无参数的函数定义
+        Type *returnType = $1; // 获取函数的返回类型
+        Type *funcType = new FunctionType(returnType, {}); // 创建无参数的函数类型
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel()); // 创建函数的符号表条目
+        identifiers->install($2, se); // 将函数名插入符号表
+        $$ = new FunctionDef(se, {}, $5); // 创建函数定义节点，函数体为
+        delete []$2; // 释放 ID 字符串的内存
+    }
+    | Type ID LPAREN ParamList RPAREN BlockStmt {
+        // 带参数的函数定义
+        Type *returnType = $1; // 获取函数的返回类型
+        std::vector<Type*> paramTypes; // 用于存储参数的类型
+        for (auto param : *$4) {
+            paramTypes.push_back(param->getType()); // 获取每个参数的类型
+        }
+        Type *funcType = new FunctionType(returnType, paramTypes); // 创建带参数的函数类型
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel()); // 创建函数的符号表条目
+        identifiers->install($2, se); // 将函数名插入符号表
+        $$ = new FunctionDef(se, $4, $6); //
+        delete []$2; // 释放 ID 字符串的内存
+    }
+    ; */
+
+FuncDef
+    :
+    Type ID LPAREN {
+        Type *funcType;
+        funcType = new FunctionType($1,std::vector<Type*>());//必须先创建函数类型，这样才能创建函数符号表项
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+    }
+    ParamList RPAREN funcStmt {
+
+        std::vector<Type*> paramsType;
+        DeclStmt* params = (DeclStmt*)$5;//参数列表
+        //遍历所有参数，并且获取参数类型
+        //如何获取参数类型：遍历所有的定义语句，找出Id，然后获取Id的符号表项，再获取此符号表项的类型
+        while(params != nullptr)
+        {
+            paramsType.push_back(params->getId()->getSymbolEntry()->getType());
+            params = (DeclStmt*)(params->getNext());
+        }//获取所有的参数类型
+        SymbolEntry *se;
+        se = identifiers->lookup($2);// se为函数名的符号表项
+        assert(se != nullptr);//断言函数名一定存在
+        FunctionType* tmp = (FunctionType*)(se->getType());//(FunctionType*)将se->getType()转换为FunctionType*类型，se->getType()本身为Type*类型，因为FunctionType继承自Type
+        tmp->setParamsType(paramsType);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!能否不要这个函数，直接在FunctionType的构造函数中传入参数类型
+        $$ = new FunctionDef(se, (DeclStmt*)$5, new CompoundStmt($7));//se,参数列表，函数体(复合语句)
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();//返回上一层符号表
+        delete top;
+        delete []$2;
+    }
+    ;
+funcStmt 
+    : LBRACE Stmts RBRACE {
+        $$ = $2;
+    }
+    | LBRACE RBRACE {//空函数
+        $$ = new EmptyStmt();
     }
     ;
 
@@ -198,7 +241,7 @@ ArgList
         $$->push_back($1);
     }
     | ArgList COMMA Exp {
-        $$ = $1;    // 使用 $1 而不是 $$->push_back($3);
+        $$ = $1;    
         $$->push_back($3);
     }
     ;
@@ -227,13 +270,58 @@ Array
         
 
         delete []$1;
+    };
+/* //形参列表（多个形参）
+FuncFParams
+    : FuncFParam { 
+        $$ = new std::vector<Id*>(); // 创建一个新的形参列表
+        $$->push_back($1); // 将单个形参添加到列表中
     }
-    ;
-// 形参列表
+    | FuncFParams COMMA FuncFParam {
+        $$ = $1; // 使用现有的形参列表
+        $$->push_back($3); // 将下一个形参添加到列表中
+    }
+    ; */
+
+/* //单个形参（包含类型、标识符和可选数组部分）
+FuncFParam
+    : Type ID { 
+        // 形参为标量
+        Type *type = $1; // 获取形参的类型
+        SymbolEntry *se = new IdentifierSymbolEntry(type, $2, identifiers->getLevel()); // 创建符号表条目
+        identifiers->install($2, se); // 将符号表条目插入符号表
+        $$ = new Id(se); // 创建新的 Id 对象表示形参
+        delete []$2; // 释放 ID 字符串的内存
+    }
+    | Type ID '[' ']' { 
+        // 形参为一维数组
+        Type *baseType = $1; // 获取基础类型
+        Type *arrayType = new ArrayType(baseType); // 创建一维数组类型
+        SymbolEntry *se = new IdentifierSymbolEntry(arrayType, $2, identifiers->getLevel()); // 创建符号表条目
+        identifiers->install($2, se); // 将符号表条目插入符号表
+        $$ = new Id(se); // 创建新的 Id 对象表示形参
+        delete []$2; // 释放 ID 字符串的内存
+    }
+    | Type ID '[' ']' '[' Exp ']' {
+        // 形参为多维数组
+        Type *baseType = $1; // 获取基础类型
+        Type *arrayType = new ArrayType(baseType); // 创建第一维数组类型
+        arrayType = new ArrayType(arrayType, $6->getValue()); // 创建第二维数组类型（使用表达式的值）
+        SymbolEntry *se = new IdentifierSymbolEntry(arrayType, $2, identifiers->getLevel()); // 创建符号表条目
+        identifiers->install($2, se); // 将符号表条目插入符号表
+        $$ = new Id(se); // 创建新的 Id 对象表示形参
+        delete []$2; // 释放 ID 字符串的内存
+        delete $6; // 释放表达式对象
+    }
+    ; */
+
+
+/* // 形参列表(注意应新建一个符号表，再进行插入！！！)
 ParamList
     : Type ID {
-        Type *type = $1;
-        SymbolEntry *se = new IdentifierSymbolEntry(type, $2, identifiers->getLevel());
+        Type *type = $1;//获取类型
+        SymbolEntry *se = new IdentifierSymbolEntry(type, $2, identifiers->getLevel());//生成新的符号表项
+        //SymbolTable *top = new SymbolTable(identifiers);
         identifiers->install($2, se);
         $$ = new std::vector<Id*>();
         $$->push_back(new Id(se));
@@ -247,9 +335,54 @@ ParamList
         $$->push_back(new Id(se));
         delete []$4;
     }
+    ; */
+
+
+ParamList
+    : %empty { $$ = nullptr; }
+    | Param {
+        $$ = $1;
+    }
+    | ParamList COMMA Param {
+        $$ = $1;
+        $$->addNodeList($3);//将下一个参数的指针赋值给当前参数的next
+    }
+    ;
+Param
+    : Type ID {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new DeclStmt(new Id(se));//创建一个声明语句
+        delete []$2;
+    }
+    | Type ID ASSIGN Exp {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        $$ = new DeclStmt(new Id(se), $4);
+        delete []$2;
+    }
+    ;//是否添加数组类型的参数
+
+
+
+
+Array
+    : ID LBRACKET INTEGER RBRACKET {
+        SymbolEntry *se = identifiers->lookup($1);
+        if (se == nullptr) {
+            fprintf(stderr, "Array \"%s\" is undefined\n", $1);
+            assert(se != nullptr);
+        }
+        //$$ = new Array(se, $3);
+        $$ = new Id(se);
+
+        delete []$1;
+    }
     ;
 
-
+// 左值
 LVal
     : ID {
         SymbolEntry *se;
@@ -310,6 +443,7 @@ ReturnStmt
         $$ = new ReturnStmt($2);
     }
     ;
+// 表达式
 Exp
     :
     AddExp {$$ = $1;}
@@ -318,6 +452,7 @@ Cond
     :
     LOrExp {$$ = $1;}
     ;
+// 基本表达式(包含一个标识符一个常量)
 PrimaryExp
     :
     LVal {
@@ -334,22 +469,72 @@ PrimaryExp
         $$ = new Constant(se);
     }
     ;
+// 二元表达式
 AddExp
     :
     PrimaryExp {$$ = $1;}
     |
     AddExp ADD PrimaryExp
     {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
+        //PrimaryExp是一个左值/整数/浮点数，若为整数或浮点数，其是一个Exprnode子类Constant，需调用getSymbolEntry()访问其符号表项，再调用getType()访问其类型
+        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())//注意，只要有一个是浮点数，结果就是浮点数！！！！
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());//处理整形变量
+            $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);//接收四个变量，一个是符号表项，一个是运算符，操作数1，操作数2
+        }
+        else
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());//处理浮点变量
+            $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);//接收四个变量，一个是符号表项，一个是运算符，操作数1，操作数2
+        }
+        
     }
     |
     AddExp SUB PrimaryExp
     {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+        }
+        else
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+        }
+    }
+    |
+    AddExp MUL PrimaryExp
+    {
+        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
+        }
+        else
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
+        }
+
+    }
+    |
+    AddExp DIV PrimaryExp
+    {
+        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
+        }
+        else
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
+        }
     }
     ;
+
+// 逻辑表达式
 RelExp
     :
     AddExp {$$ = $1;}
