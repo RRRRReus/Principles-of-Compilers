@@ -50,7 +50,10 @@ std::string ConstFloatType::toStr()
 std::string IntArrayType::toStr()
 {
     std::ostringstream buffer;
-    buffer << "int[";
+    if(getConst())
+        buffer << "const int[";
+    else
+        buffer << "int[";
     for(int i = 0; i < dim; i++)
     {
         if(i != dim - 1)
@@ -61,5 +64,16 @@ std::string IntArrayType::toStr()
 }
 std::string FloatArrayType::toStr()
 {
-    return "float[]";
+    std::ostringstream buffer;
+    if(getConst())
+        buffer << "const float[";
+    else
+        buffer << "float[";
+    for(int i = 0; i < dim; i++)
+    {
+        if(i != dim - 1)
+            buffer << "][";
+    }
+    buffer << "]";
+    return buffer.str();
 }

@@ -576,12 +576,16 @@ Type
     | FLOAT {
         $$ = TypeSystem::floatType;
     }
-    | CONST Type {
-        $$ = $2;
-        $$->setConst(true);
+    | CONST INT {
+        IntType *intType = new IntType(4);
+        intType->setConst(true);
+        $$ = intType;
     }
-
-
+    | CONST FLOAT {
+        FloatType *floatType = new FloatType(32);
+        floatType->setConst(true);
+        $$ = floatType;
+    }
     ;
 InitVal
     : Exp{
@@ -610,12 +614,15 @@ DeclStmt
         if($1->isInt())
         {
             IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+            intArrayType->setConst($1->getConst());
             se = new IdentifierSymbolEntry(intArrayType, $2, identifiers->getLevel());
         }
-        // else if($1->getType() == TypeSystem::floatType)
-        // {
-        //     se = new IdentifierSymbolEntry(TypeSystem::intArrayType, $2, identifiers->getLevel());
-        // }
+        else if($1->isFloat())
+        {
+            FloatArrayType *floatArrayType = new FloatArrayType(IndexDim.size());
+            floatArrayType->setConst($1->getConst());
+            se = new IdentifierSymbolEntry(floatArrayType, $2, identifiers->getLevel());
+        }
         else
         {
             fprintf(stderr, "Error: unknown type\n");

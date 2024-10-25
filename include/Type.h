@@ -88,10 +88,9 @@ public:
 class FloatArrayType : public Type//数组类型
 {
 private:
-    Type *baseType;
-    int size;
+    int dim;
 public:
-    FloatArrayType(Type *baseType, int size) : Type(Type::FLOATARRAY), baseType(baseType), size(size){};
+    FloatArrayType(int dim) : Type(Type::FLOATARRAY), dim(dim){};
     std::string toStr();
 };
 
@@ -101,15 +100,15 @@ private:
     static IntType commonInt;
     static VoidType commonVoid;
     static FloatType commonFloat;
-    //static ConstIntType commonConstInt;
-    //static ConstFloatType commonConstFloat;
+    //static IntType commonConstInt;
+    //static FloatType commonConstFloat;
 
 public:
     static Type *intType;
     static Type *voidType;
     static Type *floatType;
     //static Type *constIntType;
-    static Type *constFloatType;
+    //static Type *constFloatType;
 };
 
 #endif
