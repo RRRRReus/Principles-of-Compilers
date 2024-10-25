@@ -57,6 +57,18 @@ WHITE [\t ]
     dump_tokens("VOID\t%s\n", yytext);
     return VOID;
 }
+"const" {
+    dump_tokens("CONST\t%s\n", yytext);
+    return CONST;
+}
+"break" {
+    dump_tokens("BREAK\t%s\n", yytext);
+    return BREAK;
+}
+"continue" {
+    dump_tokens("CONTINUE\t%s\n", yytext);
+    return CONTINUE;
+}
 "while" {
     dump_tokens("WHILE\t%s\n", yytext);
     return WHILE;

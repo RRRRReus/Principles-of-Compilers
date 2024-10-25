@@ -137,6 +137,9 @@ void SeqNode::output(int level)
 void DeclStmt::output(int level)
 {
     fprintf(yyout, "%*cDeclStmt\n", level, ' ');
+    if(array != nullptr)
+        array->output(level + 4);
+    if(id != nullptr)
     id->output(level + 4);
     if(expr != nullptr)
         expr->output(level + 4);
@@ -222,4 +225,34 @@ void ExprStmt::output(int level)
 {
     fprintf(yyout, "%*cExprStmt\n", level, ' ');
     expr->output(level + 4);
+}
+
+void Array::output(int level)
+{
+    fprintf(yyout, "%*cArray\n", level, ' ');
+    id->output(level + 4);
+    arrayIndex->output(level + 4);
+    
+}
+
+void ArrayIndex::output(int level)
+{
+    fprintf(yyout, "%*cArrayIndex\n", level, ' ');
+    int j=0;
+    for(auto i : index)
+    {
+        fprintf(yyout, "%*cIndex", level + 4, ' ');
+        fprintf(yyout, " %d:\n", j);
+        i->output(level + 4);
+        j++;
+    }
+}
+
+void BreakStmt::output(int level)
+{
+    fprintf(yyout, "%*cBreakStmt\n", level, ' ');
+}
+void ContinueStmt::output(int level)
+{
+    fprintf(yyout, "%*cContinueStmt\n", level, ' ');
 }

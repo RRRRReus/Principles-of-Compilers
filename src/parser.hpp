@@ -74,16 +74,20 @@ extern int yydebug;
     LBRACE = 267,                  /* LBRACE  */
     RBRACE = 268,                  /* RBRACE  */
     SEMICOLON = 269,               /* SEMICOLON  */
-    ADD = 270,                     /* ADD  */
-    SUB = 271,                     /* SUB  */
-    OR = 272,                      /* OR  */
-    AND = 273,                     /* AND  */
-    LESS = 274,                    /* LESS  */
-    ASSIGN = 275,                  /* ASSIGN  */
-    RETURN = 276,                  /* RETURN  */
-    WHILE = 277,                   /* WHILE  */
-    COMMA = 278,                   /* COMMA  */
-    THEN = 279                     /* THEN  */
+    LBRACKET = 270,                /* LBRACKET  */
+    RBRACKET = 271,                /* RBRACKET  */
+    ADD = 272,                     /* ADD  */
+    SUB = 273,                     /* SUB  */
+    MUL = 274,                     /* MUL  */
+    DIV = 275,                     /* DIV  */
+    OR = 276,                      /* OR  */
+    AND = 277,                     /* AND  */
+    LESS = 278,                    /* LESS  */
+    ASSIGN = 279,                  /* ASSIGN  */
+    RETURN = 280,                  /* RETURN  */
+    WHILE = 281,                   /* WHILE  */
+    COMMA = 282,                   /* COMMA  */
+    THEN = 283                     /* THEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -102,8 +106,9 @@ union YYSTYPE
     float floattype;
     std::vector<ExprNode*>* arglisttype; // 添加 arglisttype
     std::vector<Id*>* paramlisttype; // 添加 stmtlisttype
+    ArrayIndex* ArrayIndextype;
 
-#line 107 "src/parser.hpp"
+#line 112 "src/parser.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

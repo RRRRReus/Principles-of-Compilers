@@ -7,9 +7,13 @@ class Type//类型基类
 {
 private:
     int kind;
+    bool isConst;
 protected:
+    
     enum {INT, VOID, FUNC,FLOAT,INTARRAY,FLOATARRAY};
 public:
+    void setConst(bool isConst) {this->isConst = isConst;}
+    bool getConst() {return isConst;}
     Type(int kind) : kind(kind) {};
     virtual ~Type() {};
     virtual std::string toStr() = 0;
@@ -76,19 +80,17 @@ public:
 class IntArrayType : public Type//数组类型
 {
 private:
-    Type *baseType;
-    int size;
+    int dim;
 public:
-    IntArrayType(Type *baseType, int size) : Type(Type::INTARRAY), baseType(baseType), size(size){};
+    IntArrayType(int dim) : Type(Type::INTARRAY), dim(dim){};
     std::string toStr();
 };
 class FloatArrayType : public Type//数组类型
 {
 private:
-    Type *baseType;
-    int size;
+    int dim;
 public:
-    FloatArrayType(Type *baseType, int size) : Type(Type::FLOATARRAY), baseType(baseType), size(size){};
+    FloatArrayType(int dim) : Type(Type::FLOATARRAY), dim(dim){};
     std::string toStr();
 };
 
@@ -98,15 +100,15 @@ private:
     static IntType commonInt;
     static VoidType commonVoid;
     static FloatType commonFloat;
-    static ConstIntType commonConstInt;
-    static ConstFloatType commonConstFloat;
+    //static IntType commonConstInt;
+    //static FloatType commonConstFloat;
 
 public:
     static Type *intType;
     static Type *voidType;
     static Type *floatType;
-    static Type *constIntType;
-    static Type *constFloatType;
+    //static Type *constIntType;
+    //static Type *constFloatType;
 };
 
 #endif

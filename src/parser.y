@@ -22,6 +22,7 @@
     float floattype;
     std::vector<ExprNode*>* arglisttype; // 添加 arglisttype
     std::vector<Id*>* paramlisttype; // 添加 stmtlisttype
+    ArrayIndex* ArrayIndextype;
 }
 
 %start Program
@@ -37,14 +38,18 @@
 %token COMMA
 %token NOT // 添加 PLUS, MINUS, NOT 作为一元运算符
 
+%token BREAK
+%token CONST
+%token CONTINUE
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
+%nterm <stmttype> BreakStmt ContinueStmt
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal UnaryExp MulExp EqExp
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
 //%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
 //%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
 %nterm <type> Type  // 声明 值 的类型 int void
-
+%nterm <ArrayIndextype> ArrayDim // 声明 数组 的类型
 %precedence THEN
 %precedence ELSE
 
@@ -67,17 +72,28 @@ Stmts
 
 // 语句
 Stmt    
-    : AssignStmt {$$=$1;} // 赋值语句
-    | BlockStmt {$$=$1;}    // 复合语句
-    | IfStmt {$$=$1;}   // if 语句
-    | ReturnStmt {$$=$1;}       // return 语句
-    | DeclStmt {$$=$1;} // 声明语句
-    | FuncDef {$$=$1;}  // 函数定义
-    | WhileStmt {$$=$1;}    // while 语句
-    | FuncCallStmt {$$=$1;} // 函数调用语句
-    | EmptyStmt {$$=$1;}    // 空语句
+    : AssignStmt {$$=$1;} 
+    | BlockStmt {$$=$1;}
+    | IfStmt {$$=$1;}
+    | ReturnStmt {$$=$1;}
+    | DeclStmt {$$=$1;}
+    | FuncDef {$$=$1;}
+    | WhileStmt {$$=$1;}
+    | FuncCallStmt {$$=$1;}
+    | EmptyStmt {$$=$1;}
+    | BreakStmt {$$=$1;}
+    | ContinueStmt {$$=$1;}
     ;
-
+BreakStmt
+    : BREAK SEMICOLON{
+        $$ = new BreakStmt();
+    }
+    ;
+ContinueStmt
+    : CONTINUE SEMICOLON{
+        $$ = new ContinueStmt();
+    }
+    ;
 // 空语句
 EmptyStmt
     : SEMICOLON{
@@ -246,6 +262,31 @@ ArgList
     }
     ;
 
+ArrayDim
+    :LBRACKET Exp RBRACKET{
+        ArrayIndex *IndexDim = new ArrayIndex();
+        IndexDim->index.push_back($2);
+        $$ = IndexDim;
+    }
+    |ArrayDim LBRACKET Exp RBRACKET{
+        $$ = $1;
+        $$->index.push_back($3);
+    }
+
+Array
+    : ID ArrayDim {
+        SymbolEntry *se = identifiers->lookup($1);
+        if (se == nullptr) {
+            fprintf(stderr, "Array \"%s\" is undefined\n", $1);
+            assert(se != nullptr);
+        }
+        ArrayIndex *IndexDim = $2;
+        Id *name= new Id(se);
+        $$ = new Array(name, IndexDim);
+        
+
+        delete []$1;
+    };
 /* //形参列表（多个形参）
 FuncFParams
     : FuncFParam { 
@@ -343,19 +384,6 @@ Param
 
 
 
-Array
-    : ID LBRACKET INTEGER RBRACKET {
-        SymbolEntry *se = identifiers->lookup($1);
-        if (se == nullptr) {
-            fprintf(stderr, "Array \"%s\" is undefined\n", $1);
-            assert(se != nullptr);
-        }
-        //$$ = new Array(se, $3);
-        $$ = new Id(se);
-
-        delete []$1;
-    }
-    ;
 
 // 左值
 LVal
@@ -441,7 +469,7 @@ PrimaryExp
         $$ = new Constant(se);
     }
     | FLOAT {
-        printf("1now is float%f\n", $1);
+        //printf("1now is float%f\n", $1);
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
         //printf("2now is float%f\n", se->fvalue);
         $$ = new Constant(se);
@@ -620,7 +648,16 @@ Type
     | FLOAT {
         $$ = TypeSystem::floatType;
     }
-
+    | CONST INT {
+        IntType *intType = new IntType(4);
+        intType->setConst(true);
+        $$ = intType;
+    }
+    | CONST FLOAT {
+        FloatType *floatType = new FloatType(32);
+        floatType->setConst(true);
+        $$ = floatType;
+    }
     ;
 InitVal
     : Exp{
@@ -641,6 +678,47 @@ DeclStmt
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
         identifiers->install($2, se);
         $$ = new DeclStmt(new Id(se), $4);
+        delete []$2;
+    }
+    | Type ID ArrayDim SEMICOLON {
+        SymbolEntry *se;
+        std::vector<ExprNode*> IndexDim= $3->index;
+        if($1->isInt())
+        {
+            IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+            intArrayType->setConst($1->getConst());
+            se = new IdentifierSymbolEntry(intArrayType, $2, identifiers->getLevel());
+        }
+        else if($1->isFloat())
+        {
+            FloatArrayType *floatArrayType = new FloatArrayType(IndexDim.size());
+            floatArrayType->setConst($1->getConst());
+            se = new IdentifierSymbolEntry(floatArrayType, $2, identifiers->getLevel());
+        }
+        else
+        {
+            fprintf(stderr, "Error: unknown type\n");
+            assert(false);
+        }
+        // se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        Id *name=new Id(se);
+        identifiers->install($2, se);
+        // std::vector<ExprNode*> IndexDim;
+        // IndexDim.push_back($3);
+        if (name == nullptr) {
+    printf("Error: id is nullptr\n");
+} else {
+    printf("id is valid\n");
+    if (name->getSymbolEntry() == nullptr) {
+        printf("Error: id->getSymbolEntry() is nullptr\n");
+    } else {
+        printf("id->getSymbolEntry() is valid\n");
+    }
+}
+
+        $$ = new DeclStmt(new Array(name, $3));
+        
+        printf("what?");
         delete []$2;
     }
 
