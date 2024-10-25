@@ -42,7 +42,7 @@ private:
     int op;
     ExprNode *expr1, *expr2;
 public:
-    enum {ADD, SUB, AND, OR, LESS}; //枚举所有可能的二元运算符
+    enum {ADD, SUB, MUL, DIV, AND, OR, LESS}; //枚举所有可能的二元运算符
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
     void output(int level);
 };

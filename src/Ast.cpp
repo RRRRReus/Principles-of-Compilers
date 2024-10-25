@@ -24,11 +24,18 @@ void BinaryExpr::output(int level)
     std::string op_str;
     switch(op)
     {
+        //枚举变量在这派上用场了，枚举所有可能的二元运算符
         case ADD:
             op_str = "add";
             break;
         case SUB:
             op_str = "sub";
+            break;
+        case MUL:
+            op_str = "mul";
+            break;
+        case DIV:
+            op_str = "div";
             break;
         case AND:
             op_str = "and";

@@ -48,6 +48,11 @@ WHITE [\t ]
     return INT;
 }
 
+"float" {
+    dump_tokens("FLOAT\t%s\n", yytext);
+    return FLOAT;
+}
+
 "void" {
     dump_tokens("VOID\t%s\n", yytext);
     return VOID;
@@ -85,6 +90,21 @@ WHITE [\t ]
 "+" {
     dump_tokens("ADD\t%s\n", yytext);
     return ADD;
+}
+
+"-" {
+    dump_tokens("SUB\t%s\n", yytext);
+    return SUB;
+}
+
+"*" {
+    dump_tokens("MUL\t%s\n", yytext);
+    return MUL;
+}
+
+"/" {
+    dump_tokens("DIV\t%s\n", yytext);
+    return DIV;
 }
 
 ";" {

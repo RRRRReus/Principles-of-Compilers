@@ -1,7 +1,7 @@
 int a;
 int add(int a=2,int b)
 {
-    return a+b;
+    return a + b;
 }
 int no()
 {
@@ -12,7 +12,10 @@ int main()
     {}
     int a;
     int b;
+    float c=1.0;
+    float d=2.1;
     a = 3.14;
+    c=c*d;
     add(a,b);
     while(1);
     if(a < 5)

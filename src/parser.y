@@ -31,7 +31,7 @@
 %token IF ELSE
 %token INT VOID
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON LBRACKET RBRACKET
-%token ADD SUB OR AND LESS ASSIGN
+%token ADD SUB MUL DIV OR AND LESS ASSIGN
 %token RETURN
 %token WHILE
 %token COMMA
@@ -337,9 +337,7 @@ Param
         $$ = new DeclStmt(new Id(se), $4);
         delete []$2;
     }
-    ;
-
-
+    ;//是否添加数组类型的参数
 
 
 
@@ -358,7 +356,7 @@ Array
     }
     ;
 
-
+// 左值
 LVal
     : ID {
         SymbolEntry *se;
@@ -419,6 +417,7 @@ ReturnStmt
         $$ = new ReturnStmt($2);
     }
     ;
+// 表达式
 Exp
     :
     AddExp {$$ = $1;}
@@ -427,6 +426,7 @@ Cond
     :
     LOrExp {$$ = $1;}
     ;
+// 基本表达式(包含一个标识符一个常量)
 PrimaryExp
     :
     LVal {
@@ -443,22 +443,72 @@ PrimaryExp
         $$ = new Constant(se);
     }
     ;
+// 二元表达式
 AddExp
     :
     PrimaryExp {$$ = $1;}
     |
     AddExp ADD PrimaryExp
     {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
+        //PrimaryExp是一个左值/整数/浮点数，若为整数或浮点数，其是一个Exprnode子类Constant，需调用getSymbolEntry()访问其符号表项，再调用getType()访问其类型
+        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())//注意，只要有一个是浮点数，结果就是浮点数！！！！
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());//处理整形变量
+            $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);//接收四个变量，一个是符号表项，一个是运算符，操作数1，操作数2
+        }
+        else
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());//处理浮点变量
+            $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);//接收四个变量，一个是符号表项，一个是运算符，操作数1，操作数2
+        }
+        
     }
     |
     AddExp SUB PrimaryExp
     {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+        }
+        else
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+        }
+    }
+    |
+    AddExp MUL PrimaryExp
+    {
+        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
+        }
+        else
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
+        }
+
+    }
+    |
+    AddExp DIV PrimaryExp
+    {
+        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
+        }
+        else
+        {
+            SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
+        }
     }
     ;
+
+// 逻辑表达式
 RelExp
     :
     AddExp {$$ = $1;}
