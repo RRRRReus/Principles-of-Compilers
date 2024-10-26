@@ -684,7 +684,7 @@ DeclStmtNode
         DeclStmt *decl = new DeclStmt(new Id(se), $3);
         $$ = decl;
     }
-    /* |ID ArrayDim{
+    |ID ArrayDim{
         SymbolEntry *se;
         std::vector<ExprNode*> IndexDim= $2->index;
         IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
@@ -706,8 +706,8 @@ DeclStmtNode
         $$ = new DeclStmt(new Array(name, $2));
         
         printf("what?");
-        delete []$2;
-    } */
+        //delete []$2;
+    }
     ;
 DeclStmtNodes
     :DeclStmtNode{
