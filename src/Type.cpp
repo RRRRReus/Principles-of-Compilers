@@ -4,10 +4,12 @@
 IntType TypeSystem::commonInt = IntType(4);
 VoidType TypeSystem::commonVoid = VoidType();
 FloatType TypeSystem::commonFloat = FloatType(32);
+LongLongType TypeSystem::commonLongLong = LongLongType();
 
 Type* TypeSystem::intType = &commonInt;
 Type* TypeSystem::voidType = &commonVoid;
 Type* TypeSystem::floatType= &commonFloat;
+Type* TypeSystem::longlongType = &commonLongLong;
 // Type* TypeSystem::constIntType = &commonConstInt;
 // Type* TypeSystem::constFloatType = &commonConstFloat;
 
@@ -76,4 +78,9 @@ std::string FloatArrayType::toStr()
     }
     buffer << "]";
     return buffer.str();
+}
+
+std::string LongLongType::toStr()
+{
+    return "long long";
 }

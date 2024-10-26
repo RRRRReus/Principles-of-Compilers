@@ -18,7 +18,10 @@ ConstantSymbolEntry::ConstantSymbolEntry(Type *type, float fvalue): SymbolEntry(
 {
     this->fvalue = fvalue;
 }
-
+ConstantSymbolEntry::ConstantSymbolEntry(Type *type, long long llvalue): SymbolEntry(type, SymbolEntry::CONSTANT)
+{
+    this->llvalue = llvalue;
+}
 std::string ConstantSymbolEntry::toStr()
 {
     std::ostringstream buffer;
@@ -34,8 +37,13 @@ std::string ConstantSymbolEntry::toStr()
     {
     
     buffer << fvalue;
-    printf("look!!!%f\n",fvalue);
+    //printf("look!!!%f\n",fvalue);
 
+    }
+    if((this->getType())->isLongLong())
+    {
+    buffer << llvalue;
+    //printf("look!!!%lld\n",llvalue);
     }
     return buffer.str();
 
