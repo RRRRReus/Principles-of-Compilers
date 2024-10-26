@@ -212,11 +212,32 @@ WHITE [\t ]
 }
 
 {DECIMIAL} {
-    int decimal;
-    decimal = atoi(yytext);
-    dump_tokens("DECIMAL\t%s\t%d\n", yytext, decimal);
-    yylval.itype = decimal;
-    return INTEGER;
+    int64_t decimal;
+    decimal = strtoll(yytext,nullptr,10); //将字符串转换为longlong
+    if(decimal > 0 && decimal > INT_MAX)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+        return LONGLONG;
+    }
+    else if(decimal<0&&decimal<INT_MIN)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+        yylval.ltype = decimal;
+        return LONGLONG;
+    }
+    else{
+
+        dump_tokens("%-20s", "DECIMIAL");
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20d\n", (int)decimal);
+        yylval.itype =  decimal;
+        return INTEGER;
+
+    }
 }
 {FLOAT_DECIMAL} {
     float value;
@@ -236,16 +257,16 @@ WHITE [\t ]
         dump_tokens("%-20s", "LONGLONG");
         dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
-        yylval.itype = decimal;
-        return INTEGER;
+        yylval.ltype = decimal;
+        return LONGLONG;
     }
     else if(decimal<0&&decimal<INT_MIN)
     {
         dump_tokens("%-20s", "LONGLONG");
         dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
-        yylval.itype =  decimal;
-        return INTEGER;
+        yylval.ltype =  decimal;
+        return LONGLONG;
     }
     else{
 
@@ -266,16 +287,16 @@ WHITE [\t ]
         dump_tokens("%-20s", "LONGLONG");
         dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
-        yylval.itype =  decimal;
-        return INTEGER;
+        yylval.ltype =  decimal;
+        return LONGLONG;
     }
     else if(decimal<0&&decimal<INT_MIN)
     {
         dump_tokens("%-20s", "LONGLONG");
         dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
-        yylval.itype =  decimal;
-        return INTEGER;
+        yylval.ltype =  decimal;
+        return LONGLONG;
     }
     else{
 

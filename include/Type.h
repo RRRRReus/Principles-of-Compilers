@@ -10,7 +10,7 @@ private:
     bool isConst;
 protected:
     
-    enum {INT, VOID, FUNC,FLOAT,INTARRAY,FLOATARRAY};
+    enum {INT, VOID, FUNC,FLOAT,INTARRAY,FLOATARRAY,LONGLONG};
 public:
     void setConst(bool isConst) {this->isConst = isConst;}
     bool getConst() {return isConst;}
@@ -23,9 +23,16 @@ public:
     bool isFloat() const {return kind == FLOAT;};
     bool isIntArray() const {return kind == INTARRAY;};
     bool isFloatArray() const {return kind == FLOATARRAY;};
+    bool isLongLong() const {return kind == LONGLONG;};
 
 
     
+};
+class LongLongType : public Type//长整型类型
+{
+public:
+    LongLongType() : Type(Type::LONGLONG){};
+    std::string toStr();
 };
 
 class IntType : public Type//整型类型
@@ -100,6 +107,7 @@ private:
     static IntType commonInt;
     static VoidType commonVoid;
     static FloatType commonFloat;
+    static LongLongType commonLongLong;
     //static IntType commonConstInt;
     //static FloatType commonConstFloat;
 
@@ -107,6 +115,7 @@ public:
     static Type *intType;
     static Type *voidType;
     static Type *floatType;
+    static Type *longlongType;
     //static Type *constIntType;
     //static Type *constFloatType;
 };

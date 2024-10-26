@@ -15,6 +15,7 @@
 
 %union {
     int itype;
+    long long int ltype;
     char* strtype;
     StmtNode* stmttype;
     ExprNode* exprtype;
@@ -28,6 +29,7 @@
 %start Program
 %token <strtype> ID 
 %token <itype> INTEGER
+%token <ltype> LONGLONG
 %token <floattype> FLOAT
 %token IF ELSE
 %token INT VOID
@@ -41,6 +43,7 @@
 %token BREAK
 %token CONST
 %token CONTINUE
+
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
 %nterm <stmttype> BreakStmt ContinueStmt DeclStmtNode DeclStmtNodes
@@ -474,6 +477,10 @@ PrimaryExp
         //printf("1now is float%f\n", $1);
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
         //printf("2now is float%f\n", se->fvalue);
+        $$ = new Constant(se);
+    }
+    |LONGLONG{
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::longlongType, $1);
         $$ = new Constant(se);
     }
     | LPAREN Exp RPAREN {
