@@ -16,8 +16,12 @@ int main()
     {
         int f=9;
         break;
-
     }
+
+    putint(9);
+    putfloat(2.3);
+    getarray(a);
+    b=getch();
     b=-b;
     b=+b;
     b= one(b);

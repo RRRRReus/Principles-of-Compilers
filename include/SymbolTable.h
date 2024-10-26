@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 class Type;
 
@@ -118,7 +119,23 @@ public:
     // You can add any function you need here.
 };
 
+// 用于库函数的 SymbolEntry 子类
+class FunctionSymbolEntry : public SymbolEntry {
+private:
+    std::string name;
+    std::vector<Type*> paramTypes;
+    Type* returnType;
 
+public:
+    FunctionSymbolEntry(Type* returnType, const std::vector<Type*>& paramTypes, const std::string& name)
+        : SymbolEntry(returnType, VARIABLE), name(name), paramTypes(paramTypes), returnType(returnType) {}
+
+    std::string getName() const { return name; }
+    Type* getReturnType() const { return returnType; }
+    const std::vector<Type*>& getParamTypes() const { return paramTypes; }
+    
+    std::string toStr() override;
+};
 
 
 
@@ -139,6 +156,8 @@ public:
     int getLevel() {return level;};
     static int getLabel() {return counter++;};
 };
+
+
 
 extern SymbolTable *identifiers;    //标识符符号表，全局变量
 extern SymbolTable *globals;    //全局符号表，全局变量

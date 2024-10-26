@@ -63,10 +63,67 @@ std::string TemporarySymbolEntry::toStr()
     return buffer.str();
 }
 
+std::string FunctionSymbolEntry::toStr() 
+{
+    std::string str = name + "(";
+    for (size_t i = 0; i < paramTypes.size(); ++i) {
+        str += paramTypes[i]->toStr();
+        if (i < paramTypes.size() - 1) str += ", ";
+    }//输出所有参数类型
+    str += ") -> " + returnType->toStr();//返回类型
+}
+
 SymbolTable::SymbolTable()
 {
     prev = nullptr;
     level = 0;
+
+
+    // 创建标准库函数 putint(int) 并添加到符号表
+    Type* intType = TypeSystem::intType; //commonInt是一个静态变量，不应该被修改
+    // 此处应该新建一个intType，而TypeSystem::intType = &commonInt，IntType TypeSystem::commonInt = IntType(4);  则TypeSystem::intType就是一个IntType(4)
+    Type* voidType =TypeSystem::voidType;  // 假设 VoidType 是 Type 的派生类
+    std::vector<Type*> paramTypes = {intType};
+
+    FunctionSymbolEntry* putintEntry = new FunctionSymbolEntry(voidType, paramTypes, "putint");
+    install("putint", putintEntry);
+
+    // 创建标准库函数 getint() 并添加到符号表
+
+    FunctionSymbolEntry* getintEntry = new FunctionSymbolEntry(intType, {}, "getint");
+    install("getint", getintEntry);
+
+    // 创建标准库函数 putfloat(float) 并添加到符号表
+    Type* floatType = TypeSystem::floatType; //commonFloat是一个静态变量，不应该被修改
+    paramTypes = {floatType};
+    FunctionSymbolEntry* putfloatEntry = new FunctionSymbolEntry(voidType, paramTypes, "putfloat");
+    install("putfloat", putfloatEntry);
+
+    // 创建标准库函数 getfloat() 并添加到符号表
+    FunctionSymbolEntry* getfloatEntry = new FunctionSymbolEntry(floatType, {}, "getfloat");
+    install("getfloat", getfloatEntry);
+
+    // 创建标准库函数 getarray(int[])并添加到符号表
+    Type* intArrayType = new IntArrayType(1);
+    paramTypes = {intArrayType};
+    FunctionSymbolEntry* getarrayEntry = new FunctionSymbolEntry(intType, paramTypes, "getarray");
+    install("getarray", getarrayEntry);
+
+    // 创建标准库函数 putarray(int[])并添加到符号表
+    FunctionSymbolEntry* putarrayEntry = new FunctionSymbolEntry(voidType, paramTypes, "putarray");
+    install("putarray", putarrayEntry);
+
+    // 创建标准库函数  putch(int) 并添加到符号表(将整数参数的值作为 ASCII 码，输出该 ASCII 码对应的字符)
+    paramTypes = {intType};
+    FunctionSymbolEntry* putchEntry = new FunctionSymbolEntry(voidType, paramTypes, "putch");
+    install("putch", putchEntry);
+
+    // 创建标准库函数  getch() 并添加到符号表(返回一个整数，表示读入的字符的 ASCII 码)
+    FunctionSymbolEntry* getchEntry = new FunctionSymbolEntry(intType, {}, "getch");
+    install("getch", getchEntry);
+
+
+
 }
 
 SymbolTable::SymbolTable(SymbolTable *prev)
