@@ -67,6 +67,7 @@ SymbolTable::SymbolTable()
 {
     prev = nullptr;
     level = 0;
+    
 }
 
 SymbolTable::SymbolTable(SymbolTable *prev)

@@ -80,14 +80,24 @@ extern int yydebug;
     SUB = 273,                     /* SUB  */
     MUL = 274,                     /* MUL  */
     DIV = 275,                     /* DIV  */
-    OR = 276,                      /* OR  */
-    AND = 277,                     /* AND  */
-    LESS = 278,                    /* LESS  */
+    MOD = 276,                     /* MOD  */
+    OR = 277,                      /* OR  */
+    AND = 278,                     /* AND  */
     ASSIGN = 279,                  /* ASSIGN  */
-    RETURN = 280,                  /* RETURN  */
-    WHILE = 281,                   /* WHILE  */
-    COMMA = 282,                   /* COMMA  */
-    THEN = 283                     /* THEN  */
+    LESS = 280,                    /* LESS  */
+    LESSOREQUAL = 281,             /* LESSOREQUAL  */
+    GREATER = 282,                 /* GREATER  */
+    GREATEROREQUAL = 283,          /* GREATEROREQUAL  */
+    EQUAL = 284,                   /* EQUAL  */
+    NOTEQUAL = 285,                /* NOTEQUAL  */
+    RETURN = 286,                  /* RETURN  */
+    WHILE = 287,                   /* WHILE  */
+    COMMA = 288,                   /* COMMA  */
+    NOT = 289,                     /* NOT  */
+    BREAK = 290,                   /* BREAK  */
+    CONST = 291,                   /* CONST  */
+    CONTINUE = 292,                /* CONTINUE  */
+    THEN = 293                     /* THEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -108,7 +118,7 @@ union YYSTYPE
     std::vector<Id*>* paramlisttype; // 添加 stmtlisttype
     ArrayIndex* ArrayIndextype;
 
-#line 112 "src/parser.hpp"
+#line 122 "src/parser.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
