@@ -36,16 +36,30 @@ public:
     SymbolEntry* getSymbolEntry() const { return symbolEntry; } // 添加访问器方法
 };
 
-class BinaryExpr : public ExprNode//二元表达式类
+class BinaryExpr : public ExprNode//二元表达式类(所有二元运算符！！！)
 {
 private:
     int op;
     ExprNode *expr1, *expr2;
 public:
-    enum {ADD, SUB, MUL, DIV, AND, OR, LESS}; //枚举所有可能的二元运算符
+    enum {ADD, SUB, MUL, DIV, MOD, AND, OR, LESS, LESSOREQUAL, GREATER, GREATEROREQUAL, EQUAL, NOTEQUAL}; //枚举所有可能的二元运算符
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
     void output(int level);
 };
+
+// 一元表达式类
+class UnaryExpr : public ExprNode
+{   
+private:
+    int op;
+    ExprNode *expr;
+public:
+    enum OpType { POS, NEG, NOT };
+    UnaryExpr(SymbolEntry *se, int op, ExprNode *expr)
+        : ExprNode(se), op(op), expr(expr) {}
+    void output(int level);
+};
+
 
 class Constant : public ExprNode//常数类
 {
@@ -91,6 +105,8 @@ public:
     FuncCall(SymbolEntry *se, Id *func, std::vector<ExprNode*> args) : ExprNode(se), func(func), args(args) {};
     void output(int level);
 };
+
+
 
 
 

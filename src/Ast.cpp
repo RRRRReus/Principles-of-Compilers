@@ -37,6 +37,9 @@ void BinaryExpr::output(int level)
         case DIV:
             op_str = "div";
             break;
+        case MOD:
+            op_str = "mod";
+            break;
         case AND:
             op_str = "and";
             break;
@@ -46,10 +49,45 @@ void BinaryExpr::output(int level)
         case LESS:
             op_str = "less";
             break;
+        case LESSOREQUAL:
+            op_str = "lessorequal";
+            break;
+        case GREATER:
+            op_str = "greater";
+            break;
+        case GREATEROREQUAL:
+            op_str = "greaterorequal";
+            break;
+        case EQUAL:
+            op_str = "equal";
+            break;
+        case NOTEQUAL:
+            op_str = "notequal";
+            break;
     }
     fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
     expr1->output(level + 4);
     expr2->output(level + 4);
+}
+
+void UnaryExpr::output(int level)
+{
+    std::string op_str;
+    switch(op)
+    {
+        case POS:
+            op_str = "pos";
+            break;
+        case NEG:
+            op_str = "neg";
+            break;
+        case NOT:
+            op_str = "not";
+            break;
+    }
+    fprintf(yyout, "%*cUnaryExpr\top: %s\n", level, ' ', op_str.c_str());
+    expr->output(level + 4);
+   
 }
 
 void Constant::output(int level)

@@ -99,6 +99,51 @@ WHITE [\t ]
     return LESS;
 }
 
+
+
+
+"<=" {
+    dump_tokens("LESSEQUAL\t%s\n", yytext);
+    return LESSOREQUAL;
+}
+
+">" {
+    dump_tokens("GREATER\t%s\n", yytext);
+    return GREATER;
+}
+
+">=" {
+    dump_tokens("GREATEREQUAL\t%s\n", yytext);
+    return GREATEROREQUAL;
+}
+
+"&&" {
+    dump_tokens("AND\t%s\n", yytext);
+    return AND;
+}
+
+"||" {
+    dump_tokens("OR\t%s\n", yytext);
+    return OR;
+}
+
+"==" {
+    dump_tokens("EQUAL\t%s\n", yytext);
+    return EQUAL;
+}
+
+"!=" {
+    dump_tokens("NOTEQUAL\t%s\n", yytext);
+    return NOTEQUAL;
+}
+
+"!" {
+    dump_tokens("NOT\t%s\n", yytext);
+    return NOT;
+}
+
+
+
 "+" {
     dump_tokens("ADD\t%s\n", yytext);
     return ADD;
@@ -117,6 +162,11 @@ WHITE [\t ]
 "/" {
     dump_tokens("DIV\t%s\n", yytext);
     return DIV;
+}
+
+"%" {
+    dump_tokens("MOD\t%s\n", yytext);
+    return MOD;
 }
 
 ";" {
