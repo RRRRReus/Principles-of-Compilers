@@ -43,7 +43,7 @@
 %token CONTINUE
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
-%nterm <stmttype> BreakStmt ContinueStmt
+%nterm <stmttype> BreakStmt ContinueStmt DeclStmtNode DeclStmtNodes
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal UnaryExp MulExp EqExp
 %nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
 //%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
@@ -451,7 +451,9 @@ Exp
     :
     AddExp {$$ = $1;}
     | FuncCall {$$ = $1;} //???????????????????????？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？
+    
     ;
+
 // 条件表达式
 Cond
     :
@@ -473,6 +475,9 @@ PrimaryExp
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
         //printf("2now is float%f\n", se->fvalue);
         $$ = new Constant(se);
+    }
+    | LPAREN Exp RPAREN {
+        $$ = $2;
     }
     ;
 
@@ -664,9 +669,60 @@ InitVal
         $$ =$1;
     }
     ;
+
+DeclStmtNode
+    :ID{
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        $$ = new DeclStmt(new Id(se));
+    }
+    |ID ASSIGN InitVal{
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        DeclStmt *decl = new DeclStmt(new Id(se), $3);
+        $$ = decl;
+    }
+    /* |ID ArrayDim{
+        SymbolEntry *se;
+        std::vector<ExprNode*> IndexDim= $2->index;
+        IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+        //intArrayType->setConst($1->getConst());
+        se = new IdentifierSymbolEntry(intArrayType, $1, identifiers->getLevel());
+        Id *name=new Id(se);
+        identifiers->install($1, se);
+        if (name == nullptr) {
+    printf("Error: id is nullptr\n");
+} else {
+    printf("id is valid\n");
+    if (name->getSymbolEntry() == nullptr) {
+        printf("Error: id->getSymbolEntry() is nullptr\n");
+    } else {
+        printf("id->getSymbolEntry() is valid\n");
+    }
+}
+
+        $$ = new DeclStmt(new Array(name, $2));
+        
+        printf("what?");
+        delete []$2;
+    } */
+    ;
+DeclStmtNodes
+    :DeclStmtNode{
+        printf("DeclStmtNode!!!\n");
+        $$=$1;
+    }
+    |DeclStmtNodes COMMA DeclStmtNode{
+        printf("DeclStmtNodes!!!\n");
+        //$$->addNodeList($3);
+        $$ = new SeqNode($1, $3);
+    }
+    ;
 DeclStmt
     :
-    Type ID SEMICOLON {
+    /* Type ID SEMICOLON {
         SymbolEntry *se;
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
         identifiers->install($2, se);
@@ -720,8 +776,16 @@ DeclStmt
         
         printf("what?");
         delete []$2;
+    } */
+    Type DeclStmtNodes SEMICOLON{
+        // printf("declstmt!!!\n");
+        // while($2 != nullptr)
+        // {
+        //     (DeclStmt*)$2->getId()->getSymbolEntry()->setType($1);
+        //     $2 = (DeclStmt*)$2->getNext();
+        // }
+        $$ = $2;
     }
-
 %%
 
 int yyerror(char const* message)

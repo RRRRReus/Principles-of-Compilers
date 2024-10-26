@@ -1,35 +1,27 @@
-const int a;
-int one(int a)
-{
-    return 1;
-}
-int main()
-{
-    {}
-    const float a[7][4+2];
-    int b=1;
-    b=0x01;
-    b=02;
-    b=0x1.8p3;
-    a[4][b+1] = 3.14;
-    while(1);
-    {
-        int f=9;
-        break;
+int main () {
+    int a;
+    int b = ----+1324;
+    int c = +----45561;
+
+    int d = -2, result = 2, useless = 13;
+
+    int d;
+    if(d)if(d);else while(1){while(1);}
+    if ((d * -1 / 3) < 0 || (a -+ b) == 0 && (c -- 3) % 2 > 0) {
+            
+
+        while(1){}if(1){}
+        
+        putint(result);;;;;;;;
     }
 
-    putint(9);
-    putfloat(2.3);
-    getarray(a);
-    b=getch();
-    b=-b;
-    b=+b;
-    b= one(b);
-    if(b && b || b==b)
-    {
-        
+    if ((d % 2 -+- 67) / 1 || (a --+ b) == 0 && (c ++ 2) % 2 < 0) {
+        if(0)while(1);
+        if(1){
+            //putint(-8--0x80000000);
+        }
+        result = 4;
+        putint(result);
     }
-    if(a < 5)
-        return 1;
     return 0;
 }
