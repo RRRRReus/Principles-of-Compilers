@@ -71,6 +71,7 @@ std::string FunctionSymbolEntry::toStr()
         if (i < paramTypes.size() - 1) str += ", ";
     }//输出所有参数类型
     str += ") -> " + returnType->toStr();//返回类型
+    return str;
 }
 
 SymbolTable::SymbolTable()
