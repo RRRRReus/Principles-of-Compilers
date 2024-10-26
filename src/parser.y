@@ -107,6 +107,20 @@ WhileStmt
     }
     ;
 
+/* WhileStmt
+    : WHILE LPAREN Cond RPAREN 
+        {
+            identifiers = new SymbolTable(identifiers); // 创建新的符号表
+        }
+      Stmt 
+        { 
+            $$ = new WhileStmt($3, $6);
+            SymbolTable *top = identifiers;
+            identifiers = identifiers->getPrev(); // 还原符号表
+            delete top;
+        }
+    ; */
+
 // 函数调用语句（函数调用 + ）
 FuncCallStmt
     : FuncCall SEMICOLON {

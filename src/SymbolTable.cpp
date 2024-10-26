@@ -124,7 +124,6 @@ SymbolTable::SymbolTable()
     install("getch", getchEntry);
 
 
-
 }
 
 SymbolTable::SymbolTable(SymbolTable *prev)
