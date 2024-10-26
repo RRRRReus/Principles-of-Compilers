@@ -3,6 +3,8 @@
 %option noinput
 %top{
     #include <stdarg.h>
+    #include <limits.h>
+    #include <inttypes.h>
     #include "common.h"
     #include "parser.h"
 }
@@ -35,7 +37,10 @@
 
 /* definitions section */
 DECIMIAL ([1-9][0-9]*|0)
-FLOAT_DECIMAL [-]?(([1-9][0-9]*\.[0-9]*([eE][+-]?[0-9]+)?)|(0?\.[0-9]+([eE][+-]?[0-9]+)?)|([1-9][0-9]*([eE][+-]?[0-9]+)))
+OCTAL 0[0-7]+
+HEX 0[xX][0-9a-fA-F]+ 
+FLOAT_DECIMAL (([1-9][0-9]*\.[0-9]*([eE][+-]?[0-9]+)?)|(0?\.[0-9]+([eE][+-]?[0-9]+)?)|([1-9][0-9]*([eE][+-]?[0-9]+)))
+FLOAT_HEX 0[xX]([0-9a-fA-F]+)?\.[0-9a-fA-F]*([pP][+-]?[0-9]+)?
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
 WHITE [\t ]
@@ -217,6 +222,76 @@ WHITE [\t ]
     float value;
     value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
     dump_tokens("%-20s", "FLOAT_DECIMAL");
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20f\n", value);
+    yylval.floattype = value;
+    return FLOAT;
+}
+
+{OCTAL} {
+       int64_t decimal;
+    decimal = strtoll(yytext,nullptr,8); //将字符串转换为longlong
+    if(decimal > 0 && decimal > INT_MAX)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+        yylval.itype = decimal;
+        return INTEGER;
+    }
+    else if(decimal<0&&decimal<INT_MIN)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+        yylval.itype =  decimal;
+        return INTEGER;
+    }
+    else{
+
+    dump_tokens("%-20s", "DECIMIAL");
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20d\n", (int)decimal);
+    yylval.itype =  decimal;
+    return INTEGER;
+
+    }
+}
+
+{HEX} {
+        int64_t decimal;
+    decimal = strtoll(yytext,nullptr,16); //将字符串转换为longlong
+    if(decimal > 0 && decimal > INT_MAX)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+        yylval.itype =  decimal;
+        return INTEGER;
+    }
+    else if(decimal<0&&decimal<INT_MIN)
+    {
+        dump_tokens("%-20s", "LONGLONG");
+        dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+        dump_tokens("%-20" PRId64 "\n", decimal);
+        yylval.itype =  decimal;
+        return INTEGER;
+    }
+    else{
+
+    dump_tokens("%-20s", "DECIMIAL");
+    dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
+    dump_tokens("%-20d\n", (int)decimal);
+    yylval.itype =  decimal;
+    return INTEGER;
+
+    }
+}
+
+{FLOAT_HEX} {
+    float value;
+    value = (float)strtod(yytext, NULL);  // 使用 strtof 将十六进制浮点数转换为十进制浮点数
+    dump_tokens("%-20s", "FLOAT_HEX");
     dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
     yylval.floattype = value;

@@ -8,12 +8,22 @@ int main()
     {}
     const float a[7][4+2];
     int b=1;
+    b=0x01;
+    b=02;
+    b=0x1.8p3;
     a[4][b+1] = 3.14;
     while(1);
     {
         int f=9;
         break;
 
+    }
+    b=-b;
+    b=+b;
+    b= one(b);
+    if(b && b || b==b)
+    {
+        
     }
     if(a < 5)
         return 1;

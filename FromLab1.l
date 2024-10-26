@@ -451,7 +451,7 @@ FUNCTION_START [[:alpha:]_][[:alpha:][:digit:]_]*[[:space:]]*\(
     dump_tokens("%-20d\n", (int)decimal);
 
     }
-    }
+}
 
 
 {FLOAT_DECIMAL} {
