@@ -25,7 +25,18 @@ protected:
 
 public:
     Node();
-    int getSeq() const {return seq;};
+    int getSeq() const {return seq;};   //返回节点的序号
+    Node *next; //指向下一个节点
+    Node* getNext() {return next;}
+    void addNodeList(Node *n) {
+        Node *p = this;
+        while(p->next != nullptr) 
+        {
+            p = p->next;
+        }
+        p->next = n;//将n添加到链表的末尾
+    }
+
     static void setIRBuilder(IRBuilder*ib) {builder = ib;};
     virtual void output(int level) = 0;
     virtual void typeCheck() = 0;
@@ -70,6 +81,9 @@ public:
     UnaryExpr(SymbolEntry *se, int op, ExprNode *expr)
         : ExprNode(se), op(op), expr(expr) {}
     void output(int level);
+    void typeCheck();
+    void genCode();
+
 };
 
 
@@ -100,6 +114,8 @@ public:
     ArrayIndex(std::vector<ExprNode*> index) :  index(index) {};
     ArrayIndex() {};
     void output(int level);
+    void typeCheck();
+    void genCode();
 
 };
 
@@ -112,6 +128,8 @@ private:
     public:
     Array( Id *id, ArrayIndex *arrayIndex) : ExprNode(id->getSymbolEntry()), id(id), arrayIndex(arrayIndex) {};
     void output(int level);
+    void typeCheck();
+    void genCode();
 };
 class FuncCall : public ExprNode // 函数调用类
 {
@@ -121,6 +139,8 @@ private:
 public:
     FuncCall(SymbolEntry *se, Id *func, std::vector<ExprNode*> args) : ExprNode(se), func(func), args(args) {};
     void output(int level);
+    void typeCheck();
+    void genCode();
 };
 
 class StmtNode : public Node//语句节点类
@@ -134,6 +154,8 @@ private:
 public:
     ExprStmt(ExprNode *expr) : expr(expr) {};
     void output(int level);
+    void typeCheck();
+    void genCode();
 };
 
 class CompoundStmt : public StmtNode//复合语句类
@@ -214,12 +236,18 @@ class BreakStmt : public StmtNode//break语句类
 public:
     BreakStmt() {};
     void output(int level);
+    void typeCheck();
+    void genCode();
+
 };
 class ContinueStmt : public StmtNode//continue语句类
 {
 public:
     ContinueStmt() {};
     void output(int level);
+    void typeCheck();
+    void genCode();
+
     
 };
 
@@ -259,6 +287,9 @@ private:
 public:
     WhileStmt(ExprNode *cond, StmtNode *body) : cond(cond), body(body) {};
     void output(int level);
+    void typeCheck();
+    void genCode();
+
 };
 
 class EmptyStmt : public StmtNode // 空语句类
@@ -266,6 +297,9 @@ class EmptyStmt : public StmtNode // 空语句类
 public:
     EmptyStmt() {};
     void output(int level);
+    void typeCheck();
+    void genCode();
+
 };
 class Ast//抽象语法树类
 {

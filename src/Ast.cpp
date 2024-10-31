@@ -498,3 +498,59 @@ void ContinueStmt::output(int level)
 {
     fprintf(yyout, "%*cContinueStmt\n", level, ' ');
 }
+
+void Array::typeCheck()
+{
+}
+void ArrayIndex::typeCheck()
+{
+}
+void FuncCall::typeCheck()
+{
+}
+void BreakStmt::typeCheck()
+{
+}
+void ContinueStmt::typeCheck()
+{
+}
+void EmptyStmt::typeCheck()
+{
+}
+void WhileStmt::typeCheck()
+{
+}
+void Array::genCode()
+{
+}
+void ArrayIndex::genCode()
+{
+}
+void FuncCall::genCode()
+{
+}
+void BreakStmt::genCode()
+{
+}
+void ContinueStmt::genCode()
+{
+}
+void EmptyStmt::genCode()
+{
+}
+void WhileStmt::genCode()
+{
+}
+
+void UnaryExpr::typeCheck()
+{
+}
+void UnaryExpr::genCode()
+{
+}
+void ExprStmt::typeCheck()
+{
+}
+void ExprStmt::genCode()
+{
+}
