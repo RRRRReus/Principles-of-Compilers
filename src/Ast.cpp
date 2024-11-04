@@ -195,17 +195,34 @@ void AssignStmt::genCode()
 
 void Ast::typeCheck()
 {
+    SymbolEntry *se = identifiers->lookup("main");
+    if(se == nullptr)
+    {
+        fprintf(stderr, "main function not found\n");
+        exit(1);
+    }
+    if(se->getType()->isFunc() == false)
+    {
+        fprintf(stderr, "main is not a function\n");
+        exit(1);
+    }
     if(root != nullptr)
         root->typeCheck();
 }
 
 void FunctionDef::typeCheck()
 {
+    printf("FunctionDef::typeCheck\n");
+    stmt->typeCheck();
+
     // Todo
 }
 
 void BinaryExpr::typeCheck()
-{    
+{
+    printf("BinaryExpr::typeCheck\n");
+    expr1->typeCheck();
+    expr2->typeCheck();
     // Todo
      // 获取 expr1 和 expr2 的类型
     Type* type1 = this->getExpr1()->getSymbolEntry()->getType();//要获取类型，首先要获取符号表项，然后获取类型
@@ -260,47 +277,122 @@ void BinaryExpr::typeCheck()
 
 void Constant::typeCheck()
 {
+    printf("Constant::typeCheck\n");
     // Todo
 }
 
 void Id::typeCheck()
 {
+    printf("Id::typeCheck\n");
+
     // Todo
 }
 
 void IfStmt::typeCheck()
 {
+    printf("IfStmt::typeCheck\n");
+    cond->typeCheck();
+    thenStmt->typeCheck();
     // Todo
 }
 
 void IfElseStmt::typeCheck()
 {
+    printf("IfElseStmt::typeCheck\n");
+    cond->typeCheck();
+    thenStmt->typeCheck();
+    elseStmt->typeCheck();
+
     // Todo
 }
 
 void CompoundStmt::typeCheck()
 {
+    printf("CompoundStmt::typeCheck\n");
+    stmt->typeCheck();
+
     // Todo
 }
 
 void SeqNode::typeCheck()
 {
+    printf("SeqNode::typeCheck\n");
+    stmt1->typeCheck();
+    stmt2->typeCheck();
+
     // Todo
 }
 
 void DeclStmt::typeCheck()
 {
+    printf("DeclStmt::typeCheck\n");
+    if(array != nullptr)
+        array->typeCheck();
+    if(id != nullptr)
+        id->typeCheck();
+    if(expr != nullptr)
+        expr->typeCheck();
+
     // Todo
 }
 
 void ReturnStmt::typeCheck()
 {
+    printf("ReturnStmt::typeCheck\n");
+    retValue->typeCheck();
+
     // Todo
 }
 
 void AssignStmt::typeCheck()
 {
+    printf("AssignStmt::typeCheck\n");
+    lval->typeCheck();
+    expr->typeCheck();
+
     // Todo
+}
+void Array::typeCheck()
+{
+    printf("Array::typeCheck\n");
+    id->typeCheck();
+    arrayIndex->typeCheck();
+
+}
+void ArrayIndex::typeCheck()
+{
+    printf("ArrayIndex::typeCheck\n");
+    for(auto i : index)
+    {
+        i->typeCheck();
+    }
+}
+void FuncCall::typeCheck()
+{
+    printf("FuncCall::typeCheck\n");
+    for(auto i : args)
+    {
+        i->typeCheck();
+    }
+}
+void BreakStmt::typeCheck()
+{
+    printf("BreakStmt::typeCheck\n");
+
+}
+void ContinueStmt::typeCheck()
+{
+    printf("ContinueStmt::typeCheck\n");
+}
+void EmptyStmt::typeCheck()
+{
+    printf("EmptyStmt::typeCheck\n");
+}
+void WhileStmt::typeCheck()
+{
+    printf("WhileStmt::typeCheck\n");
+    cond->typeCheck();
+    body->typeCheck();
 }
 
 void Ast::output()
@@ -548,27 +640,6 @@ void ContinueStmt::output(int level)
     fprintf(yyout, "%*cContinueStmt\n", level, ' ');
 }
 
-void Array::typeCheck()
-{
-}
-void ArrayIndex::typeCheck()
-{
-}
-void FuncCall::typeCheck()
-{
-}
-void BreakStmt::typeCheck()
-{
-}
-void ContinueStmt::typeCheck()
-{
-}
-void EmptyStmt::typeCheck()
-{
-}
-void WhileStmt::typeCheck()
-{
-}
 void Array::genCode()
 {
 }

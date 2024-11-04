@@ -730,7 +730,6 @@ DeclStmtNodes
     }
     ;
 DeclStmt//目前只有int类型！！！！
-    :
     /* Type ID SEMICOLON {
         SymbolEntry *se;
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
@@ -786,7 +785,7 @@ DeclStmt//目前只有int类型！！！！
         printf("what?");
         delete []$2;
     } */
-    Type DeclStmtNodes SEMICOLON{
+    :Type DeclStmtNodes SEMICOLON{
         // printf("declstmt!!!\n");
         // while($2 != nullptr)
         // {
