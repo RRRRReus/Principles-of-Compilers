@@ -5,6 +5,8 @@
     extern Ast ast;
     int yylex();
     int yyerror( char const * );
+    Type *DefType;
+
 }
 
 %code requires {
@@ -655,22 +657,28 @@ LOrExp
 Type
     : INT {
         $$ = TypeSystem::intType;
+        DefType = $$;
     }
     | VOID {
         $$ = TypeSystem::voidType;
+        DefType = $$;
+
     }
     | FLOAT {
         $$ = TypeSystem::floatType;
+        DefType = $$;
     }
     | CONST INT {
         IntType *intType = new IntType(4);
         intType->setConst(true);
         $$ = intType;
+        DefType = $$;
     }
     | CONST FLOAT {
         FloatType *floatType = new FloatType(32);
         floatType->setConst(true);
         $$ = floatType;
+        DefType = $$;
     }
     ;
 InitVal
@@ -682,13 +690,13 @@ InitVal
 DeclStmtNode
     :ID{
         SymbolEntry *se;
-        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
         identifiers->install($1, se);
         $$ = new DeclStmt(new Id(se));
     }
     |ID ASSIGN InitVal{
         SymbolEntry *se;
-        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
         identifiers->install($1, se);
         DeclStmt *decl = new DeclStmt(new Id(se), $3);
         $$ = decl;
@@ -696,9 +704,26 @@ DeclStmtNode
     |ID ArrayDim{
         SymbolEntry *se;
         std::vector<ExprNode*> IndexDim= $2->index;
-        IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+        if(DefType->isInt())
+        {
+            IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+            intArrayType->setConst(DefType->getConst());
+            se = new IdentifierSymbolEntry(intArrayType, $1, identifiers->getLevel());
+        }
+        else if(DefType->isFloat())
+        {
+            FloatArrayType *floatArrayType = new FloatArrayType(IndexDim.size());
+            floatArrayType->setConst(DefType->getConst());
+            se = new IdentifierSymbolEntry(floatArrayType, $1, identifiers->getLevel());
+        }
+        else
+        {
+            fprintf(stderr, "Error: unknown type\n");
+            assert(false);
+        }
+        //IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
         //intArrayType->setConst($1->getConst());
-        se = new IdentifierSymbolEntry(intArrayType, $1, identifiers->getLevel());
+        //se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
         Id *name=new Id(se);
         identifiers->install($1, se);
         if (name == nullptr) {
@@ -720,16 +745,27 @@ DeclStmtNode
     ;
 DeclStmtNodes
     :DeclStmtNode{
-        printf("DeclStmtNode!!!\n");
+        //printf("DeclStmtNode!!!\n");
         $$=$1;
     }
     |DeclStmtNodes COMMA DeclStmtNode{
-        printf("DeclStmtNodes!!!\n");
+        //printf("DeclStmtNodes!!!\n");
         //$$->addNodeList($3);
         $$ = new SeqNode($1, $3);
     }
     ;
 DeclStmt//目前只有int类型！！！！
+    :Type 
+     DeclStmtNodes SEMICOLON{
+        // printf("declstmt!!!\n");
+        // while($2 != nullptr)
+        // {
+        //     (DeclStmt*)$2->getId()->getSymbolEntry()->setType($1);
+        //     $2 = (DeclStmt*)$2->getNext();
+        // }
+        $$ = $2;
+    }
+
     /* Type ID SEMICOLON {
         SymbolEntry *se;
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
@@ -785,15 +821,6 @@ DeclStmt//目前只有int类型！！！！
         printf("what?");
         delete []$2;
     } */
-    :Type DeclStmtNodes SEMICOLON{
-        // printf("declstmt!!!\n");
-        // while($2 != nullptr)
-        // {
-        //     (DeclStmt*)$2->getId()->getSymbolEntry()->setType($1);
-        //     $2 = (DeclStmt*)$2->getNext();
-        // }
-        $$ = $2;
-    }
 %%
 
 int yyerror(char const* message)
