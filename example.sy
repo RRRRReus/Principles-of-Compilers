@@ -1,4 +1,5 @@
 int a=0;
+int a=3;
 int main()
 {
     float a[4],g[4][6],ww[1][3][6];

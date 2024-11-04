@@ -397,7 +397,7 @@ LVal
         se = identifiers->lookup($1);
         if(se == nullptr)
         {
-            fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
+            fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 未定义\n", (char*)$1);
             delete [](char*)$1;
             assert(se != nullptr);
         }
@@ -690,11 +690,22 @@ InitVal
 DeclStmtNode
     :ID{
         SymbolEntry *se;
+        if(identifiers->lookup($1) != nullptr)
+        {
+            fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
+            assert(false);
+        }
         se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
+
         identifiers->install($1, se);
         $$ = new DeclStmt(new Id(se));
     }
     |ID ASSIGN InitVal{
+        if(identifiers->lookup($1) != nullptr)
+        {
+            fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
+            assert(false);
+        }
         SymbolEntry *se;
         se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
         identifiers->install($1, se);
@@ -702,6 +713,11 @@ DeclStmtNode
         $$ = decl;
     }
     |ID ArrayDim{
+        if(identifiers->lookup($1) != nullptr)
+        {
+            fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
+            assert(false);
+        }
         SymbolEntry *se;
         std::vector<ExprNode*> IndexDim= $2->index;
         if(DefType->isInt())

@@ -198,12 +198,12 @@ void Ast::typeCheck()
     SymbolEntry *se = identifiers->lookup("main");
     if(se == nullptr)
     {
-        fprintf(stderr, "main function not found\n");
+        fprintf(stderr, "LAB3类型检查报错:主函数不存在\n");
         exit(1);
     }
     if(se->getType()->isFunc() == false)
     {
-        fprintf(stderr, "main is not a function\n");
+        fprintf(stderr, "LAB3类型检查报错:main不为函数名\n");
         exit(1);
     }
     if(root != nullptr)
