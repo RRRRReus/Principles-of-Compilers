@@ -177,3 +177,13 @@ int SymbolTable::counter = 0;
 static SymbolTable t;
 SymbolTable *identifiers = &t;
 SymbolTable *globals = &t;
+
+SymbolEntry *SymbolTable::lookupOnlyNow(std::string name)
+{
+    SymbolTable* current = this;
+        auto it = current->symbolTable.find(name);
+        if (it != current->symbolTable.end()) {
+            return it->second;
+        }
+    return nullptr;
+}

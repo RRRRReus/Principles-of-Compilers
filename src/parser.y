@@ -690,7 +690,7 @@ InitVal
 DeclStmtNode
     :ID{
         SymbolEntry *se;
-        if(identifiers->lookup($1) != nullptr)
+        if(identifiers->lookupOnlyNow($1) != nullptr)
         {
             fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
             assert(false);
@@ -701,7 +701,7 @@ DeclStmtNode
         $$ = new DeclStmt(new Id(se));
     }
     |ID ASSIGN InitVal{
-        if(identifiers->lookup($1) != nullptr)
+        if(identifiers->lookupOnlyNow($1) != nullptr)
         {
             fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
             assert(false);
@@ -713,7 +713,7 @@ DeclStmtNode
         $$ = decl;
     }
     |ID ArrayDim{
-        if(identifiers->lookup($1) != nullptr)
+        if(identifiers->lookupOnlyNow($1) != nullptr)
         {
             fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
             assert(false);
