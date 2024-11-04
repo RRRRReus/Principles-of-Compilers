@@ -474,6 +474,9 @@ PrimaryExp
     | INTEGER {
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, $1);
         $$ = new Constant(se);
+        // $$->CanBeCalculatedInt = true;
+        // $$->CalculatedInt= $1;
+
     }
     | FLOAT {
         //printf("1now is float%f\n", $1);

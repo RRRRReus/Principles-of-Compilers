@@ -51,6 +51,8 @@ protected:
     SymbolEntry *symbolEntry;   //符号表项
     Operand *dst;   // The result of the subtree is stored into dst.
 public:
+    bool CanBeCalculatedInt = false;//是否可以计算成一个整数
+    int CalculatedInt;//如果可以计算成一个整数，那么这个整数是多少
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
     Operand* getOperand() {return dst;};
     SymbolEntry* getSymPtr() {return symbolEntry;};

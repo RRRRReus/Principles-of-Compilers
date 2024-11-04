@@ -223,6 +223,60 @@ void BinaryExpr::typeCheck()
     printf("BinaryExpr::typeCheck\n");
     expr1->typeCheck();
     expr2->typeCheck();
+    // printf("检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
+    // printf("看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
+    if(expr1->CanBeCalculatedInt&&expr2->CanBeCalculatedInt)
+    {
+        CanBeCalculatedInt = true;
+        switch(op)
+        {
+            case ADD:
+                CalculatedInt = expr1->CalculatedInt + expr2->CalculatedInt;
+                break;
+            case SUB:
+                CalculatedInt = expr1->CalculatedInt - expr2->CalculatedInt;
+                break;
+            case MUL:
+                CalculatedInt = expr1->CalculatedInt * expr2->CalculatedInt;
+                break;
+            case DIV:
+                //printf("进来了吗");
+                if(expr2->CalculatedInt == 0)
+                {
+                    fprintf(stderr, "LAB3类型检查报错:除数为0\n");
+                    exit(1);
+                }
+                CalculatedInt = expr1->CalculatedInt / expr2->CalculatedInt;
+                break;
+            case MOD:
+                CalculatedInt = expr1->CalculatedInt % expr2->CalculatedInt;
+                break;
+            case AND:
+                CalculatedInt = expr1->CalculatedInt && expr2->CalculatedInt;
+                break;
+            case OR:
+                CalculatedInt = expr1->CalculatedInt || expr2->CalculatedInt;
+                break;
+            case LESS:
+                CalculatedInt = expr1->CalculatedInt < expr2->CalculatedInt;
+                break;
+            case LESSOREQUAL:
+                CalculatedInt = expr1->CalculatedInt <= expr2->CalculatedInt;
+                break;
+            case GREATER:
+                CalculatedInt = expr1->CalculatedInt > expr2->CalculatedInt;
+                break;
+            case GREATEROREQUAL:
+                CalculatedInt = expr1->CalculatedInt >= expr2->CalculatedInt;
+                break;
+            case EQUAL:
+                CalculatedInt = expr1->CalculatedInt == expr2->CalculatedInt;
+                break;
+            case NOTEQUAL:
+                CalculatedInt = expr1->CalculatedInt != expr2->CalculatedInt;
+                break;
+        }
+    }
     // Todo
      // 获取 expr1 和 expr2 的类型
     Type* type1 = this->getExpr1()->getSymbolEntry()->getType();//要获取类型，首先要获取符号表项，然后获取类型
@@ -274,9 +328,36 @@ void BinaryExpr::typeCheck()
     }
 
 }
+void UnaryExpr::typeCheck()
+{
+    printf("UnaryExpr::typeCheck\n");
+    expr->typeCheck();
+    if(expr->CanBeCalculatedInt)
+    {
+        CanBeCalculatedInt = true;
+        switch(op)
+        {
+            case POS:
+                CalculatedInt = expr->CalculatedInt;
+                break;
+            case NEG:
+                CalculatedInt = -expr->CalculatedInt;
+                break;
+            case NOT:
+                CalculatedInt = !expr->CalculatedInt;
+                break;
+        }
+    }
+}
 
 void Constant::typeCheck()
 {
+    //printf("???\n");
+    this->CanBeCalculatedInt = true;
+    if(symbolEntry->getType()->isInt())
+    {
+        this->CalculatedInt = atoi(symbolEntry->toStr().c_str());
+    }
     printf("Constant::typeCheck\n");
     // Todo
 }
@@ -662,9 +743,6 @@ void WhileStmt::genCode()
 {
 }
 
-void UnaryExpr::typeCheck()
-{
-}
 void UnaryExpr::genCode()
 {
 }
