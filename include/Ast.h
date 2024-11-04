@@ -65,8 +65,11 @@ private:
 public:
     enum {ADD, SUB, MUL, DIV, MOD, AND, OR, LESS, LESSOREQUAL, GREATER, GREATEROREQUAL, EQUAL, NOTEQUAL}; //枚举所有可能的二元运算符
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){dst = new Operand(se);};
+    // 公有的访问器方法
+    ExprNode* getExpr1() const { return expr1; }
+    ExprNode* getExpr2() const { return expr2; }
     void output(int level);
-    void typeCheck();
+    void typeCheck();   //二元表达式类，需要进行类型检查
     void genCode();
 };
 
@@ -309,7 +312,7 @@ public:
     Ast() {root = nullptr;}
     void setRoot(Node*n) {root = n;}
     void output();
-    void typeCheck();
+    void typeCheck();   //AST类，其typecheck就是调用root的typecheck，也就是Node的typecheck
     void genCode(Unit *unit);
 };
 

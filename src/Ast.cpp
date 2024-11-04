@@ -205,8 +205,57 @@ void FunctionDef::typeCheck()
 }
 
 void BinaryExpr::typeCheck()
-{
+{    
     // Todo
+     // 获取 expr1 和 expr2 的类型
+    Type* type1 = this->getExpr1()->getSymbolEntry()->getType();//要获取类型，首先要获取符号表项，然后获取类型
+    Type* type2 = this->getExpr2()->getSymbolEntry()->getType();
+
+    // 检查操作数类型是否兼容
+    switch (op) {
+        case ADD:
+        case SUB:
+        case MUL:
+        case DIV:
+        case MOD:
+            // 数值运算符要求操作数都是数值类型（不是void）？？？对吗？？？
+            if (type1->isVoid() || type2->isVoid()) {
+                fprintf(stderr, "Type error: numeric operator applied to non-numeric type\n", type1->toStr().c_str(), type2->toStr().c_str());
+                exit(EXIT_FAILURE);
+            }
+            break;
+        case AND:
+        case OR:
+            // 逻辑运算符要求操作数都是整数类型？？？？？？？？？？是必须整数吗？？？
+            if (!type1->isInt() || !type2->isInt()) {
+                fprintf(stderr, "Type error: logical operator applied to non-integer type\n", type1->toStr().c_str(), type2->toStr().c_str());
+                exit(EXIT_FAILURE);
+            }
+            break;
+        case LESS:
+        case LESSOREQUAL:
+        case GREATER:
+        case GREATEROREQUAL:
+        case EQUAL:
+        case NOTEQUAL:
+            // 比较运算符要求操作数类型相同
+            if (type1 != type2) {
+                fprintf(stderr, "Type error: comparison operator applied to incompatible types\n", type1->toStr().c_str(), type2->toStr().c_str());
+                exit(EXIT_FAILURE);
+            }
+            break;
+        default:
+            fprintf(stderr, "Type error: unknown binary operator\n", op);
+            exit(EXIT_FAILURE);
+    }
+
+   // 设置当前表达式的类型
+    if (op == AND || op == OR || op == LESS || op == LESSOREQUAL || op == GREATER || op == GREATEROREQUAL || op == EQUAL || op == NOTEQUAL) {
+        this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果
+    } else {
+        this->symbolEntry->setType(type1); // 数值运算符的结果类型与操作数类型相同
+    }
+
 }
 
 void Constant::typeCheck()
@@ -308,7 +357,7 @@ void BinaryExpr::output(int level)
             break;
     }
     fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
-    expr1->output(level + 4);
+    expr1->output(level + 4);   //递归输出左右表达式
     expr2->output(level + 4);
 }
 
