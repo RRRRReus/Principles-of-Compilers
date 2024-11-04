@@ -607,6 +607,8 @@ void DeclStmt::output(int level)
     id->output(level + 4);
     if(expr != nullptr)
         expr->output(level + 4);
+    if(initValList != nullptr)
+        initValList->output(level + 4);
 }
 
 void IfStmt::output(int level)
@@ -751,4 +753,27 @@ void ExprStmt::typeCheck()
 }
 void ExprStmt::genCode()
 {
+}
+
+void InitValList::output(int level)
+{
+    fprintf(yyout, "%*cInitValList\n", level, ' ');
+    for(auto i : initVal)
+    {
+        i->output(level + 4);
+    }
+}
+void InitValList::typeCheck()
+{
+    for(auto i : initVal)
+    {
+        i->typeCheck();
+    }
+}
+void InitValList::genCode()
+{
+    for(auto i : initVal)
+    {
+        i->genCode();
+    }
 }

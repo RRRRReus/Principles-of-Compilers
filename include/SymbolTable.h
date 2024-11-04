@@ -41,11 +41,18 @@ private:
     int value;
     float fvalue;
     long long llvalue;
-
+    int *pvalue;//指向整数的指针
+    float *pfvalue;//指向浮点数的指针
 public:
+    int ArrayDim;//数组维度
+    int *ArrayDimSize;//数组各维度大小
+    int size;//数组总大小
+
     ConstantSymbolEntry(Type *type, int value);
     ConstantSymbolEntry(Type *type, float fvalue);
     ConstantSymbolEntry(Type *type, long long llvalue);
+    ConstantSymbolEntry(Type *type, int *pvalue);
+    ConstantSymbolEntry(Type *type, float *pfvalue);
     virtual ~ConstantSymbolEntry() {};
     int getValue() const {return value;};
     std::string toStr();

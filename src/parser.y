@@ -50,7 +50,8 @@
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
 %nterm <stmttype> BreakStmt ContinueStmt DeclStmtNode DeclStmtNodes
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal UnaryExp MulExp EqExp
-%nterm <arglisttype> ArgList // 实参 声明 ArgList 的类型
+%nterm <arglisttype> ArgList InitValList// 实参 声明 ArgList 的类型
+
 //%nterm <paramlisttype> FuncFParams FuncFParam // 形参 声明 ParamList 的类型
 //%nterm <paramlisttype> ParamList // 形参 声明 ParamList 的类型
 %nterm <type> Type  // 声明 值 的类型 int void
@@ -684,9 +685,23 @@ Type
         DefType = $$;
     }
     ;
+InitValList
+    : InitVal{
+        $$ = new std::vector<ExprNode*>();
+        $$->push_back($1);
+    }
+    |InitValList COMMA InitVal{
+        $$ = $1;
+        $$->push_back($3);
+    }
+    ;
 InitVal
     : Exp{
         $$ =$1;
+    }
+    |LBRACE InitValList RBRACE{
+        $$ = new InitValList(*$2);
+        delete $2;
     }
     ;
 
@@ -760,6 +775,54 @@ DeclStmtNode
         
         printf("what?");
         //delete []$2;
+    }
+    | ID ArrayDim ASSIGN LBRACE InitValList RBRACE {
+                if(identifiers->lookupOnlyNow($1) != nullptr)
+        {
+            fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
+            assert(false);
+        }
+        SymbolEntry *se;
+        std::vector<ExprNode*> IndexDim= $2->index;
+        if(DefType->isInt())
+        {
+            IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+            intArrayType->setConst(DefType->getConst());
+            se = new IdentifierSymbolEntry(intArrayType, $1, identifiers->getLevel());
+        }
+        else if(DefType->isFloat())
+        {
+            FloatArrayType *floatArrayType = new FloatArrayType(IndexDim.size());
+            floatArrayType->setConst(DefType->getConst());
+            se = new IdentifierSymbolEntry(floatArrayType, $1, identifiers->getLevel());
+        }
+        else
+        {
+            fprintf(stderr, "Error: unknown type\n");
+            assert(false);
+        }
+        //IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+        //intArrayType->setConst($1->getConst());
+        //se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
+        Id *name=new Id(se);
+        identifiers->install($1, se);
+        if (name == nullptr) {
+    printf("Error: id is nullptr\n");
+} else {
+    printf("id is valid\n");
+    if (name->getSymbolEntry() == nullptr) {
+        printf("Error: id->getSymbolEntry() is nullptr\n");
+    } else {
+        printf("id->getSymbolEntry() is valid\n");
+    }
+}
+
+        $$ = new DeclStmt(new Array(name, $2), new InitValList(*$5));
+        
+        printf("what?");
+        //delete []$2;
+
+
     }
     ;
 DeclStmtNodes

@@ -22,6 +22,15 @@ ConstantSymbolEntry::ConstantSymbolEntry(Type *type, long long llvalue): SymbolE
 {
     this->llvalue = llvalue;
 }
+ConstantSymbolEntry::ConstantSymbolEntry(Type *type,int *pvalue): SymbolEntry(type, SymbolEntry::CONSTANT)
+{
+    this->pvalue = pvalue;
+}
+ConstantSymbolEntry::ConstantSymbolEntry(Type *type,float *pfvalue): SymbolEntry(type, SymbolEntry::CONSTANT)
+{
+    this->pfvalue = pfvalue;
+}
+
 std::string ConstantSymbolEntry::toStr()
 {
     std::ostringstream buffer;
@@ -29,7 +38,7 @@ std::string ConstantSymbolEntry::toStr()
     if((this->getType())->isInt())
     {
     buffer << value;
-    printf("lookINT!!!%d\n",value);
+    //printf("lookINT!!!%d\n",value);
     
     }
     
@@ -45,6 +54,21 @@ std::string ConstantSymbolEntry::toStr()
     buffer << llvalue;
     //printf("look!!!%lld\n",llvalue);
     }
+    if((this->getType())->isIntArray())
+    {
+        for(int i = 0; i < size; i++)
+        {
+            buffer << pvalue[i] << " ";
+        }
+    }
+    if((this->getType())->isFloatArray())
+    {
+        for(int i = 0; i < size; i++)
+        {
+            buffer << pfvalue[i] << " ";
+        }
+    }
+
     return buffer.str();
 
 }
@@ -187,3 +211,5 @@ SymbolEntry *SymbolTable::lookupOnlyNow(std::string name)
         }
     return nullptr;
 }
+
+

@@ -123,7 +123,16 @@ public:
     void genCode();
 
 };
-
+class InitValList:public ExprNode//初始化值列表类
+{
+private:
+    std::vector<ExprNode*> initVal;
+public:
+    InitValList(std::vector<ExprNode*> initVal) : ExprNode(nullptr),initVal(initVal) {};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
 class Array : public ExprNode//数组类
 {
 private:
@@ -191,10 +200,12 @@ private:
     Id *id;
     Array *array;
     ExprNode *expr;
+    InitValList *initValList;
 public:
     DeclStmt(Id *id, ExprNode *expr) : id(id), expr(expr) {};
-    DeclStmt(Array *array) : array(array), expr(nullptr) {};
+    DeclStmt(Array *array) : array(array), initValList(nullptr) {};
     DeclStmt(Id *id) : id(id), expr(nullptr) {};
+    DeclStmt(Array *array, InitValList *initValList) : array(array), initValList(initValList) {};
     Id *getId() { return id; }  //返回标识符
     void output(int level);
     void typeCheck();
