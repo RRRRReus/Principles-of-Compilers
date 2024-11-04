@@ -237,7 +237,7 @@ void BinaryExpr::typeCheck()
         case MOD:
             // 数值运算符要求操作数都是数值类型（不是void）？？？对吗？？？
             if (type1->isVoid() || type2->isVoid()) {
-                fprintf(stderr, "Type error: numeric operator applied to non-numeric type\n", type1->toStr().c_str(), type2->toStr().c_str());
+                fprintf(stderr, "Type error: numeric operator applied to non-numeric type\n");
                 exit(EXIT_FAILURE);
             }
             break;
@@ -245,7 +245,7 @@ void BinaryExpr::typeCheck()
         case OR:
             // 逻辑运算符要求操作数都是整数类型？？？？？？？？？？是必须整数吗？？？
             if (!type1->isInt() || !type2->isInt()) {
-                fprintf(stderr, "Type error: logical operator applied to non-integer type\n", type1->toStr().c_str(), type2->toStr().c_str());
+                fprintf(stderr, "Type error: logical operator applied to non-integer type\n");
                 exit(EXIT_FAILURE);
             }
             break;
@@ -257,12 +257,12 @@ void BinaryExpr::typeCheck()
         case NOTEQUAL:
             // 比较运算符要求操作数类型相同
             if (type1 != type2) {
-                fprintf(stderr, "Type error: comparison operator applied to incompatible types\n", type1->toStr().c_str(), type2->toStr().c_str());
+                fprintf(stderr, "Type error: comparison operator applied to incompatible types\n");
                 exit(EXIT_FAILURE);
             }
             break;
         default:
-            fprintf(stderr, "Type error: unknown binary operator\n", op);
+            fprintf(stderr, "Type error: unknown binary operator\n");
             exit(EXIT_FAILURE);
     }
 
