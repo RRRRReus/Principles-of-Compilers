@@ -195,6 +195,17 @@ void AssignStmt::genCode()
 
 void Ast::typeCheck()
 {
+    SymbolEntry *se = identifiers->lookup("main");
+    if(se == nullptr)
+    {
+        fprintf(stderr, "main function not found\n");
+        exit(1);
+    }
+    if(se->getType()->isFunc() == false)
+    {
+        fprintf(stderr, "main is not a function\n");
+        exit(1);
+    }
     if(root != nullptr)
         root->typeCheck();
 }
