@@ -78,6 +78,7 @@ public:
     FunctionType(Type* returnType, std::vector<Type*> paramsType) : 
     Type(Type::FUNC), returnType(returnType), paramsType(paramsType){};
     Type* getRetType() {return returnType;};
+    std::vector<Type*> getParamsType() {return paramsType;};//返回所有的参数类型
     void setParamsType(std::vector<Type*> paramTypes) {paramsType = paramTypes;}
     std::string toStr();
 };

@@ -282,26 +282,28 @@ void BinaryExpr::typeCheck()
     Type* type1 = this->getExpr1()->getSymbolEntry()->getType();//要获取类型，首先要获取符号表项，然后获取类型
     Type* type2 = this->getExpr2()->getSymbolEntry()->getType();
 
-    // 检查操作数类型是否兼容
+     // 数值运算符要求操作数都是数值类型
+    if (type1->isVoid() || type2->isVoid()) 
+    {
+        fprintf(stderr, "LAB3类型检查报错:运算数不是数值类型\n");
+        //exit(EXIT_FAILURE);
+    }//void参与运算，不会报我写的报错
+
+
+    // 检查操作数类型是否兼容   //目前没啥用
     switch (op) {
         case ADD:
         case SUB:
         case MUL:
         case DIV:
         case MOD:
-            // 数值运算符要求操作数都是数值类型（不是void）？？？对吗？？？
-            if (type1->isVoid() || type2->isVoid()) {
-                fprintf(stderr, "Type error: numeric operator applied to non-numeric type\n");
-                exit(EXIT_FAILURE);
-            }
-            break;
         case AND:
         case OR:
             // 逻辑运算符要求操作数都是整数类型？？？？？？？？？？是必须整数吗？？？
-            if (!type1->isInt() || !type2->isInt()) {
-                fprintf(stderr, "Type error: logical operator applied to non-integer type\n");
+            if (!type1->isInt() || !type2->isInt() || !type1->isFloat() || !type2->isFloat()) {
+                fprintf(stderr, "LAB3类型检查报错:非整数参与逻辑运算\n");
                 exit(EXIT_FAILURE);
-            }
+            }//需要检查吗？？？？？？？？？？？？？？？
             break;
         case LESS:
         case LESSOREQUAL:
@@ -309,30 +311,36 @@ void BinaryExpr::typeCheck()
         case GREATEROREQUAL:
         case EQUAL:
         case NOTEQUAL:
-            // 比较运算符要求操作数类型相同
+            // 比较运算符要求操作数类型相同吗？？？？？？？
             if (type1 != type2) {
-                fprintf(stderr, "Type error: comparison operator applied to incompatible types\n");
-                exit(EXIT_FAILURE);
+                fprintf(stderr, "LAB3类型检查报错:比较运算符两操作数类型不同\n");
+                //exit(EXIT_FAILURE);
             }
             break;
         default:
-            fprintf(stderr, "Type error: unknown binary operator\n");
+            fprintf(stderr, "LAB3类型检查报错:未知运算符类型\n");
             exit(EXIT_FAILURE);
     }
 
    // 设置当前表达式的类型
     if (op == AND || op == OR || op == LESS || op == LESSOREQUAL || op == GREATER || op == GREATEROREQUAL || op == EQUAL || op == NOTEQUAL) {
-        this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果
+        this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果    //隐式转换
     } else {
-        this->symbolEntry->setType(type1); // 数值运算符的结果类型与操作数类型相同
+        this->symbolEntry->setType(type1); // 数值运算符的结果类型与操作数类型相同  //隐式转换未实现（float+int）
     }
 
 }
-void UnaryExpr::typeCheck()
+void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何地方！！！
 {
     printf("UnaryExpr::typeCheck\n");
     expr->typeCheck();
-    if(expr->CanBeCalculatedInt)
+    Type* type = expr->getSymbolEntry()->getType();//获取表达式类型
+    if(type->isVoid())//如果表达式类型是void
+    {
+        fprintf(stderr, "LAB3类型检查报错:表达式类型为void\n");
+        exit(EXIT_FAILURE);
+    }
+    if(expr->CanBeCalculatedInt)//如果expr可以计算成一个整数，用于check除数为零
     {
         CanBeCalculatedInt = true;
         switch(op)
@@ -353,9 +361,10 @@ void UnaryExpr::typeCheck()
 void Constant::typeCheck()
 {
     //printf("???\n");
-    this->CanBeCalculatedInt = true;
+    
     if(symbolEntry->getType()->isInt())
     {
+        this->CanBeCalculatedInt = true;
         this->CalculatedInt = atoi(symbolEntry->toStr().c_str());
     }
     printf("Constant::typeCheck\n");
@@ -448,13 +457,39 @@ void ArrayIndex::typeCheck()
         i->typeCheck();
     }
 }
-void FuncCall::typeCheck()
+void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹配//函数未定义即调用的报错，在语法分析阶段实现
 {
     printf("FuncCall::typeCheck\n");
-    for(auto i : args)
+    for(auto i : args)//遍历参数列表进行递归检查//？？？？？？？？？？？？？？？？？？？？？？
     {
+        printf("进入循环\n");
         i->typeCheck();
     }
+
+    int size_real=args.size();//实参个数
+    //func是一个Id，其父类的SymbolEntry是一个IdentifierSymbolEntry，在调用IdentifierSymbolEntry的父类的getType函数，返回其类型为Func，
+    int size_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType().size();//形参个数
+    printf("已算出实参个数：%d\n",size_real);
+
+    if(size_real!=size_form)//检查实参个数和形参个数是否匹配
+    {
+        fprintf(stderr, "LAB3类型检查报错:实参个数与形参个数不匹配\n");
+        exit(EXIT_FAILURE);
+    }
+    else{//检查实参和形参的类型是否匹配
+
+        for(int i=0;i<size_real;i++)
+        {
+            Type* type_real=args[i]->getSymbolEntry()->getType();
+            Type* type_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType()[i];
+            if(type_real!=type_form)
+            {
+                fprintf(stderr, "LAB3类型检查报错:实参与形参类型不匹配\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+
 }
 void BreakStmt::typeCheck()
 {

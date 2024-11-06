@@ -126,7 +126,7 @@ FuncCall
     : ID LPAREN RPAREN {
         SymbolEntry *se = identifiers->lookup($1);// 在符号表里查找函数名
         if (se == nullptr) {
-            fprintf(stderr, "Function \"%s\" is undefined\n", $1);
+            fprintf(stderr, "LAB3类型检查报错:函数 \"%s\" 未定义\n", $1);
             assert(se != nullptr);
         }
         $$ = new FuncCall(se, new Id(se), {});//new Id(se) 创建一个表示函数名的 Id 对象
@@ -456,8 +456,6 @@ ReturnStmt
 Exp
     :
     AddExp {$$ = $1;}
-    | FuncCall {$$ = $1;} //???????????????????????？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？？
-    
     ;
 
 // 条件表达式
@@ -466,7 +464,7 @@ Cond
     LOrExp {$$ = $1;}
     //| EqExp {$$ = $1;}
     ;
-// 基本表达式(包含一个标识符一个常量)
+// 基本表达式(标识符、常量、函数调用，括号表达式)
 PrimaryExp
     :
     LVal {
@@ -492,6 +490,7 @@ PrimaryExp
     | LPAREN Exp RPAREN {
         $$ = $2;
     }
+    | FuncCall {$$ = $1;} // 函数调用应属于基本表达式（只有返回值有用）
     ;
 
 // 一元运算符
@@ -500,7 +499,7 @@ PrimaryExp
     | '-' { $$ = '-'; }
     ; */
 
-//一元表达式 (函数调用、+、-、!，注：!仅出现在条件表达式中！！！怎么修改)
+//一元表达式 (函数调用、+、-、!，注：!仅出现在条件表达式中！！！怎么修改。。。不用修改)
 UnaryExp
     :PrimaryExp {$$ = $1;}
     | ADD UnaryExp {//PLUS是 加号 +
