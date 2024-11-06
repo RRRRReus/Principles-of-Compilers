@@ -117,6 +117,7 @@ WhileStmt
 FuncCallStmt
     : FuncCall SEMICOLON {
         $$ = new ExprStmt($1);
+        fprintf(stderr, "带分号的函数调用语句\n");
     }
     ;
 

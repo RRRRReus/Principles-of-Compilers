@@ -282,14 +282,41 @@ void BinaryExpr::typeCheck()
     Type* type1 = this->getExpr1()->getSymbolEntry()->getType();//要获取类型，首先要获取符号表项，然后获取类型
     Type* type2 = this->getExpr2()->getSymbolEntry()->getType();
 
+    printf("type1是%s\n",type1->toStr().c_str());
+    printf("type2是%s\n",type2->toStr().c_str());
+
      // 数值运算符要求操作数都是数值类型
     if (type1->isVoid() || type2->isVoid()) 
     {
+        fprintf(stderr, "void参与运算\n");
         fprintf(stderr, "LAB3类型检查报错:运算数不是数值类型\n");
         //exit(EXIT_FAILURE);
     }//void参与运算，不会报我写的报错
-
-
+    else if(type1->isFunc() || type2->isFunc())
+    {
+        if(type1->isFunc()){
+            // 获取函数的返回值类型
+            //fprintf(stderr, "type1是函数类型\n");
+            Type* returnType1 = dynamic_cast<FunctionType*>(type1)->getRetType();
+            if(returnType1->isVoid())
+            {
+                fprintf(stderr, "LAB3类型检查报错:函数返回值void参与双目运算\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        if(type2->isFunc()){
+            // 获取函数的返回值类型
+            //fprintf(stderr, "type2是函数类型\n");
+            Type* returnType2 = dynamic_cast<FunctionType*>(type2)->getRetType();
+            if(returnType2->isVoid())
+            {
+                fprintf(stderr, "LAB3类型检查报错:函数返回值void参与双目运算\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+    }
+   
     // 检查操作数类型是否兼容   //目前没啥用
     switch (op) {
         case ADD:
@@ -335,13 +362,24 @@ void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何
     printf("UnaryExpr::typeCheck\n");
     expr->typeCheck();
     Type* type = expr->getSymbolEntry()->getType();//获取表达式类型
-    printf("单目运算符后面的type是%s\n",type->toStr().c_str());
-    printf("type是void吗%d\n",type->isVoid());
     if(type->isVoid())//如果表达式类型是void
     {
         fprintf(stderr, "LAB3类型检查报错:表达式类型为void\n");
         exit(EXIT_FAILURE);
     }
+    else if(type->isFunc())
+    {
+            // 获取函数的返回值类型
+            //fprintf(stderr, "type是函数类型\n");
+            Type* returnType = dynamic_cast<FunctionType*>(type)->getRetType();//将type转换为其子类func类型，然后获取函数返回值的类型
+            if(returnType->isVoid())
+            {
+                fprintf(stderr, "LAB3类型检查报错:函数返回值void参与单目运算\n");
+                exit(EXIT_FAILURE);
+            }
+        
+    }
+
     if(expr->CanBeCalculatedInt)//如果expr可以计算成一个整数，用于check除数为零
     {
         CanBeCalculatedInt = true;
@@ -436,11 +474,46 @@ void ReturnStmt::typeCheck()
     // Todo
 }
 
-void AssignStmt::typeCheck()
+void AssignStmt::typeCheck()//检查左值是否可以被赋值，右值是否可以用来赋值
 {
     printf("AssignStmt::typeCheck\n");
     lval->typeCheck();
     expr->typeCheck();
+
+
+    // 获取左值和右值的类型
+    Type* lvalType = lval->getSymbolEntry()->getType();
+    Type* exprType = expr->getSymbolEntry()->getType();
+
+    // 检查左值是否为可赋值的类型（例如标识符）
+    if (!lvalType->isInt() && !lvalType->isFloat() && !lvalType->isLongLong() && !lvalType->isIntArray() && !lvalType->isFloatArray()) {
+        fprintf(stderr, "LAB3类型检查报错:左值不是可赋值的类型\n");
+        exit(EXIT_FAILURE);
+    }
+
+    if(exprType->isVoid())//右值是void类型
+    {
+        fprintf(stderr, "LAB3类型检查报错:右值为void类型\n");
+        exit(EXIT_FAILURE);
+    }
+    // 检查右值是否为函数类型
+    else if (exprType->isFunc()) {
+        // 获取函数的返回值类型
+        Type* returnType = dynamic_cast<FunctionType*>(exprType)->getRetType();
+        // 检查返回值是否为 void
+        if (returnType->isVoid()) {
+            fprintf(stderr, "LAB3类型检查报错:函数返回值为void，不能赋值\n");
+            exit(EXIT_FAILURE);
+        }
+        // 将函数的返回值类型作为右值类型
+        exprType = returnType;
+    }
+
+    // // 检查左值和右值的类型是否兼容
+    // if (lvalType != exprType) {
+    //     fprintf(stderr, "LAB3类型检查报错:左值和右值的类型不匹配\n");
+    //     exit(EXIT_FAILURE);
+    // }
 
     // Todo
 }
@@ -785,9 +858,14 @@ void WhileStmt::genCode()
 void UnaryExpr::genCode()
 {
 }
-void ExprStmt::typeCheck()
+
+
+void ExprStmt::typeCheck()//怎么藏在这里！！！！！！！函数调用语句（区分函数调用）是一个ExprStmt（从这里连上funccall的递归）
 {
+    expr->typeCheck();
 }
+
+
 void ExprStmt::genCode()
 {
 }
