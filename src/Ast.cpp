@@ -335,6 +335,8 @@ void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何
     printf("UnaryExpr::typeCheck\n");
     expr->typeCheck();
     Type* type = expr->getSymbolEntry()->getType();//获取表达式类型
+    printf("单目运算符后面的type是%s\n",type->toStr().c_str());
+    printf("type是void吗%d\n",type->isVoid());
     if(type->isVoid())//如果表达式类型是void
     {
         fprintf(stderr, "LAB3类型检查报错:表达式类型为void\n");

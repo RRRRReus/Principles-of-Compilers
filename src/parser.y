@@ -130,6 +130,7 @@ FuncCall
             assert(se != nullptr);
         }
         $$ = new FuncCall(se, new Id(se), {});//new Id(se) 创建一个表示函数名的 Id 对象
+        printf("函数调用!!!\n");
     }
     | ID LPAREN ArgList RPAREN {
         SymbolEntry *se = identifiers->lookup($1);
@@ -138,6 +139,7 @@ FuncCall
             assert(se != nullptr);
         }
         $$ = new FuncCall(se, new Id(se), *$3); // 使用 *$3 解引用指针
+        printf("函数调用!!!\n");
         delete $3; // 释放 ArgList
     }
     ;
@@ -715,7 +717,7 @@ DeclStmtNode
         se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
 
         identifiers->install($1, se);
-        $$ = new DeclStmt(new Id(se));
+        $$ = new DeclStmt(new Id(se));//创建一个声明语句节点（并且在其构造函数中又新建了一个 Id 标识符节点）
     }
     |ID ASSIGN InitVal{
         if(identifiers->lookupOnlyNow($1) != nullptr)
@@ -772,7 +774,6 @@ DeclStmtNode
 
         $$ = new DeclStmt(new Array(name, $2));
         
-        printf("what?");
         //delete []$2;
     }
     | ID ArrayDim ASSIGN LBRACE InitValList RBRACE {
@@ -824,6 +825,7 @@ DeclStmtNode
 
     }
     ;
+//连续定义
 DeclStmtNodes
     :DeclStmtNode{
         //printf("DeclStmtNode!!!\n");
