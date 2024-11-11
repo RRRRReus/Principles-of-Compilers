@@ -36,10 +36,18 @@ int main()
 
     //中间代码生成测试
 
-    int a;
+    int a=1;
+    if(a)
+    {
+        a=9+8+4;
+    }
+    else
+    {
+        a=9+8+4-(-1);
+    }
     int b;
     int c;
-    //c=a+b;
+    c=a+b;
 
 
     //return b + !a + a;

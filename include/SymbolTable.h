@@ -47,7 +47,7 @@ public:
     int ArrayDim;//数组维度
     int *ArrayDimSize;//数组各维度大小
     int size;//数组总大小
-
+    ConstantSymbolEntry(int value);
     ConstantSymbolEntry(Type *type, int value);
     ConstantSymbolEntry(Type *type, float fvalue);
     ConstantSymbolEntry(Type *type, long long llvalue);

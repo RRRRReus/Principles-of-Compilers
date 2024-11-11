@@ -9,6 +9,12 @@ SymbolEntry::SymbolEntry(Type *type, int kind)
     this->kind = kind;
 }
 
+ConstantSymbolEntry::ConstantSymbolEntry(int value): SymbolEntry(TypeSystem::intType,SymbolEntry::CONSTANT)
+{
+    this->value = value;
+    this->type = TypeSystem::intType;
+}
+
 ConstantSymbolEntry::ConstantSymbolEntry(Type *type, int value) : SymbolEntry(type, SymbolEntry::CONSTANT)
 {
     this->value = value;

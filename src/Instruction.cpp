@@ -81,6 +81,16 @@ void BinaryInstruction::output() const
     type = operands[0]->getType()->toStr();
     switch (opcode)
     {
+    case XOR:
+        op = "xor";
+        break;
+    case AND:
+        op = "and";
+        break;
+    case OR:
+        op = "or";
+        break;
+
     case ADD:
         op = "add";
         break;

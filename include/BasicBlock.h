@@ -27,10 +27,10 @@ public:
     void output() const;
     bool succEmpty() const { return succ.empty(); };
     bool predEmpty() const { return pred.empty(); };
-    void addSucc(BasicBlock *);
-    void removeSucc(BasicBlock *);
-    void addPred(BasicBlock *);
-    void removePred(BasicBlock *);
+    void addSucc(BasicBlock *);//添加后继
+    void removeSucc(BasicBlock *);//删除后继
+    void addPred(BasicBlock *);//添加前驱
+    void removePred(BasicBlock *);//删除前驱
     int getNo() { return no; };
     Function *getParent() { return parent; };
     Instruction* begin() { return head->getNext();};

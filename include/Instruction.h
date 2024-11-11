@@ -16,6 +16,7 @@ public:
     BasicBlock *getParent();
     bool isUncond() const {return instType == UNCOND;};//是否为无条件分支
     bool isCond() const {return instType == COND;};//是否为条件分支
+    int getInstType() const {return instType;};//获取指令类型
     void setParent(BasicBlock *);
     void setNext(Instruction *);
     void setPrev(Instruction *);
@@ -138,7 +139,7 @@ public:
     BinaryInstruction(unsigned opcode, Operand *dst, Operand *src1, Operand *src2, BasicBlock *insert_bb = nullptr);
     ~BinaryInstruction();
     void output() const;
-    enum {SUB, ADD, AND, OR};
+    enum {SUB, ADD, AND, OR,XOR};
     Operand *getDef() { return operands[0]; }//获取定义
     std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }
 };

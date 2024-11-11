@@ -57,12 +57,14 @@ void BasicBlock::output() const
     printf("已输出B%d,开始遍历指令链表:\n", no);
     printf("head->getNext()是否等于head:%d\n",head->getNext()==head);
     for (auto i = head->getNext(); i != head; i = i->getNext()){
-        printf("i的指令类型是%s\n",i->getDef()->toStr().c_str());
+        //printf("进来了吗\n");
+        //printf("i的指令类型是%s\n",i->getDef()->toStr().c_str());
+        //注意注意！！！getDef()是获取操作数不是类型！！操作数可能为空！！类型是instype
         i->output();
     }
         
 }
-
+//添加后继
 void BasicBlock::addSucc(BasicBlock *bb)
 {
     succ.push_back(bb);
@@ -73,7 +75,7 @@ void BasicBlock::removeSucc(BasicBlock *bb)
 {
     succ.erase(std::find(succ.begin(), succ.end(), bb));
 }
-
+//添加前驱
 void BasicBlock::addPred(BasicBlock *bb)
 {
     pred.push_back(bb);
