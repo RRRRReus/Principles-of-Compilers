@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
     yyparse();
     if(dump_type == AST)
         ast.output();
-    ast.typeCheck();
-    ast.genCode(&unit);
+    ast.typeCheck();    //类型检查
+    ast.genCode(&unit); //生成中间代码
     if(dump_type == IR)
         unit.output();
     return 0;

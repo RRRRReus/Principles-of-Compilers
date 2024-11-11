@@ -92,12 +92,12 @@ private:
     // You can add any field you need here.
 
 public:
-    IdentifierSymbolEntry(Type *type, std::string name, int scope);
+    IdentifierSymbolEntry(Type *type, std::string name, int scope);//标识符的类型、名字、作用域
     virtual ~IdentifierSymbolEntry() {};
     std::string toStr();
     bool isGlobal() const {return scope == GLOBAL;};
     bool isParam() const {return scope == PARAM;};
-    bool isLocal() const {return scope >= LOCAL;};
+    bool isLocal() const {return scope >= LOCAL;};//局部变量即位置大于等于LOCAL
     int getScope() const {return scope;};
     void setAddr(Operand *addr) {this->addr = addr;};
     Operand* getAddr() {return addr;};
@@ -167,9 +167,9 @@ private:
 public:
     SymbolTable();
     SymbolTable(SymbolTable *prev);
-    void install(std::string name, SymbolEntry* entry);
-    SymbolEntry* lookup(std::string name);
-    SymbolEntry* lookupOnlyNow(std::string name);
+    void install(std::string name, SymbolEntry* entry);//安装符号表
+    SymbolEntry* lookup(std::string name);//查找符号表
+    SymbolEntry* lookupOnlyNow(std::string name);//只在当前符号表中查找
     SymbolTable* getPrev() {return prev;};
     int getLevel() {return level;};
     static int getLabel() {return counter++;};

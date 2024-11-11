@@ -33,17 +33,22 @@ void BasicBlock::remove(Instruction *inst)
 
 void BasicBlock::output() const
 {
-    fprintf(yyout, "B%d:", no);
+    fprintf(yyout, "B%d:", no);//输出基本块的编号
 
-    if (!pred.empty())
+    if (!pred.empty())//如果前驱不为空，则输出前驱
     {
+        printf("pred不为空\n");
         fprintf(yyout, "%*c; preds = %%B%d", 32, '\t', pred[0]->getNo());
         for (auto i = pred.begin() + 1; i != pred.end(); i++)
             fprintf(yyout, ", %%B%d", (*i)->getNo());
     }
     fprintf(yyout, "\n");
-    for (auto i = head->getNext(); i != head; i = i->getNext())
+    printf("已输出B%d，开始遍历指令链表:\n", no);
+    for (auto i = head->getNext(); i != head; i = i->getNext()){
+        printf("i的指令类型是%d\n",i->getDef()->getType());
         i->output();
+    }
+        
 }
 
 void BasicBlock::addSucc(BasicBlock *bb)

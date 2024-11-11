@@ -74,7 +74,7 @@ BinaryInstruction::~BinaryInstruction()
 
 void BinaryInstruction::output() const
 {
-    std::string s1, s2, s3, op, type;
+    std::string s1, s2, s3, op, type;//s1为目的操作数，s2为源操作数1，s3为源操作数2，op为操作符，type为类型
     s1 = operands[0]->toStr();
     s2 = operands[1]->toStr();
     s3 = operands[2]->toStr();
@@ -255,6 +255,7 @@ AllocaInstruction::~AllocaInstruction()
 
 void AllocaInstruction::output() const
 {
+    printf("进入AllocaInstruction::output函数\n");
     std::string dst, type;
     dst = operands[0]->toStr();
     type = se->getType()->toStr();

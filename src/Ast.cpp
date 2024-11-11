@@ -29,17 +29,18 @@ std::vector<BasicBlock**> Node::merge(std::vector<BasicBlock**> &list1, std::vec
     return res;
 }
 
-void Ast::genCode(Unit *unit)
+void Ast::genCode(Unit *unit)   //根节点的中间代码生成
 {
-    IRBuilder *builder = new IRBuilder(unit);
-    Node::setIRBuilder(builder);
+    IRBuilder *builder = new IRBuilder(unit);   //创建IRBuilder对象
+    Node::setIRBuilder(builder);    //设置IRBuilder对象
     root->genCode();
 }
 
 void FunctionDef::genCode()
 {
-    Unit *unit = builder->getUnit();
-    Function *func = new Function(unit, se);
+    printf("进入FunctionDef::genCode\n");
+    Unit *unit = builder->getUnit();    //获取当前编译单元
+    Function *func = new Function(unit, se);    //创建函数对象
     BasicBlock *entry = func->getEntry();
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);
@@ -50,13 +51,15 @@ void FunctionDef::genCode()
      * Construct control flow graph. You need do set successors and predecessors for each basic block.
      * Todo
     */
+
+
    
 }
 
 void BinaryExpr::genCode()
 {
-    BasicBlock *bb = builder->getInsertBB();
-    Function *func = bb->getParent();
+    BasicBlock *bb = builder->getInsertBB();    //获取当前基本块
+    Function *func = bb->getParent();   //获取当前基本块所属的函数
     if (op == AND)
     {
         BasicBlock *trueBB = new BasicBlock(func);  // if the result of lhs is true, jump to the trueBB.
@@ -70,16 +73,25 @@ void BinaryExpr::genCode()
     else if(op == OR)
     {
         // Todo
+        BasicBlock *falseBB = new BasicBlock(func);  // 如果lhs的结果为false，跳转到falseBB
+        expr1->genCode();
+        backPatch(expr1->falseList(), falseBB);
+        builder->setInsertBB(falseBB);               // 设置插入点为falseBB，以便expr2生成的指令会插入到其中
+        expr2->genCode();
+        true_list = merge(expr1->trueList(), expr2->trueList());
+        false_list = expr2->falseList();
+
     }
-    else if(op >= LESS && op <= GREATER)
+    else if(op >= LESS && op <= NOTEQUAL)    //表示一系列运算符，用枚举值范围来区分//原本条件为op >= LESS && op <= GREATER，更改以适配所有的比较运算符
     {
         // Todo
+        
     }
-    else if(op >= ADD && op <= SUB)
+    else if(op >= ADD && op <= SUB)//加减法
     {
         expr1->genCode();
         expr2->genCode();
-        Operand *src1 = expr1->getOperand();
+        Operand *src1 = expr1->getOperand();//获取操作数
         Operand *src2 = expr2->getOperand();
         int opcode;
         switch (op)
@@ -100,14 +112,14 @@ void BinaryExpr::genCode()
 
 void Constant::genCode()
 {
-    // we don't need to generate code.
+    // we don't need to generate code.//不需要生成代码
 }
 
 void Id::genCode()
 {
-    BasicBlock *bb = builder->getInsertBB();
-    Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
-    new LoadInstruction(dst, addr, bb);
+    BasicBlock *bb = builder->getInsertBB();//获取当前基本块
+    Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();//获取符号表项的地址
+    new LoadInstruction(dst, addr, bb); //生成load指令
 }
 
 void IfStmt::genCode()
@@ -139,6 +151,9 @@ void IfElseStmt::genCode()
 void CompoundStmt::genCode()
 {
     // Todo
+    printf("进入CompoundStmt::genCode\n");
+    stmt->genCode();
+
 }
 
 void SeqNode::genCode()
@@ -148,28 +163,35 @@ void SeqNode::genCode()
 
 void DeclStmt::genCode()
 {
+    printf("进入DeclStmt::genCode\n");
     IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());
-    if(se->isGlobal())
+    printf("符号表项是se->isGlobal() = %d\n",se->isGlobal());
+    printf("符号表项是se->isLocal() = %d\n",se->isLocal());
+    printf("符号表项是se->isParam() = %d\n",se->isParam());
+    if(se->isGlobal())//全局变量
     {
+        printf("进入DeclStmt::genCode中全局变量的部分\n");
         Operand *addr;
         SymbolEntry *addr_se;
-        addr_se = new IdentifierSymbolEntry(*se);
-        addr_se->setType(new PointerType(se->getType()));
-        addr = new Operand(addr_se);
-        se->setAddr(addr);
+        addr_se = new IdentifierSymbolEntry(*se);//创建一个新的符号表项
+        addr_se->setType(new PointerType(se->getType()));//设置类型
+        addr = new Operand(addr_se);//创建一个操作数
+        se->setAddr(addr);//设置操作数的地址
     }
-    else if(se->isLocal())
+    else if(se->isLocal())//局部变量
     {
-        Function *func = builder->getInsertBB()->getParent();
+        printf("进入DeclStmt::genCode中局部变量的部分\n");
+        Function *func = builder->getInsertBB()->getParent();//获取当前基本块所属的函数（即局部变量所属位置）
         BasicBlock *entry = func->getEntry();
-        Instruction *alloca;
-        Operand *addr;
-        SymbolEntry *addr_se;
+        Instruction *alloca;//指令应为alloca指令
+        Operand *addr;  //操作数
+        SymbolEntry *addr_se;   //符号表项
         Type *type;
         type = new PointerType(se->getType());
-        addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+        addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());  //创建一个新的临时符号表项
         addr = new Operand(addr_se);
         alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
+        printf("生成了alloca指令\n");
         entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
         se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
     }
@@ -290,7 +312,7 @@ void BinaryExpr::typeCheck()
     {
         fprintf(stderr, "void参与运算\n");
         fprintf(stderr, "LAB3类型检查报错:运算数不是数值类型\n");
-        //exit(EXIT_FAILURE);
+        exit(EXIT_FAILURE);
     }//void参与运算，不会报我写的报错
     else if(type1->isFunc() || type2->isFunc())
     {
@@ -326,12 +348,12 @@ void BinaryExpr::typeCheck()
         case MOD:
         case AND:
         case OR:
-            // 逻辑运算符要求操作数都是整数类型？？？？？？？？？？是必须整数吗？？？
-            if (!type1->isInt() || !type2->isInt() || !type1->isFloat() || !type2->isFloat()) {
-                fprintf(stderr, "LAB3类型检查报错:非整数参与逻辑运算\n");
-                exit(EXIT_FAILURE);
-            }//需要检查吗？？？？？？？？？？？？？？？
-            break;
+            // // 逻辑运算符要求操作数都是整数类型？？？？？？？？？？是必须整数吗？？？
+            // if (!type1->isInt() || !type2->isInt() || !type1->isFloat() || !type2->isFloat()) {
+            //     fprintf(stderr, "LAB3类型检查报错:非整数参与逻辑运算\n");
+            //     exit(EXIT_FAILURE);
+            // }//需要检查吗？？？？？？？？？？？？？？？
+            // break;
         case LESS:
         case LESSOREQUAL:
         case GREATER:
@@ -362,7 +384,9 @@ void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何
     printf("UnaryExpr::typeCheck\n");
     expr->typeCheck();
     Type* type = expr->getSymbolEntry()->getType();//获取表达式类型
-    if(type->isVoid())//如果表达式类型是void
+
+    //如果表达式类型是void，报错
+    if(type->isVoid())
     {
         fprintf(stderr, "LAB3类型检查报错:表达式类型为void\n");
         exit(EXIT_FAILURE);
@@ -396,6 +420,11 @@ void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何
                 break;
         }
     }
+
+    //？？？？？？对吗？？？？
+    // if (op == NOT) {
+    //     this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果    //隐式转换
+    // }
 }
 
 void Constant::typeCheck()

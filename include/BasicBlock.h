@@ -8,13 +8,13 @@ class Function;
 
 class BasicBlock
 {
-    typedef std::vector<BasicBlock *>::iterator bb_iterator;
+    typedef std::vector<BasicBlock *>::iterator bb_iterator;//这行代码定义了一个类型别名 bb_iterator，它是一个 std::vector<BasicBlock *>::iterator 类型的别名
 
 private:
-    std::vector<BasicBlock *> pred, succ;
-    Instruction *head;
-    Function *parent;
-    int no;
+    std::vector<BasicBlock *> pred, succ;//前驱和后继//双向循环链表
+    Instruction *head;//指令链表的头
+    Function *parent;//所属的函数
+    int no;//基本块的编号
 
 public:
     BasicBlock(Function *);
@@ -38,8 +38,8 @@ public:
     Instruction* rbegin() { return head->getPrev();};
     Instruction* rend() { return head;};
     bb_iterator succ_begin() { return succ.begin(); };
-    bb_iterator succ_end() { return succ.end(); };
-    bb_iterator pred_begin() { return pred.begin(); };
+    bb_iterator succ_end() { return succ.end(); };//后继的开始和结束
+    bb_iterator pred_begin() { return pred.begin(); };//前驱的开始和结束
     bb_iterator pred_end() { return pred.end(); };
     int getNumOfPred() const { return pred.size(); };
     int getNumOfSucc() const { return succ.size(); };

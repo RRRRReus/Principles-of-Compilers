@@ -21,8 +21,8 @@ class IRComSubExprElim
 private:
     Unit *unit;
 
-    std::vector<Expr> exprVec;
-    std::map<Instruction *, int> ins2Expr;
+    std::vector<Expr> exprVec;// 记录所有的表达式
+    std::map<Instruction *, int> ins2Expr; 
     std::map<BasicBlock *, std::set<int>> genBB;
     std::map<BasicBlock *, std::set<int>> killBB;
     std::map<BasicBlock *, std::set<int>> inBB;

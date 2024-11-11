@@ -125,7 +125,7 @@ FuncCallStmt
 // 函数调用
 FuncCall
     : ID LPAREN RPAREN {
-        SymbolEntry *se = identifiers->lookup($1);// 在符号表里查找函数名
+        SymbolEntry *se = identifiers->lookup($1);// 在符号表里查找函数名 //identifiers是哪来的？？
         if (se == nullptr) {
             fprintf(stderr, "LAB3类型检查报错:函数 \"%s\" 未定义\n", $1);
             assert(se != nullptr);
@@ -224,9 +224,12 @@ FuncDef
         funcType = new FunctionType($1,std::vector<Type*>());//必须先创建函数类型，这样才能创建函数符号表项
         SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
         identifiers->install($2, se);
-        identifiers = new SymbolTable(identifiers);
+        identifiers = new SymbolTable(identifiers);//新建一个符号表（新作用域）（函数本身的符号表），即参数的符号表！！！
     }
-    ParamList RPAREN funcStmt {
+    ParamList RPAREN {
+        identifiers = new SymbolTable(identifiers);//新建一个符号表（新作用域）（函数本身的符号表），即局部变量的符号表！！！
+    }
+    funcStmt {
 
         std::vector<Type*> paramsType;
         DeclStmt* params = (DeclStmt*)$5;//参数列表
@@ -242,7 +245,7 @@ FuncDef
         assert(se != nullptr);//断言函数名一定存在
         FunctionType* tmp = (FunctionType*)(se->getType());//(FunctionType*)将se->getType()转换为FunctionType*类型，se->getType()本身为Type*类型，因为FunctionType继承自Type
         tmp->setParamsType(paramsType);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!能否不要这个函数，直接在FunctionType的构造函数中传入参数类型
-        $$ = new FunctionDef(se, (DeclStmt*)$5, new CompoundStmt($7));//se,参数列表，函数体(复合语句)
+        $$ = new FunctionDef(se, (DeclStmt*)$5, new CompoundStmt($8));//se,参数列表，函数体(复合语句)
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();//返回上一层符号表
         delete top;
@@ -715,7 +718,7 @@ DeclStmtNode
             fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
             assert(false);
         }
-        se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
+        se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());//创建一个标识符符号表项
 
         identifiers->install($1, se);
         $$ = new DeclStmt(new Id(se));//创建一个声明语句节点（并且在其构造函数中又新建了一个 Id 标识符节点）

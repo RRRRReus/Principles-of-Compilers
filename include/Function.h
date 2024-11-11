@@ -17,16 +17,16 @@ class Function
     typedef std::vector<BasicBlock *>::reverse_iterator reverse_iterator;
 
 private:
-    std::vector<BasicBlock *> block_list;
+    std::vector<BasicBlock *> block_list;//基本块列表（从入口基本块entry进去）
     SymbolEntry *sym_ptr;
-    BasicBlock *entry;
+    BasicBlock *entry;//入口基本块
     Unit *parent;
 
 public:
     Function(Unit *, SymbolEntry *);
     ~Function();
     void insertBlock(BasicBlock *bb) { block_list.push_back(bb); };
-    BasicBlock *getEntry() { return entry; };
+    BasicBlock *getEntry() { return entry; };//获取入口基本块
     void remove(BasicBlock *bb);
     void output() const;
     std::vector<BasicBlock *> &getBlockList(){return block_list;};

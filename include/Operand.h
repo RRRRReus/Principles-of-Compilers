@@ -8,7 +8,7 @@ class Instruction;
 class Function;
 
 
-// class Operand - The operand of an instruction.
+// class Operand - The operand of an instruction.   //指令的操作数。
 class Operand
 {
 typedef std::vector<Instruction *>::iterator use_iterator;
