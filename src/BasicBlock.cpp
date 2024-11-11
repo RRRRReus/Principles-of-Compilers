@@ -45,7 +45,7 @@ void BasicBlock::output() const
     fprintf(yyout, "\n");
     printf("已输出B%d，开始遍历指令链表:\n", no);
     for (auto i = head->getNext(); i != head; i = i->getNext()){
-        printf("i的指令类型是%d\n",i->getDef()->getType());
+        //printf("i的指令类型是%d\n",i->getDef()->getType());
         i->output();
     }
         
