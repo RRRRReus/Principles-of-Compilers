@@ -29,7 +29,7 @@ public:
     use_iterator use_begin() {return uses.begin();};
     use_iterator use_end() {return uses.end();};
     Type* getType() {return se->getType();};
-    std::string toStr() const;
+    std::string toStr() const;//返回字符串
 };
 
 #endif

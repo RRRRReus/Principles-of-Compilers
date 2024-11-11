@@ -16,11 +16,22 @@ void BasicBlock::insertBack(Instruction *inst)
     insertBefore(inst, head);
 }
 
-// insert the instruction dst before src.
+// insert the instruction dst before src.   //在src之前插入指令dst
 void BasicBlock::insertBefore(Instruction *dst, Instruction *src)
 {
     // Todo
+    dst->setPrev(src->getPrev());// 更新 dst 的前驱和后继指针
+    dst->setNext(src);
 
+    // 更新 src 的前驱指针
+    src->setPrev(dst);
+
+    // 更新 src 前驱的后继指针
+    if (dst->getPrev() != nullptr) {
+        dst->getPrev()->setNext(dst);
+    }
+
+    // 设置 dst 的父基本块
     dst->setParent(this);
 }
 
@@ -43,9 +54,10 @@ void BasicBlock::output() const
             fprintf(yyout, ", %%B%d", (*i)->getNo());
     }
     fprintf(yyout, "\n");
-    printf("已输出B%d，开始遍历指令链表:\n", no);
+    printf("已输出B%d,开始遍历指令链表:\n", no);
+    printf("head->getNext()是否等于head:%d\n",head->getNext()==head);
     for (auto i = head->getNext(); i != head; i = i->getNext()){
-        //printf("i的指令类型是%d\n",i->getDef()->getType());
+        printf("i的指令类型是%s\n",i->getDef()->toStr().c_str());
         i->output();
     }
         
