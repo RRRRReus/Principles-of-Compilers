@@ -4,7 +4,11 @@
 class Unit;
 class Function;
 class BasicBlock;
-
+/**
+ * @class IRBuilder
+ * @brief 表示编译器中间表示中的IR构建器。
+ * 把unit和insertBB放在一起，方便生成IR。
+ */
 class IRBuilder
 {
 private:

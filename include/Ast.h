@@ -17,10 +17,23 @@ private:
     static int counter;
     int seq;
 protected:
-    std::vector<BasicBlock**> true_list;
-    std::vector<BasicBlock**> false_list;
+    std::vector<BasicBlock**> true_list;//真出口
+    std::vector<BasicBlock**> false_list;//假出口
     static IRBuilder *builder;
+    /**
+     * @brief 将列表中的所有指针指向target
+     * @param list 待修改的列表
+     * @param target 目标指针
+     * 
+     */
     void backPatch(std::vector<BasicBlock**> &list, BasicBlock*target);
+    /**
+     * @brief 合并两个列表
+     * @param list1 第一个列表
+     * @param list2 第二个列表
+     * @return 合并后的列表
+     * 
+     */
     std::vector<BasicBlock**> merge(std::vector<BasicBlock**> &list1, std::vector<BasicBlock**> &list2);
 
 public:
