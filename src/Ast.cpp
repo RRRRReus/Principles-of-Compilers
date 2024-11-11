@@ -327,10 +327,10 @@ void BinaryExpr::typeCheck()
         case AND:
         case OR:
             // 逻辑运算符要求操作数都是整数类型？？？？？？？？？？是必须整数吗？？？
-            if (!type1->isInt() || !type2->isInt() || !type1->isFloat() || !type2->isFloat()) {
-                fprintf(stderr, "LAB3类型检查报错:非整数参与逻辑运算\n");
-                exit(EXIT_FAILURE);
-            }//需要检查吗？？？？？？？？？？？？？？？
+            // if (!type1->isInt() || !type2->isInt() || !type1->isFloat() || !type2->isFloat()) {
+            //     fprintf(stderr, "LAB3类型检查报错:非整数参与逻辑运算\n");//这里有问题！！先注释掉！！！
+            //     exit(EXIT_FAILURE);
+            // }//需要检查吗？？？？？？？？？？？？？？？
             break;
         case LESS:
         case LESSOREQUAL:
