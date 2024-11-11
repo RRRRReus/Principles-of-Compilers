@@ -182,6 +182,12 @@ public:
 class UncondBrInstruction : public Instruction
 {
 public:
+/**
+ * @brief 构造一个新的 UncondBrInstruction 对象。
+ * @param branch 分支目标基本块。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ * 
+ */
     UncondBrInstruction(BasicBlock*, BasicBlock *insert_bb = nullptr);
     void output() const;
     void setBranch(BasicBlock *);
@@ -203,6 +209,14 @@ protected:
 class CondBrInstruction : public Instruction
 {
 public:
+/**
+ * @brief 构造一个新的 CondBrInstruction 对象。
+ * @param true_branch 条件为真时的目标基本块。
+ * @param false_branch 条件为假时的目标基本块。
+ * @param cond 条件操作数。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ * 
+ */
     CondBrInstruction(BasicBlock*, BasicBlock*, Operand *, BasicBlock *insert_bb = nullptr);
     ~CondBrInstruction();
     void output() const;
@@ -228,6 +242,12 @@ protected:
 class RetInstruction : public Instruction
 {
 public:
+/**
+ * @brief 构造一个新的 RetInstruction 对象。
+ * @param src 返回值操作数。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ * 
+ */
     RetInstruction(Operand *src, BasicBlock *insert_bb = nullptr);
     ~RetInstruction();
     std::vector<Operand *> getUse()
