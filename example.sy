@@ -37,7 +37,9 @@ int main()
     //中间代码生成测试
 
     int a;
-    //int b;
+    int b;
+    int c;
+    //c=a+b;
 
 
     //return b + !a + a;

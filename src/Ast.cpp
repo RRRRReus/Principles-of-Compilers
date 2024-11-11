@@ -181,6 +181,9 @@ void CompoundStmt::genCode()
 void SeqNode::genCode()
 {
     // Todo
+    printf("进入SeqNode::genCode\n");
+    stmt1->genCode();
+    stmt2->genCode();
 }
 
 void DeclStmt::genCode()
