@@ -11,10 +11,10 @@ class BasicBlock
     typedef std::vector<BasicBlock *>::iterator bb_iterator;//这行代码定义了一个类型别名 bb_iterator，它是一个 std::vector<BasicBlock *>::iterator 类型的别名
 
 private:
-    std::vector<BasicBlock *> pred, succ;//前驱和后继//双向循环链表
-    Instruction *head;//指令链表的头
-    Function *parent;//所属的函数
-    int no;//基本块的编号
+    std::vector<BasicBlock *> pred, succ;//前驱和后继
+    Instruction *head;//指向第一条指令
+    Function *parent;//指向所属函数
+    int no;//基本块编号
 
 public:
     BasicBlock(Function *);
