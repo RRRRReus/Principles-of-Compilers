@@ -967,32 +967,38 @@ void WhileStmt::genCode()
 {
     BasicBlock *now_bb = builder->getInsertBB();
     Function *func;
-    BasicBlock *body_bb, *end_bb;
+    BasicBlock *body_bb, *end_bb ,*cond_bb;
 
     func = builder->getInsertBB()->getParent();
     body_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
+    cond_bb = new BasicBlock(func);
 
+    builder->setInsertBB(cond_bb);
     cond->genCode();
+    cond_bb = builder->getInsertBB();
     backPatch(cond->trueList(), body_bb);
     backPatch(cond->falseList(), end_bb);
+    new CondBrInstruction(body_bb, end_bb, cond->getOperand(), cond_bb);
 
     builder->setInsertBB(body_bb);
     body->genCode();
     body_bb = builder->getInsertBB();
-    new UncondBrInstruction(now_bb, body_bb);
+    new UncondBrInstruction(cond_bb, body_bb);
 
     builder->setInsertBB(end_bb);
 
-    now_bb->addPred(body_bb);
-    body_bb->addSucc(now_bb);
-    now_bb->addPred(end_bb);
-    end_bb->addSucc(now_bb);
+    now_bb->addSucc(cond_bb);
+    cond_bb->addPred(now_bb);
 
-    body_bb->addPred(end_bb);
-    end_bb->addSucc(body_bb);
-    body_bb->addPred(now_bb);
-    now_bb->addSucc(body_bb);
+    cond_bb->addSucc(body_bb);
+    body_bb->addPred(cond_bb);
+
+    cond_bb->addSucc(end_bb);
+    end_bb->addPred(cond_bb);
+
+    body_bb->addSucc(cond_bb);
+    cond_bb->addPred(body_bb);
 
 }
 
