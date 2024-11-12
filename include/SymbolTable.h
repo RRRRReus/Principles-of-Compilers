@@ -18,9 +18,9 @@ protected:
 public:
     SymbolEntry(Type *type, int kind);
     virtual ~SymbolEntry() {};
-    bool isConstant() const {return kind == CONSTANT;};
-    bool isTemporary() const {return kind == TEMPORARY;};
-    bool isVariable() const {return kind == VARIABLE;};
+    bool isConstant() const {return kind == CONSTANT;};//是否是常量
+    bool isTemporary() const {return kind == TEMPORARY;};//是否是临时变量
+    bool isVariable() const {return kind == VARIABLE;};//是否是变量
     Type* getType() {return type;};//返回类型
     void setType(Type *type) {this->type = type;};//设置类型
     virtual std::string toStr() = 0;
@@ -144,8 +144,8 @@ private:
     Type* returnType;
 
 public:
-    FunctionSymbolEntry(Type* returnType, const std::vector<Type*>& paramTypes, const std::string& name)
-        : SymbolEntry(returnType, VARIABLE), name(name), paramTypes(paramTypes), returnType(returnType) {}
+    FunctionSymbolEntry(Type* funcType, Type* returnType, const std::vector<Type*>& paramTypes, const std::string& name)
+        :SymbolEntry(funcType, VARIABLE), name(name), paramTypes(paramTypes), returnType(returnType) {}
 
     std::string getName() const { return name; }
     Type* getReturnType() const { return returnType; }

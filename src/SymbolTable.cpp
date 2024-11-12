@@ -120,46 +120,57 @@ SymbolTable::SymbolTable()
 
 
     // 创建标准库函数 putint(int) 并添加到符号表
-    Type* intType = TypeSystem::intType; //commonInt是一个静态变量，不应该被修改
+    Type* intType = TypeSystem::intType; //commonInt是一个静态变量，不应该被修改(单例模型！！！！！！所有的intType都是指向commonInt的指针，都是一个对象)
     // 此处应该新建一个intType，而TypeSystem::intType = &commonInt，IntType TypeSystem::commonInt = IntType(4);  则TypeSystem::intType就是一个IntType(4)
     Type* voidType =TypeSystem::voidType;  // 假设 VoidType 是 Type 的派生类
-    std::vector<Type*> paramTypes = {intType};
+    Type* floatType = TypeSystem::floatType; //commonFloat是一个静态变量，不应该被修改
 
-    FunctionSymbolEntry* putintEntry = new FunctionSymbolEntry(voidType, paramTypes, "putint");
+    
+    //创建void putint(int)函数
+    std::vector<Type*> paramTypes = {intType};//参数类型
+    FunctionType* putint_funcType = new FunctionType(voidType, paramTypes);//每一个库函数都具有一个自己的函数类型（构造函数参数：返回值类型、参数类型）
+    FunctionSymbolEntry* putintEntry = new FunctionSymbolEntry(putint_funcType, voidType, paramTypes, "putint");
     install("putint", putintEntry);
 
-    // 创建标准库函数 getint() 并添加到符号表
 
-    FunctionSymbolEntry* getintEntry = new FunctionSymbolEntry(intType, {}, "getint");
+    // 创建标准库函数 int getint() 并添加到符号表
+    FunctionType* getint_funcType = new FunctionType(intType, {});
+    FunctionSymbolEntry* getintEntry = new FunctionSymbolEntry(getint_funcType, intType, {}, "getint");
     install("getint", getintEntry);
 
-    // 创建标准库函数 putfloat(float) 并添加到符号表
-    Type* floatType = TypeSystem::floatType; //commonFloat是一个静态变量，不应该被修改
+    // 创建标准库函数 void putfloat(float) 并添加到符号表
     paramTypes = {floatType};
-    FunctionSymbolEntry* putfloatEntry = new FunctionSymbolEntry(voidType, paramTypes, "putfloat");
+    FunctionType* putfloat_funcType = new FunctionType(voidType, paramTypes);//函数类型(构造函数传参：返回值类型，参数类型)
+    FunctionSymbolEntry* putfloatEntry = new FunctionSymbolEntry(putfloat_funcType, voidType, paramTypes, "putfloat");
     install("putfloat", putfloatEntry);
 
-    // 创建标准库函数 getfloat() 并添加到符号表
-    FunctionSymbolEntry* getfloatEntry = new FunctionSymbolEntry(floatType, {}, "getfloat");
+    // 创建标准库函数 float getfloat() 并添加到符号表
+    FunctionType* getfloat_funcType = new FunctionType(floatType, {});
+    FunctionSymbolEntry* getfloatEntry = new FunctionSymbolEntry(getfloat_funcType, floatType, {}, "getfloat");
     install("getfloat", getfloatEntry);
 
-    // 创建标准库函数 getarray(int[])并添加到符号表
+    // 创建标准库函数 int getarray(int[])并添加到符号表
     Type* intArrayType = new IntArrayType(1);
     paramTypes = {intArrayType};
-    FunctionSymbolEntry* getarrayEntry = new FunctionSymbolEntry(intType, paramTypes, "getarray");
+    FunctionType* getarray_funcType = new FunctionType(intType, paramTypes);
+    FunctionSymbolEntry* getarrayEntry = new FunctionSymbolEntry(getarray_funcType, intType, paramTypes, "getarray");
     install("getarray", getarrayEntry);
 
-    // 创建标准库函数 putarray(int[])并添加到符号表
-    FunctionSymbolEntry* putarrayEntry = new FunctionSymbolEntry(voidType, paramTypes, "putarray");
+    // 创建标准库函数 void putarray(int, int[])并添加到符号表
+    paramTypes = {intType, intArrayType};
+    FunctionType* putarray_funcType = new FunctionType(voidType, paramTypes);
+    FunctionSymbolEntry* putarrayEntry = new FunctionSymbolEntry(putarray_funcType, voidType, paramTypes, "putarray");
     install("putarray", putarrayEntry);
 
-    // 创建标准库函数  putch(int) 并添加到符号表(将整数参数的值作为 ASCII 码，输出该 ASCII 码对应的字符)
+    // 创建标准库函数 void putch(int) 并添加到符号表(将整数参数的值作为 ASCII 码，输出该 ASCII 码对应的字符)
     paramTypes = {intType};
-    FunctionSymbolEntry* putchEntry = new FunctionSymbolEntry(voidType, paramTypes, "putch");
+    FunctionType* putch_funcType = new FunctionType(voidType, paramTypes);
+    FunctionSymbolEntry* putchEntry = new FunctionSymbolEntry(putch_funcType, voidType, paramTypes, "putch");
     install("putch", putchEntry);
 
-    // 创建标准库函数  getch() 并添加到符号表(返回一个整数，表示读入的字符的 ASCII 码)
-    FunctionSymbolEntry* getchEntry = new FunctionSymbolEntry(intType, {}, "getch");
+    // 创建标准库函数 int getch() 并添加到符号表(返回一个整数，表示读入的字符的 ASCII 码)
+    FunctionType* getch_funcType = new FunctionType(intType, {});
+    FunctionSymbolEntry* getchEntry = new FunctionSymbolEntry(getch_funcType, intType, {}, "getch");
     install("getch", getchEntry);
 
 
