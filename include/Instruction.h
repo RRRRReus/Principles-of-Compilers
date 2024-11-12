@@ -184,7 +184,7 @@ class UncondBrInstruction : public Instruction
 {
 public:
 /**
- * @brief 构造一个新的 UncondBrInstruction 对象。
+ * @brief 构造一个新的 UncondBrInstruction 对象。从insert_bb末尾无条件跳转到branch前面。
  * @param branch 分支目标基本块。
  * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
  * 

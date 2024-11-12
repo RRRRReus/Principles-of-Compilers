@@ -174,6 +174,7 @@ void IfStmt::genCode()//????原来的代码不全？？？
     thenStmt->genCode();
     then_bb = builder->getInsertBB();
     new UncondBrInstruction(end_bb, then_bb);
+    new CondBrInstruction(then_bb, end_bb, cond->getOperand(), now_bb);
 
     builder->setInsertBB(end_bb);
         
@@ -210,7 +211,7 @@ void IfElseStmt::genCode()
     elseStmt->genCode();
     else_bb = builder->getInsertBB();
     new UncondBrInstruction(end_bb, else_bb);
-
+    new CondBrInstruction(then_bb, else_bb, cond->getOperand(), now_bb);
     
     builder->setInsertBB(end_bb);
 
@@ -964,6 +965,35 @@ void EmptyStmt::genCode()
 }
 void WhileStmt::genCode()
 {
+    BasicBlock *now_bb = builder->getInsertBB();
+    Function *func;
+    BasicBlock *body_bb, *end_bb;
+
+    func = builder->getInsertBB()->getParent();
+    body_bb = new BasicBlock(func);
+    end_bb = new BasicBlock(func);
+
+    cond->genCode();
+    backPatch(cond->trueList(), body_bb);
+    backPatch(cond->falseList(), end_bb);
+
+    builder->setInsertBB(body_bb);
+    body->genCode();
+    body_bb = builder->getInsertBB();
+    new UncondBrInstruction(now_bb, body_bb);
+
+    builder->setInsertBB(end_bb);
+
+    now_bb->addPred(body_bb);
+    body_bb->addSucc(now_bb);
+    now_bb->addPred(end_bb);
+    end_bb->addSucc(now_bb);
+
+    body_bb->addPred(end_bb);
+    end_bb->addSucc(body_bb);
+    body_bb->addPred(now_bb);
+    now_bb->addSucc(body_bb);
+
 }
 
 void UnaryExpr::genCode()
