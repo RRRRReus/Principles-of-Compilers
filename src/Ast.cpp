@@ -321,7 +321,8 @@ void DeclStmt::genCode()
 
 void ReturnStmt::genCode()
 {
-    // Todo
+    this->getRetValue()->genCode();
+    new RetInstruction(this->getRetValue()->getOperand(), builder->getInsertBB());
 }
 
 void AssignStmt::genCode()

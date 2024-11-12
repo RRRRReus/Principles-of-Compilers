@@ -18,7 +18,7 @@ std::string IntType::toStr()
 {
     //原来用的是buffer
     if(getConst())
-        return "const int";
+        return "i32";
     else
         return "i32";
 }

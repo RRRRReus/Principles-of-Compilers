@@ -255,6 +255,7 @@ class ReturnStmt : public StmtNode//返回语句类
 private:
     ExprNode *retValue;
 public:
+    ExprNode* getRetValue() {return retValue;}
     ReturnStmt(ExprNode*retValue) : retValue(retValue) {};
     void output(int level);
     void typeCheck();
