@@ -28,7 +28,8 @@ public:
     Function(Unit *, SymbolEntry *);
     ~Function();
     void insertBlock(BasicBlock *bb) { block_list.push_back(bb); };
-    BasicBlock *getEntry() { return entry; };//获取入口基本块
+    //获取入口基本块
+    BasicBlock *getEntry() { return entry; };
     void remove(BasicBlock *bb);
     void output() const;
     std::vector<BasicBlock *> &getBlockList(){return block_list;};

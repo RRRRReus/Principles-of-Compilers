@@ -20,7 +20,7 @@ std::string IntType::toStr()
     if(getConst())
         return "const int";
     else
-        return "int";
+        return "i32";
 }
 
 std::string VoidType::toStr()

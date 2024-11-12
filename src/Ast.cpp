@@ -141,6 +141,34 @@ void BinaryExpr::genCode()
         }
         new BinaryInstruction(opcode, dst, src1, src2, bb);
     }
+    else if(op == MUL || op == DIV || op == MOD)//乘除取模
+    {
+        expr1->genCode();
+        expr2->genCode();
+        Operand *src1 = expr1->getOperand();//获取操作数
+        Operand *src2 = expr2->getOperand();
+        int opcode;
+        switch (op)
+        {
+        case MUL:
+            opcode = BinaryInstruction::MUL;
+            break;
+        case DIV:
+            opcode = BinaryInstruction::DIV;
+            break;
+        case MOD:
+            opcode = BinaryInstruction::MOD;
+            break;
+        default:
+            opcode = -1;
+            break;
+        }
+        new BinaryInstruction(opcode, dst, src1, src2, bb);
+    }
+    else
+    {
+        // Todo
+    }
 }
 
 void Constant::genCode()
@@ -280,6 +308,14 @@ void DeclStmt::genCode()
         printf("生成了alloca指令\n");
         entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
         se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+    
+        if(expr != nullptr)
+        {
+            expr->genCode();
+            Operand *src = expr->getOperand();
+            new StoreInstruction(addr, src, entry);
+        }
+    
     }
 }
 
@@ -972,7 +1008,7 @@ void ContinueStmt::genCode()
     new UncondBrInstruction(top_while_cond, builder->getInsertBB());
     top_while_cond->addPred(builder->getInsertBB());
     builder->getInsertBB()->addSucc(top_while_cond);
-    
+
 
 }
 void EmptyStmt::genCode()
