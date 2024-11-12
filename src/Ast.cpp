@@ -657,9 +657,12 @@ void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹�
     }
 
     int size_real=args.size();//实参个数
-    //func是一个Id，其父类的SymbolEntry是一个IdentifierSymbolEntry，在调用IdentifierSymbolEntry的父类的getType函数，返回其类型为Func，
-    int size_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType().size();//形参个数
     printf("已算出实参个数：%d\n",size_real);
+    //func是一个Id，其父类的SymbolEntry是一个IdentifierSymbolEntry，在调用IdentifierSymbolEntry的父类的getType函数，返回其类型为Func，
+    printf("func的类型是%s\n",func->getSymbolEntry()->getType()->toStr().c_str());
+    //printf("形参个数是%ld\n",func->getSymbolEntry()->getType()->getParamsType().size());
+    int size_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType().size();//形参个数
+    printf("已算出形参个数：%d\n",size_form);
 
     if(size_real!=size_form)//检查实参个数和形参个数是否匹配
     {

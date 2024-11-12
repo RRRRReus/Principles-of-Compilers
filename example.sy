@@ -4,6 +4,8 @@
 
 int main()
 {
+    getint();
+    putint(1);
     //所有typecheck检查代码
 
     //int a7[4][4]={1,2,{3,4,5},{5,6}};
