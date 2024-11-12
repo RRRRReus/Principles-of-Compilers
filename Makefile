@@ -29,7 +29,7 @@ OUTPUT_RES = $(addsuffix .res, $(basename $(TESTCASE)))
 OUTPUT_BIN = $(addsuffix .bin, $(basename $(TESTCASE)))
 OUTPUT_LOG = $(addsuffix .log, $(basename $(TESTCASE)))
 
-.phony:all app run gdb testlab1 testlab2 testlab3 test check_mem2reg check_unreachable clean clean-all clean-test clean-app llvmir
+.phony:all app run gdb testlab1 testlab2 testlab3 test check_mem2reg check_unreachable clean clean-all clean-test clean-app llvmir runa
 
 all:app
 
