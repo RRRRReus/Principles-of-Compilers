@@ -172,16 +172,19 @@ void IfStmt::genCode()//????原来的代码不全？？？
 
     builder->setInsertBB(then_bb);
     thenStmt->genCode();
-    then_bb = builder->getInsertBB();
-    new UncondBrInstruction(end_bb, then_bb);
+    BasicBlock *then_over_bb = builder->getInsertBB();//then块结束后的基本块
+    //then_bb = builder->getInsertBB();
+    new UncondBrInstruction(end_bb, then_over_bb);
     new CondBrInstruction(then_bb, end_bb, cond->getOperand(), now_bb);
 
     builder->setInsertBB(end_bb);
         
     now_bb->addSucc(then_bb);
     then_bb->addPred(now_bb);
+
     now_bb->addSucc(end_bb);
     end_bb->addPred(now_bb);
+
     then_bb->addSucc(end_bb);
     end_bb->addPred(then_bb);
 
@@ -204,13 +207,13 @@ void IfElseStmt::genCode()
 
     builder->setInsertBB(then_bb);
     thenStmt->genCode();
-    then_bb = builder->getInsertBB();
-    new UncondBrInstruction(end_bb, then_bb);
+    BasicBlock *then_over_bb = builder->getInsertBB();
+    new UncondBrInstruction(end_bb, then_over_bb);
 
     builder->setInsertBB(else_bb);
     elseStmt->genCode();
-    else_bb = builder->getInsertBB();
-    new UncondBrInstruction(end_bb, else_bb);
+    BasicBlock *else_over_bb = builder->getInsertBB();
+    new UncondBrInstruction(end_bb, else_over_bb);
     new CondBrInstruction(then_bb, else_bb, cond->getOperand(), now_bb);
     
     builder->setInsertBB(end_bb);
@@ -956,9 +959,16 @@ void FuncCall::genCode()
 }
 void BreakStmt::genCode()
 {
+    //new UncondBrInstruction(builder->getInsertBB()->while_end, builder->getInsertBB());
+    // if(builder->getInsertBB()!=nullptr)
+    // builder->getInsertBB()->addPred(builder->getInsertBB()->while_end);
+    // if(builder->getInsertBB()->while_end!=nullptr)
+    // builder->getInsertBB()->while_end->addSucc(builder->getInsertBB());
+
 }
 void ContinueStmt::genCode()
 {
+    //new UncondBrInstruction(builder->getInsertBB()->while_cond, builder->getInsertBB());
 }
 void EmptyStmt::genCode()
 {
@@ -982,10 +992,12 @@ void WhileStmt::genCode()
     new CondBrInstruction(body_bb, end_bb, cond->getOperand(), cond_bb);
 
     builder->setInsertBB(body_bb);
+    body_bb->while_cond=cond_bb;
+    body_bb->while_end=end_bb;
     body->genCode();
-    body_bb = builder->getInsertBB();
-    new UncondBrInstruction(cond_bb, body_bb);
-
+    BasicBlock *body_over_bb = builder->getInsertBB();
+    new UncondBrInstruction(cond_bb, body_over_bb);
+    new UncondBrInstruction(cond_bb, now_bb);
     builder->setInsertBB(end_bb);
 
     now_bb->addSucc(cond_bb);

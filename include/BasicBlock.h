@@ -17,6 +17,8 @@ private:
     int no;//基本块编号
 
 public:
+    BasicBlock *while_cond;//如果该基本块是while循环的循环体，则while_cond指向循环条件
+    BasicBlock *while_end;//如果该基本块是while循环的循环体，则while_end指向循环结束
     BasicBlock(Function *);
     ~BasicBlock();
     void insertFront(Instruction *);
