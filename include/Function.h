@@ -23,6 +23,8 @@ private:
     Unit *parent;//父类
 
 public:
+    std::vector<BasicBlock *> while_cond;//在这个函数中while循环条件栈
+    std::vector<BasicBlock *> while_end;//在这个函数中while循环结束栈
     Function(Unit *, SymbolEntry *);
     ~Function();
     void insertBlock(BasicBlock *bb) { block_list.push_back(bb); };

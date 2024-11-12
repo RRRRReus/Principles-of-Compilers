@@ -959,16 +959,21 @@ void FuncCall::genCode()
 }
 void BreakStmt::genCode()
 {
-    //new UncondBrInstruction(builder->getInsertBB()->while_end, builder->getInsertBB());
-    // if(builder->getInsertBB()!=nullptr)
-    // builder->getInsertBB()->addPred(builder->getInsertBB()->while_end);
-    // if(builder->getInsertBB()->while_end!=nullptr)
-    // builder->getInsertBB()->while_end->addSucc(builder->getInsertBB());
+    BasicBlock *top_while_end = builder->getInsertBB()->getParent()->while_end.back();
+    new UncondBrInstruction(top_while_end, builder->getInsertBB());
+
+    top_while_end->addPred(builder->getInsertBB());
+    builder->getInsertBB()->addSucc(top_while_end);
 
 }
 void ContinueStmt::genCode()
 {
-    //new UncondBrInstruction(builder->getInsertBB()->while_cond, builder->getInsertBB());
+    BasicBlock *top_while_cond = builder->getInsertBB()->getParent()->while_cond.back();
+    new UncondBrInstruction(top_while_cond, builder->getInsertBB());
+    top_while_cond->addPred(builder->getInsertBB());
+    builder->getInsertBB()->addSucc(top_while_cond);
+    
+
 }
 void EmptyStmt::genCode()
 {
@@ -983,6 +988,8 @@ void WhileStmt::genCode()
     body_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
     cond_bb = new BasicBlock(func);
+    func->while_cond.push_back(cond_bb);
+    func->while_end.push_back(end_bb);
 
     builder->setInsertBB(cond_bb);
     cond->genCode();
@@ -999,6 +1006,9 @@ void WhileStmt::genCode()
     new UncondBrInstruction(cond_bb, body_over_bb);
     new UncondBrInstruction(cond_bb, now_bb);
     builder->setInsertBB(end_bb);
+
+    func->while_cond.pop_back();
+    func->while_end.pop_back();
 
     now_bb->addSucc(cond_bb);
     cond_bb->addPred(now_bb);
