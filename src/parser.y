@@ -718,6 +718,11 @@ DeclStmtNode
             fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
             assert(false);
         }
+        if(DefType->getConst())
+        {
+            fprintf(stderr, "LAB3类型检查报错:常量 \"%s\" 未初始化\n", (char*)$1);
+            assert(false);
+        }
         se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());//创建一个标识符符号表项
 
         identifiers->install($1, se);
@@ -730,9 +735,21 @@ DeclStmtNode
             assert(false);
         }
         SymbolEntry *se;
-        se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
+        if(DefType->getConst()||DefType->isInt())
+        {
+            se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel(),0);
+        }
+        else if(DefType->getConst()||DefType->isFloat())
+        {
+            se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel(),float(0.0));
+        }
+        else
+        {
+            se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
+        }
         identifiers->install($1, se);
-        DeclStmt *decl = new DeclStmt(new Id(se), $3);
+        Id *id = new Id(se);
+        DeclStmt *decl = new DeclStmt(id, $3);
         $$ = decl;
     }
     |ID ArrayDim{
@@ -841,7 +858,7 @@ DeclStmtNodes
         $$ = new SeqNode($1, $3);
     }
     ;
-DeclStmt//目前只有int类型！！！！
+DeclStmt//目前只有int类型！！！！都有了现在
     :Type 
      DeclStmtNodes SEMICOLON{
         // printf("declstmt!!!\n");

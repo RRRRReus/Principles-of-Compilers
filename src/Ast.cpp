@@ -271,6 +271,7 @@ void CompoundStmt::genCode()
     // Todo
     printf("进入CompoundStmt::genCode\n");
     stmt->genCode();
+    printf("进入CompoundStmt::genCodeOVER\n");
 
 }
 
@@ -284,8 +285,19 @@ void SeqNode::genCode()
 
 void DeclStmt::genCode()
 {
-    printf("进入DeclStmt::genCode\n");
+    fprintf(stderr,"进入DeclStmt::genCode222\n");
+    // if(id == nullptr)
+    // {
+    //     printf("id为空\n");
+    //     return;
+    // }
+    printf("ppp0");
+
     IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());
+    fprintf(stderr,"33");
+
+    printf("ppp");
+
     printf("符号表项是se->isGlobal() = %d\n",se->isGlobal());
     printf("符号表项是se->isLocal() = %d\n",se->isLocal());
     printf("符号表项是se->isParam() = %d\n",se->isParam());
@@ -321,6 +333,7 @@ void DeclStmt::genCode()
     
         if(expr != nullptr)
         {
+            printf("世界！");
             expr->genCode();
             fprintf(stderr, "expr是\n");
             Operand *src = expr->getOperand();
@@ -415,8 +428,8 @@ void BinaryExpr::typeCheck()
     printf("BinaryExpr::typeCheck\n");
     expr1->typeCheck();
     expr2->typeCheck();
-    // printf("检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
-    // printf("看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
+     //printf("检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
+     //printf("看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
     if(expr1->CanBeCalculatedInt&&expr2->CanBeCalculatedInt)
     {
         CanBeCalculatedInt = true;
@@ -613,6 +626,12 @@ void Constant::typeCheck()
 void Id::typeCheck()
 {
     printf("Id::typeCheck\n");
+    if(this->getSymbolEntry()->getType()->getConst())
+    {
+        this->CanBeCalculatedInt = true;
+        this->CalculatedInt = dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->ConstantValue;
+    }
+    //fprintf(stderr,"多少？？%d\n",this->CanBeCalculatedInt);
 
     // Todo
 }
@@ -662,6 +681,36 @@ void DeclStmt::typeCheck()
     if(expr != nullptr)
         expr->typeCheck();
 
+
+    if(id!=nullptr && expr!=nullptr
+        &&id->getSymbolEntry()->getType()->getConst() 
+        &&id->getSymbolEntry()->getType()-> isInt())//
+    {
+        printf("进入了常量初始化\n");
+        if(expr->CanBeCalculatedInt)
+        {
+            id->CanBeCalculatedInt = true;
+            if(id->getSymbolEntry()==nullptr)
+            {
+                fprintf(stderr, "LAB3类型检查报错:>>>>>\n");
+                exit(EXIT_FAILURE);
+            }
+
+            dynamic_cast<IdentifierSymbolEntry*>(id->getSymbolEntry())->ConstantValue = expr->CalculatedInt;
+            id->CalculatedInt = expr->CalculatedInt;
+
+            //id->setSymbolEntry(new ConstantSymbolEntry(TypeSystem::intType,expr->CalculatedInt));
+         }
+        else
+        {
+            fprintf(stderr, "LAB3类型检查报错:常量初始化失败\n");
+            exit(EXIT_FAILURE);
+        }
+    
+    
+    }
+
+
     // Todo
 }
 
@@ -683,7 +732,7 @@ void AssignStmt::typeCheck()//检查左值是否可以被赋值，右值是否�
     // 获取左值和右值的类型
     Type* lvalType = lval->getSymbolEntry()->getType();
     Type* exprType = expr->getSymbolEntry()->getType();
-
+    
     // 检查左值是否为可赋值的类型（例如标识符）
     if (!lvalType->isInt() && !lvalType->isFloat() && !lvalType->isLongLong() && !lvalType->isIntArray() && !lvalType->isFloatArray()) {
         fprintf(stderr, "LAB3类型检查报错:左值不是可赋值的类型\n");
@@ -707,7 +756,6 @@ void AssignStmt::typeCheck()//检查左值是否可以被赋值，右值是否�
         // 将函数的返回值类型作为右值类型
         exprType = returnType;
     }
-
     // // 检查左值和右值的类型是否兼容
     // if (lvalType != exprType) {
     //     fprintf(stderr, "LAB3类型检查报错:左值和右值的类型不匹配\n");

@@ -58,8 +58,10 @@ int main(int argc, char *argv[])
     if(dump_type == AST)
         ast.output();
     ast.typeCheck();    //类型检查
-    ast.genCode(&unit); //生成中间代码
     if(dump_type == IR)
+    {
+        ast.genCode(&unit); //生成中间代码
         unit.output();
+    }
     return 0;
 }

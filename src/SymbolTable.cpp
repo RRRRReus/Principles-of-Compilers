@@ -85,6 +85,19 @@ IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, int s
     addr = nullptr;
 }
 
+IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, int scope, int ConstantValue): SymbolEntry(type, SymbolEntry::VARIABLE), name(name)
+{
+    this->scope = scope;
+    addr = nullptr;
+    this->ConstantValue = ConstantValue;
+}
+IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, int scope, float ConstantFloatValue): SymbolEntry(type, SymbolEntry::VARIABLE), name(name)
+{
+    this->scope = scope;
+    addr = nullptr;
+    this->ConstantFloatValue = ConstantFloatValue;
+}
+
 std::string IdentifierSymbolEntry::toStr()
 {
     return "@" + name;
