@@ -2,7 +2,7 @@
 
 void Unit::insertFunc(Function *f)
 {
-    func_list.push_back(f);
+    func_list.push_back(f);//将函数f加入函数列表
 }
 
 void Unit::removeFunc(Function *func)
