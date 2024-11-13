@@ -70,6 +70,7 @@ public:
     Operand* getOperand() {return dst;};
     SymbolEntry* getSymPtr() {return symbolEntry;};
     SymbolEntry* getSymbolEntry() const { return symbolEntry; } // 添加访问器方法
+    void setSymbolEntry(SymbolEntry *se) { symbolEntry = se; } // 添加访问器方法
 };
 
 class BinaryExpr : public ExprNode//二元表达式类(所有二元运算符！！！)

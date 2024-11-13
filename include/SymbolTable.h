@@ -47,6 +47,7 @@ public:
     int ArrayDim;//数组维度
     int *ArrayDimSize;//数组各维度大小
     int size;//数组总大小
+    void setIntValue(int value) {this->value = value;};
     ConstantSymbolEntry(int value);
     ConstantSymbolEntry(Type *type, int value);
     ConstantSymbolEntry(Type *type, float fvalue);
@@ -92,7 +93,11 @@ private:
     // You can add any field you need here.
 
 public:
+    int ConstantValue;//如果是常量的话，整型常量值
+    int ConstantFloatValue;//如果是常量的话，浮点常量值
     IdentifierSymbolEntry(Type *type, std::string name, int scope);//标识符的类型、名字、作用域
+    IdentifierSymbolEntry(Type *type, std::string name, int scope,int ConstantValue);//作为一个const整形常量
+    IdentifierSymbolEntry(Type *type, std::string name, int scope,float ConstantFloatValue);//作为一个const浮点常量
     virtual ~IdentifierSymbolEntry() {};
     std::string toStr();
     bool isGlobal() const {return scope == GLOBAL;};

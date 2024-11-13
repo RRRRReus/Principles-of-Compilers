@@ -1,9 +1,10 @@
 int main()
 {
 
-    int b=4;
+    //int b=4,i;
     const int c=4;
-    
+    int a=9/(4-c);
+    //int a=9/(4-c);
     // int c;
     // int a=b*c;
     // a=b%c;
