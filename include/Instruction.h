@@ -32,7 +32,7 @@ protected:
     Instruction *next;//指向后一条指令
     BasicBlock *parent;//指向所属基本块
     std::vector<Operand*> operands;//操作数
-    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA};
+    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA, CALL};//增加函数调用的call
 };
 
 // meaningless instruction, used as the head node of the instruction list.
@@ -140,8 +140,8 @@ public:
     ~BinaryInstruction();
     void output() const;
     enum {SUB, ADD,MUL,DIV,MOD, AND, OR,XOR};
-    Operand *getDef() { return operands[0]; }//获取定义
-    std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }
+    Operand *getDef() { return operands[0]; }//获取结果操作数
+    std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }//获取源操作数
 };
 /**
  * @class CmpInstruction
@@ -259,6 +259,36 @@ public:
             return {};
     }
     void output() const;
+};
+
+
+/**
+ * @class CallInstruction
+ * @brief 表示编译器中间表示中的函数调用指令。
+ * 
+ * 该类负责处理函数调用操作。
+ * 它继承自基类 Instruction。
+ * 
+ */
+class CallInstruction : public Instruction
+{
+public:
+/**
+ * @brief 构造一个新的 CallInstruction 对象。
+ * @param dst 返回值操作数。
+ * @param funcSE 函数符号表项。
+ * @param args 实参操作数列表。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ * 
+ */
+    CallInstruction(Operand *dst, IdentifierSymbolEntry *funcSE, const std::vector<Operand *> &args, BasicBlock *insert_bb = nullptr);
+    ~CallInstruction();
+    void output() const;
+    Operand *getDef() { return operands.empty() ? nullptr : operands[0]; }//获取返回值操作数
+    std::vector<Operand *> getUse() { return std::vector<Operand *>(operands.begin() + 1, operands.end()); }//获取所有实参操作数
+
+private:
+    IdentifierSymbolEntry *funcSE;
 };
 
 #endif

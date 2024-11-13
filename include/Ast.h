@@ -67,7 +67,7 @@ public:
     bool CanBeCalculatedInt = false;//是否可以计算成一个整数
     int CalculatedInt;//如果可以计算成一个整数，那么这个整数是多少
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
-    Operand* getOperand() {return dst;};
+    Operand* getOperand() {return dst;};//获取操作数
     SymbolEntry* getSymPtr() {return symbolEntry;};
     SymbolEntry* getSymbolEntry() const { return symbolEntry; } // 添加访问器方法
 };
@@ -212,8 +212,8 @@ class DeclStmt : public StmtNode//声明语句类    标识符+表达式
 private:
     Id *id;
     Array *array;
-    ExprNode *expr;
-    InitValList *initValList;
+    ExprNode *expr;//表达式
+    InitValList *initValList;//初始化值列表
 public:
     DeclStmt(Id *id, ExprNode *expr) : id(id), expr(expr) {};
     DeclStmt(Array *array) : array(array), initValList(nullptr) {};

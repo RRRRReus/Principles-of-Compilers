@@ -7,9 +7,9 @@ extern FILE* yyout;
 
 Function::Function(Unit *u, SymbolEntry *s)
 {
-    u->insertFunc(this);
+    u->insertFunc(this);//插入unit的函数列表
     entry = new BasicBlock(this);//创建一个新的基本块
-    sym_ptr = s;
+    sym_ptr = s;//符号表项
     parent = u;
 }
 

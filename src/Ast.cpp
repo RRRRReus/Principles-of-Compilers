@@ -40,20 +40,26 @@ void FunctionDef::genCode()
 {
     printf("进入FunctionDef::genCode\n");
     Unit *unit = builder->getUnit();    //获取当前编译单元
-    Function *func = new Function(unit, se);    //创建函数对象
-    BasicBlock *entry = func->getEntry();
-    // set the insert point to the entry basicblock of this function.
-    builder->setInsertBB(entry);
+    Function *func = new Function(unit, se);    //创建函数对象（参数：当前编译单元，符号表项）//此处构造函数已将其放入unit的funclist中
 
+    BasicBlock *entry = func->getEntry();//获取函数的入口基本块
+    // set the insert point to the entry basicblock of this function.
+    builder->setInsertBB(entry);//把所有定义语句都放到函数的入口基本块中
+    if (params!=nullptr)
+    {
+        params->genCode();//生成参数的中间代码
+    }
     stmt->genCode();
 
     /**
      * Construct control flow graph. You need do set successors and predecessors for each basic block.
+     * 构造控制流图。您需要为每个基本块设置后继和前驱。
+     *
      * Todo
     */
 
+ 
 
-   
 }
 
 void BinaryExpr::genCode()
@@ -178,6 +184,7 @@ void Constant::genCode()
 
 void Id::genCode()
 {
+    fprintf(stderr, "进入Id::genCode\n");
     BasicBlock *bb = builder->getInsertBB();//获取当前基本块
     Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();//获取符号表项的地址
     new LoadInstruction(dst, addr, bb); //生成load指令
@@ -306,17 +313,47 @@ void DeclStmt::genCode()
         addr = new Operand(addr_se);
         alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
         printf("生成了alloca指令\n");
+        printf("指令类型是%d\n",alloca->getInstType());
+        printf("基本块是%p\n",entry);
         entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
+        printf("已将alloca指令插入到基本块的最前面\n");
         se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
     
         if(expr != nullptr)
         {
             expr->genCode();
+            fprintf(stderr, "expr是\n");
             Operand *src = expr->getOperand();
             new StoreInstruction(addr, src, entry);
         }
     
     }
+    else if(se->isParam())//新加入参数检查
+    {
+        printf("进入DeclStmt::genCode中参数的部分\n");
+        Function *func = builder->getInsertBB()->getParent();//获取当前基本块所属的函数（即参数所属位置）
+        BasicBlock *entry = func->getEntry();//获取函数的入口基本块
+        Instruction *alloca;//指令应为alloca指令
+        Operand *addr;  //操作数
+        SymbolEntry *addr_se;   //符号表项
+        Type *type;
+        type = new PointerType(se->getType());
+        addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());  //创建一个新的临时符号表项
+        addr = new Operand(addr_se);
+        alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
+        printf("生成了alloca指令\n");
+        entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
+        se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+        
+        if(expr != nullptr)
+        {
+            expr->genCode();
+            Operand *src = expr->getOperand();
+            new StoreInstruction(addr, src, entry);//store指令
+        }
+    }
+
+    printf("DeclStmt::genCode结束\n");
 }
 
 void ReturnStmt::genCode()
@@ -327,15 +364,20 @@ void ReturnStmt::genCode()
 
 void AssignStmt::genCode()
 {
-    BasicBlock *bb = builder->getInsertBB();
-    expr->genCode();
-    Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(lval->getSymPtr())->getAddr();
+    fprintf(stderr, "进入AssignStmt::genCode\n");
+    BasicBlock *bb = builder->getInsertBB();//获取当前基本块
+    lval->genCode();//需要加吗？？？？？？？？？
+    expr->genCode();////////////////////////////////////////////这个地方出现的问题
+    fprintf(stderr, "expr递归结束\n");
+    Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(lval->getSymPtr())->getAddr();//获取地址
+    fprintf(stderr, "lval是\n");
     Operand *src = expr->getOperand();
     /***
      * We haven't implemented array yet, the lval can only be ID. So we just store the result of the `expr` to the addr of the id.
      * If you want to implement array, you have to caculate the address first and then store the result into it.
      */
     new StoreInstruction(addr, src, bb);
+    fprintf(stderr, "AssignStmt::genCode结束\n");
 }
 
 void Ast::typeCheck()
@@ -358,6 +400,11 @@ void Ast::typeCheck()
 void FunctionDef::typeCheck()
 {
     printf("FunctionDef::typeCheck\n");
+    if(params != nullptr)//参数不为空
+    {
+        printf("该函数不为空,开始检查params，params是\n");
+         params->typeCheck();
+    }
     stmt->typeCheck();
 
     // Todo
@@ -687,7 +734,7 @@ void ArrayIndex::typeCheck()
 void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹配//函数未定义即调用的报错，在语法分析阶段实现
 {
     printf("FuncCall::typeCheck\n");
-    for(auto i : args)//遍历参数列表进行递归检查//？？？？？？？？？？？？？？？？？？？？？？
+    for(auto i : args)//遍历参数列表进行递归检查
     {
         printf("进入循环\n");
         i->typeCheck();
@@ -994,8 +1041,35 @@ void Array::genCode()
 void ArrayIndex::genCode()
 {
 }
-void FuncCall::genCode()
+void FuncCall::genCode()//！！！！！！记得做
 {
+    printf("进入FuncCall::genCode\n");
+    BasicBlock *bb = builder->getInsertBB(); // 获取当前基本块
+
+    // 生成实参的中间代码
+    std::vector<Operand *> argsOperands;//实参的操作数
+    for (auto arg : args) {
+        arg->genCode();
+        argsOperands.push_back(arg->getOperand());//将实参的操作数加入到argsOperands中
+    }
+
+    // 获取函数符号表项
+    IdentifierSymbolEntry *funcSE = dynamic_cast<IdentifierSymbolEntry *>(func->getSymbolEntry());
+
+    // 创建返回值操作数
+    Operand *retOperand = nullptr;//初始化返回值操作数
+    if (!funcSE->getType()->isVoid()) {//如果函数返回值不是void
+        retOperand = new Operand(new TemporarySymbolEntry(funcSE->getType(), SymbolTable::getLabel()));//为什么是临时符号表项？？？？？？
+    }
+
+    // 生成函数调用指令
+    new CallInstruction(retOperand, funcSE, argsOperands, bb);
+
+    // 设置返回值操作数
+    if (retOperand != nullptr) {
+        dst = retOperand;
+    }
+    
 }
 void BreakStmt::genCode()
 {
