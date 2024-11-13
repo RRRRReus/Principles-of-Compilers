@@ -16,11 +16,9 @@ Type* TypeSystem::longlongType = &commonLongLong;
 
 std::string IntType::toStr()
 {
-    //原来用的是buffer
-    if(getConst())
-        return "i32";
-    else
-        return "i32";
+    std::ostringstream buffer;
+    buffer << "i" << size;
+    return buffer.str();
 }
 
 std::string VoidType::toStr()

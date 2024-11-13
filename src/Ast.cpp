@@ -120,7 +120,7 @@ void BinaryExpr::genCode()
             opcode = -1;
             break;
         }
-        dst = new Operand(new TemporarySymbolEntry(new IntType(4), SymbolTable::getLabel()));    //创建一个临时符号表项
+        dst = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));    //创建一个临时符号表项
         new CmpInstruction(opcode, dst, src1, src2, bb);    //生成比较指令
 
         // Todo
