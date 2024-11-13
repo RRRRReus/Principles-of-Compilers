@@ -117,7 +117,6 @@ WhileStmt
 FuncCallStmt
     : FuncCall SEMICOLON {
         $$ = new ExprStmt($1);
-        fprintf(stderr, "带分号的函数调用语句\n");
     }
     ;
 
@@ -131,7 +130,6 @@ FuncCall
             assert(se != nullptr);
         }
         $$ = new FuncCall(se, new Id(se), {});//new Id(se) 创建一个表示函数名的 Id 对象
-        printf("函数调用!!!\n");
     }
     | ID LPAREN ArgList RPAREN {
         SymbolEntry *se = identifiers->lookup($1);
@@ -140,7 +138,6 @@ FuncCall
             assert(se != nullptr);
         }
         $$ = new FuncCall(se, new Id(se), *$3); // 使用 *$3 解引用指针
-        printf("函数调用!!!\n");
         delete $3; // 释放 ArgList
     }
     ;

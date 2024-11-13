@@ -83,7 +83,7 @@ public:
     std::string toStr();
 };
 
-class PointerType : public Type
+class PointerType : public Type//指针类型
 {
 private:
     Type *valueType;
