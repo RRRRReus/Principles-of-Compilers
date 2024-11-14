@@ -45,10 +45,19 @@ void FunctionDef::genCode()
     BasicBlock *entry = func->getEntry();//获取函数的入口基本块
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);//把所有定义语句都放到函数的入口基本块中
-    if (params!=nullptr)
+    // if (params!=nullptr)
+    // {
+    //     params->genCode();//生成参数的中间代码
+    // }
+    if (params != nullptr)
     {
-        params->genCode();//生成参数的中间代码
-    }
+        while(params != nullptr)
+        {
+            params->genCode();
+            params = (DeclStmt*)(params->getNext());//遍历参数列表（params是DeclStmt，通过指针在.y文件中连成一个链表）
+        }
+    }   
+    
     stmt->genCode();
 
     /**
@@ -341,29 +350,32 @@ void DeclStmt::genCode()
         printf("进入DeclStmt::genCode中参数的部分\n");
         Function *func = builder->getInsertBB()->getParent();//获取当前基本块所属的函数（即参数所属位置）
         BasicBlock *entry = func->getEntry();//获取函数的入口基本块
-        std::vector<Instruction*> alloca;//指令应为alloca指令
+       // std::vector<Instruction*> alloca;//指令应为alloca指令
+        Instruction *alloca;
         Operand *addr;  //操作数
         SymbolEntry *addr_se;   //符号表项
         Type *type;
         type = new PointerType(se->getType());
         fprintf(stderr, "指针参数类型是%s\n",type->toStr().c_str());
         fprintf(stderr, "是%s\n",se->getType()->toStr().c_str());
-        std::vector<Type*> params = dynamic_cast<FunctionType*>(se->getType())->getParamsType();//获取所有的参数类型！！！！
+        //std::vector<Type*> params = dynamic_cast<FunctionType*>(se->getType())->getParamsType();//获取所有的参数类型！！！！
         
-        for(long unsigned int i = 0;i < params.size();i++)
-        {
-            printf("参数类型是%s\n",params[i]->toStr().c_str());
-        }
+        // for(long unsigned int i = 0;i < params.size();i++)
+        // {
+        //     printf("参数类型是%s\n",params[i]->toStr().c_str());
+        // }
         addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());  //创建一个新的临时符号表项
         addr = new Operand(addr_se);
-        for(long unsigned int i = 0;i < params.size();i++)
-        {
-            alloca.push_back(new AllocaInstruction(addr, se));                   // allocate space for local id in function stack.
-            entry->insertFront(alloca[i]);                                 // allocate instructions should be inserted into the begin of the entry block.
-            se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
-        }
-        //alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
-        
+        // for(long unsigned int i = 0;i < params.size();i++)
+        // {
+        //     alloca.push_back(new AllocaInstruction(addr, se));                   // allocate space for local id in function stack.
+        //     entry->insertFront(alloca[i]);                                 // allocate instructions should be inserted into the begin of the entry block.
+        //     se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+        // }
+         
+        alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
+        entry->insertFront(alloca);
+        se->setAddr(addr);
         if(expr != nullptr)
         {
             expr->genCode();
