@@ -196,6 +196,16 @@ void BinaryExpr::genCode()
             opcode = -1;
             break;
         }
+        if(src1->getType()->isInt()&& dynamic_cast<IntType*>(src1->getType())->getSize()==1)
+        {
+            src1 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+            new ZextInstruction(src1, expr1->getOperand(), bb);
+        }
+        if(src2->getType()->isInt()&& dynamic_cast<IntType*>(src2->getType())->getSize()==1)
+        {
+            src2 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+            new ZextInstruction(src2, expr2->getOperand(), bb);
+        }
         new BinaryInstruction(opcode, dst, src1, src2, bb);
     }
     else if(op == MUL || op == DIV || op == MOD)//乘除取模

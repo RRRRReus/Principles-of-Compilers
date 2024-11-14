@@ -32,7 +32,17 @@ protected:
     Instruction *next;//指向后一条指令
     BasicBlock *parent;//指向所属基本块
     std::vector<Operand*> operands;//操作数
-    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA, CALL};//增加函数调用的call
+    enum {  BINARY, 
+            COND, 
+            UNCOND,
+            RET, 
+            LOAD, 
+            STORE, 
+            CMP, 
+            ALLOCA, 
+            CALL,//增加函数调用的call
+            ZEXT//增加零扩展指令
+    };
 };
 
 // meaningless instruction, used as the head node of the instruction list.
@@ -290,5 +300,19 @@ public:
 private:
     IdentifierSymbolEntry *funcSE;
 };
-
+/**
+ * @class ZextInstruction
+ * @brief 表示编译器中间表示中的零扩展指令。
+ *
+ * 该类负责处理零扩展操作。
+ * 它继承自基类 Instruction。
+ */
+class ZextInstruction : public Instruction
+{
+public:
+    ZextInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb = nullptr);
+    void output() const override;
+    Operand *getDef() override;
+    std::vector<Operand *> getUse() override;
+};
 #endif

@@ -22,18 +22,27 @@
 //     // a=b%c;
 //     // a=!b;
 // }
-int main()
-{
-    int b=4;
-    int c=4;
-    int a=b+c+123;
-    a=min(b,c);
-    a=max();
-    max();
+// int main()
+// {
+//     int b=4;
+//     int c=4;
+//     int a=b+c+123;
+//     a=min(b,c);
+//     a=max();
+//     max();
 
     
-    // int c;
-    // int a=b*c;
-    // a=b%c;
-    // a=!b;
+//     // int c;
+//     // int a=b*c;
+//     // a=b%c;
+//     // a=!b;
+// }
+int main()
+{
+    int a=11;
+    if(a+!a)
+    {
+        a=87;
+    }
+    a=23;
 }

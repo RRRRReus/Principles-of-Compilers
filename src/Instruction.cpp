@@ -384,3 +384,48 @@ void CallInstruction::output() const
 
 }
 
+/**
+ * @brief 构造一个新的 ZextInstruction 对象。
+ * @param dst 目标操作数。
+ * @param src 源操作数。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ */
+ZextInstruction::ZextInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(ZEXT, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+    
+}
+
+/**
+ * @brief 输出指令的字符串表示。
+ */
+void ZextInstruction::output() const
+{
+    fprintf(yyout, "  %s = zext %s %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
+}
+
+/**
+ * @brief 获取定义操作数。
+ * @return 定义操作数。
+ */
+Operand *ZextInstruction::getDef()
+{
+    return operands[0];
+}
+
+/**
+ * @brief 获取使用操作数。
+ * @return 使用操作数的向量。
+ */
+std::vector<Operand *> ZextInstruction::getUse()
+{
+    return {operands[1]};
+}
