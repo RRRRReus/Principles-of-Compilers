@@ -83,6 +83,7 @@ void BinaryInstruction::output() const
     {
     case XOR:
         op = "xor";
+        fprintf(stderr, "进入XOR,type是%s\n",type.c_str());
         break;
     case AND:
         op = "and";

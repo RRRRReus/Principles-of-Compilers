@@ -1,4 +1,6 @@
 #include "Unit.h"
+#include <iostream>
+extern FILE* yyout;
 
 void Unit::insertFunc(Function *f)
 {
@@ -12,6 +14,8 @@ void Unit::removeFunc(Function *func)
 
 void Unit::output() const
 {
+    std::string target= "target triple = \"x86_64-pc-linux-gnu\"\n";
+    fprintf(yyout, "target triple = \"x86_64-pc-linux-gnu\"\n");
     for (auto &func : func_list)
         func->output();
 }

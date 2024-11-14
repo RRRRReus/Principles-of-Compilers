@@ -24,6 +24,7 @@ public:
     bool isIntArray() const {return kind == INTARRAY;};
     bool isFloatArray() const {return kind == FLOATARRAY;};
     bool isLongLong() const {return kind == LONGLONG;};
+    
 };
 class LongLongType : public Type//长整型类型
 {
@@ -37,6 +38,7 @@ class IntType : public Type//整型类型
 private:
     int size;
 public:
+    int getSize(){return size;}
     IntType(int size) : Type(Type::INT), size(size){};
     std::string toStr();
 };
