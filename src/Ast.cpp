@@ -412,7 +412,7 @@ void DeclStmt::genCode()
             expr->genCode();
             fprintf(stderr, "expr是\n");
             Operand *src = expr->getOperand();
-            new StoreInstruction(addr, src, entry);
+            new StoreInstruction(addr, src, builder->getInsertBB());
         }
     
     }
