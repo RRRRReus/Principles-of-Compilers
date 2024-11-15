@@ -518,6 +518,11 @@ void BinaryExpr::typeCheck()
     printf("BinaryExpr::typeCheck\n");
     expr1->typeCheck();
     expr2->typeCheck();
+    if(op==DIV&&expr2->CanBeCalculatedInt&&expr2->CalculatedInt==0)
+    {
+        fprintf(stderr, "LAB3类型检查报错:除数为0\n");
+        exit(1);
+    }
      //printf("检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
      //printf("看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
     if(expr1->CanBeCalculatedInt&&expr2->CanBeCalculatedInt)
