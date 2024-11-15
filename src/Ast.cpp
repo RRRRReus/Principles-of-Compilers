@@ -657,13 +657,13 @@ void BinaryExpr::typeCheck()
             fprintf(stderr, "LAB3类型检查报错:未知运算符类型\n");
             exit(EXIT_FAILURE);
     }
-
+    //不在typecheck中设置类型，而是在genCode中设置类型
    // 设置当前表达式的类型
-    if (op == AND || op == OR || op == LESS || op == LESSOREQUAL || op == GREATER || op == GREATEROREQUAL || op == EQUAL || op == NOTEQUAL) {
-        this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果    //隐式转换
-    } else {
-        this->symbolEntry->setType(type1); // 数值运算符的结果类型与操作数类型相同  //隐式转换未实现（float+int）
-    }
+    // if (op == AND || op == OR || op == LESS || op == LESSOREQUAL || op == GREATER || op == GREATEROREQUAL || op == EQUAL || op == NOTEQUAL) {
+    //     this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果    //隐式转换
+    // } else {
+    //     this->symbolEntry->setType(type1); // 数值运算符的结果类型与操作数类型相同  //隐式转换未实现（float+int）
+    // }
 
 }
 void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何地方！！！
