@@ -299,7 +299,7 @@ class FunctionDef : public StmtNode//函数定义类（参数呢？）
 private:
     SymbolEntry *se;    // 函数符号表项
     //std::vector<Id*> params;    //  增加参数列表  //？？？？？？？？？？？？？？？？？Id还是DeclStmt
-    DeclStmt *params;
+    DeclStmt *params;//通过链表将DeclStmt连在一起构成params（在语法分析阶段）
     StmtNode *stmt;    // 函数体
 public:
      FunctionDef(SymbolEntry *se, DeclStmt *params, StmtNode *stmt) 

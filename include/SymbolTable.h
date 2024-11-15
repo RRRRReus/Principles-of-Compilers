@@ -91,6 +91,7 @@ private:
     int scope;  //作用域
     Operand *addr;  // The address of the identifier.
     // You can add any field you need here.
+    std::string globalInitialValue; // 新增全局变量初始值
 
 public:
     int ConstantValue;//如果是常量的话，整型常量值
@@ -108,6 +109,8 @@ public:
     Operand* getAddr() {return addr;};
     std::string getName() const {return name;};
     // You can add any function you need here.
+    std::string getInitialValue() const { return globalInitialValue; } // 获取全局变量初始值
+    void setInitialValue(const std::string &value) { globalInitialValue = value; } // 设置全局变量初始值
 };
 
 

@@ -1,24 +1,10 @@
-int min(int a,int b)
+int zero=100;
+int min()
 {
-    int temp=b+a;//现在函数参数只会有第一个被分配内存
-    return temp;
-}
-int max()
-{
-    return 10;
+    return 0;
 }
 int main()
 {
     int b=4;
-    int c=4;
-    int a=b+c+123;
-    a=min(b,c);
-    a=max();
-    max();
-
-    
-    // int c;
-    // int a=b*c;
-    // a=b%c;
-    // a=!b;
+   
 }

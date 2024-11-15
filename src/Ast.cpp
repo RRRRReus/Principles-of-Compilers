@@ -40,15 +40,13 @@ void FunctionDef::genCode()
 {
     printf("进入FunctionDef::genCode\n");
     Unit *unit = builder->getUnit();    //获取当前编译单元
+    fprintf(stderr, "已经获取当前编译单元\n");
     Function *func = new Function(unit, se);    //创建函数对象（参数：当前编译单元，符号表项）//此处构造函数已将其放入unit的funclist中
-
+    fprintf(stderr, "已经创建函数对象\n");
     BasicBlock *entry = func->getEntry();//获取函数的入口基本块
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);//把所有定义语句都放到函数的入口基本块中
-    // if (params!=nullptr)
-    // {
-    //     params->genCode();//生成参数的中间代码
-    // }
+    fprintf(stderr, "已经将定义语句插入基本块\n");
     if (params != nullptr)
     {
         while(params != nullptr)
@@ -280,7 +278,7 @@ void CompoundStmt::genCode()
     // Todo
     printf("进入CompoundStmt::genCode\n");
     stmt->genCode();
-    printf("进入CompoundStmt::genCodeOVER\n");
+    printf("CompoundStmt::genCodeOVER\n");
 
 }
 
@@ -301,20 +299,41 @@ void DeclStmt::genCode()
     //     return;
     // }
 
-    IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());
+    IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());//当前变量的符号表项
 
     printf("符号表项是se->isGlobal() = %d\n",se->isGlobal());
     printf("符号表项是se->isLocal() = %d\n",se->isLocal());
     printf("符号表项是se->isParam() = %d\n",se->isParam());
     if(se->isGlobal())//全局变量
     {
+        //不属于任何函数，虚空变量
         printf("进入DeclStmt::genCode中全局变量的部分\n");
         Operand *addr;
-        SymbolEntry *addr_se;
+        SymbolEntry *addr_se;//用于存储新生成的符号表项
+        //Instruction *alloca;//指令应为alloca指令
         addr_se = new IdentifierSymbolEntry(*se);//创建一个新的符号表项
-        addr_se->setType(new PointerType(se->getType()));//设置类型
+        addr_se->setType(new PointerType(se->getType()));//设置类型(变量的数据类型)
+        GlobalVariable *global = new GlobalVariable(addr_se);//创建一个新的全局变量
+         
+        fprintf(stderr, "全局变量的类型是%s\n",se->getType()->toStr().c_str());
         addr = new Operand(addr_se);//创建一个操作数
+        //alloca = new AllocaInstruction(addr, se); 
         se->setAddr(addr);//设置操作数的地址
+
+        Unit *unit = builder->getUnit();//获取当前编译单元
+        unit->insertGlobal(global);//将全局变量插入到编译单元的全局变量列表中
+
+        if(expr != nullptr)//如果有初始化表达式//全局变量不用store指令，直接在编译阶段初始化
+        {
+            fprintf(stderr, "具有初始化表达式\n");
+            expr->genCode();
+            fprintf(stderr, "expr中间代码生成结束\n");
+            Operand *src = expr->getOperand();//获取操作数
+            fprintf(stderr, "获取操作数结束, %s\n",src->toStr().c_str());
+            se->setInitialValue(src->toStr().c_str()); // 设置初始值
+            fprintf(stderr, "设置初始值结束\n");
+        }
+
     }
     else if(se->isLocal())//局部变量
     {
@@ -350,7 +369,6 @@ void DeclStmt::genCode()
         printf("进入DeclStmt::genCode中参数的部分\n");
         Function *func = builder->getInsertBB()->getParent();//获取当前基本块所属的函数（即参数所属位置）
         BasicBlock *entry = func->getEntry();//获取函数的入口基本块
-       // std::vector<Instruction*> alloca;//指令应为alloca指令
         Instruction *alloca;
         Operand *addr;  //操作数
         SymbolEntry *addr_se;   //符号表项
@@ -358,20 +376,9 @@ void DeclStmt::genCode()
         type = new PointerType(se->getType());
         fprintf(stderr, "指针参数类型是%s\n",type->toStr().c_str());
         fprintf(stderr, "是%s\n",se->getType()->toStr().c_str());
-        //std::vector<Type*> params = dynamic_cast<FunctionType*>(se->getType())->getParamsType();//获取所有的参数类型！！！！
         
-        // for(long unsigned int i = 0;i < params.size();i++)
-        // {
-        //     printf("参数类型是%s\n",params[i]->toStr().c_str());
-        // }
         addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());  //创建一个新的临时符号表项
         addr = new Operand(addr_se);
-        // for(long unsigned int i = 0;i < params.size();i++)
-        // {
-        //     alloca.push_back(new AllocaInstruction(addr, se));                   // allocate space for local id in function stack.
-        //     entry->insertFront(alloca[i]);                                 // allocate instructions should be inserted into the begin of the entry block.
-        //     se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
-        // }
          
         alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
         entry->insertFront(alloca);
