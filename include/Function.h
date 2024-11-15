@@ -19,10 +19,14 @@ class Function
 private:
     std::vector<BasicBlock *> block_list;//基本块列表
     SymbolEntry *sym_ptr;//符号表项
+    Operand *return_val;//返回值操作数
     BasicBlock *entry;//入口基本块
+    BasicBlock *exit;//出口基本块
     Unit *parent;//父类
 
 public:
+    BasicBlock *getExit() { return exit; };
+    Operand *getRetValue() { return return_val; };
     std::vector<BasicBlock *> while_cond;//在这个函数中while循环条件栈
     std::vector<BasicBlock *> while_end;//在这个函数中while循环结束栈
     Function(Unit *, SymbolEntry *);

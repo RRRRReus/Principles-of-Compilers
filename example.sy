@@ -39,10 +39,5 @@
 // }
 int main()
 {
-    int a=11;
-    if(a+!a)
-    {
-        a=87;
-    }
-    a=23;
+    return 4;
 }

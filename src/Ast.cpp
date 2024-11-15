@@ -452,7 +452,17 @@ void DeclStmt::genCode()
 void ReturnStmt::genCode()
 {
     this->getRetValue()->genCode();
-    new RetInstruction(this->getRetValue()->getOperand(), builder->getInsertBB());
+    Function *func = builder->getInsertBB()->getParent();
+    Operand *retValue = this->getRetValue()->getOperand();
+    //BasicBlock *exit = func->getExit();
+    BasicBlock *bb = builder->getInsertBB();
+    Operand *addr = func->getRetValue();
+    
+    new StoreInstruction(addr, retValue, bb);
+    new UncondBrInstruction(func->getExit(), bb);
+    builder->getInsertBB()->addSucc(func->getExit());
+    func->getExit()->addPred(builder->getInsertBB());
+    //new RetInstruction(this->getRetValue()->getOperand(), builder->getInsertBB());
 }
 
 void AssignStmt::genCode()
