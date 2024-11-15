@@ -22,7 +22,21 @@ void Unit::output() const
 
 Unit::~Unit()
 {
-    auto delete_list = func_list;
-    for(auto &func:delete_list)
+    auto delete_list_func = func_list;
+    for(auto &func:delete_list_func)
         delete func;
+    auto delete_list_global = global_list;
+    for (auto global : delete_list_global)
+        delete global;
+}
+
+//新增全局变量内容
+void Unit::insertGlobal(GlobalVariable *global)
+{
+    global_list.push_back(global);
+}
+
+void Unit::removeGlobal(GlobalVariable *global)
+{
+    global_list.erase(std::remove(global_list.begin(), global_list.end(), global), global_list.end());
 }
