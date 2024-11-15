@@ -41,7 +41,8 @@ void Function::output() const
     {
         auto bb = q.front();//取出队列的第一个元素
         q.pop_front();//删除队列的第一个元素
-        bb->output();//输出基本块
+        if(!bb->empty())
+            bb->output();//输出基本块
         for (auto succ = bb->succ_begin(); succ != bb->succ_end(); succ++)//遍历基本块的后继
         {
             if (v.find(*succ) == v.end())//如果后继不在已访问集合中

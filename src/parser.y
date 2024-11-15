@@ -675,7 +675,7 @@ Type
         DefType = $$;
     }
     | CONST INT {
-        IntType *intType = new IntType(4);
+        IntType *intType = new IntType(32);
         intType->setConst(true);
         $$ = intType;
         DefType = $$;
