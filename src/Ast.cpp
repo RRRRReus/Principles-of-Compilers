@@ -320,7 +320,16 @@ void IfElseStmt::genCode()
     elseStmt->genCode();
     BasicBlock *else_over_bb = builder->getInsertBB();
     new UncondBrInstruction(end_bb, else_over_bb);
-    new CondBrInstruction(then_bb, else_bb, cond->getOperand(), now_bb);
+    Operand *Condsrc=cond->getOperand();
+    Type *Condtype=cond->getSymbolEntry()->getType();
+
+    if(Condtype->isInt()&& dynamic_cast<IntType*>(Condtype)->getSize()==32)
+    {
+        Condsrc = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
+        new CmpInstruction(CmpInstruction::NE, Condsrc, cond->getOperand(), new Operand(new ConstantSymbolEntry(0)), now_bb);
+    }
+
+    new CondBrInstruction(then_bb, else_bb, Condsrc, now_bb);
     
     builder->setInsertBB(end_bb);
 
@@ -1253,7 +1262,13 @@ void WhileStmt::genCode()
     cond_bb = builder->getInsertBB();
     backPatch(cond->trueList(), body_bb);
     backPatch(cond->falseList(), end_bb);
-    new CondBrInstruction(body_bb, end_bb, cond->getOperand(), cond_bb);
+    Operand *cond_op = cond->getOperand();
+    if(cond_op->getType()->isInt()&& dynamic_cast<IntType*>(cond_op->getType())->getSize()==32)
+    {
+        cond_op = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
+        new CmpInstruction(CmpInstruction::NE, cond_op, cond->getOperand(), new Operand(new ConstantSymbolEntry(0)), cond_bb);
+    }
+    new CondBrInstruction(body_bb, end_bb, cond_op, cond_bb);
 
     builder->setInsertBB(body_bb);
     body_bb->while_cond=cond_bb;
