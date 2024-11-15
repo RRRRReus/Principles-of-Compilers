@@ -361,6 +361,9 @@ void DeclStmt::genCode()
     //     return;
     // }
 
+    //se 表示变量本身的符号表项，而 addr_se 表示指向该变量的指针的符号表项。
+    //addr_se 的类型是 PointerType，它指向 se 所表示的变量的类型。
+
     IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());//当前变量的符号表项
 
     printf("符号表项是se->isGlobal() = %d\n",se->isGlobal());
@@ -368,18 +371,20 @@ void DeclStmt::genCode()
     printf("符号表项是se->isParam() = %d\n",se->isParam());
     if(se->isGlobal())//全局变量
     {
-        //不属于任何函数，虚空变量
+        // //不属于任何函数，虚空变量
         printf("进入DeclStmt::genCode中全局变量的部分\n");
         Operand *addr;
         SymbolEntry *addr_se;//用于存储新生成的符号表项
-        //Instruction *alloca;//指令应为alloca指令
+        Type *type;
+        type = new PointerType(se->getType());//创建一个指针类型
         addr_se = new IdentifierSymbolEntry(*se);//创建一个新的符号表项
-        addr_se->setType(new PointerType(se->getType()));//设置类型(变量的数据类型)
-        GlobalVariable *global = new GlobalVariable(addr_se);//创建一个新的全局变量
+        //addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());//这个到底是干什么使的啊啊啊啊啊啊啊！！！！！！！！！！！
+        addr_se->setType(type);//设置类型(变量的数据类型)
+        GlobalVariable *global = new GlobalVariable(se);//创建一个新的全局变量
          
         fprintf(stderr, "全局变量的类型是%s\n",se->getType()->toStr().c_str());
-        addr = new Operand(addr_se);//创建一个操作数
-        //alloca = new AllocaInstruction(addr, se); 
+        addr = new Operand(addr_se);//创建一个目标数
+        fprintf(stderr, "全局变量的地址是%s\n",addr->toStr().c_str());
         se->setAddr(addr);//设置操作数的地址
 
         Unit *unit = builder->getUnit();//获取当前编译单元
@@ -390,10 +395,19 @@ void DeclStmt::genCode()
             fprintf(stderr, "具有初始化表达式\n");
             expr->genCode();
             fprintf(stderr, "expr中间代码生成结束\n");
-            Operand *src = expr->getOperand();//获取操作数
-            fprintf(stderr, "获取操作数结束, %s\n",src->toStr().c_str());
-            se->setInitialValue(src->toStr().c_str()); // 设置初始值
-            fprintf(stderr, "设置初始值结束\n");
+            //Operand *src = expr->getOperand();//获取操作数
+            if(expr->CanBeCalculatedInt){
+                ConstantSymbolEntry* src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(),expr->CalculatedInt);//此处只有int
+                fprintf(stderr, "获取操作数结束, %s\n",src->toStr().c_str());
+                se->setInitialValue(src->toStr().c_str()); // 设置初始值
+                fprintf(stderr, "设置初始值结束\n");
+            }
+            else{//未实现浮点数！！！！！！！！！！！！！！
+
+                fprintf(stderr, "LAB3中间代码生成报错:全局变量的赋值不为常数\n");
+                exit(1);
+            }
+            
         }
 
     }
@@ -410,9 +424,9 @@ void DeclStmt::genCode()
         addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());  //创建一个新的临时符号表项
         addr = new Operand(addr_se);
         alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
-        printf("生成了alloca指令\n");
+        fprintf(stderr, "addr是%s\n",addr->toStr().c_str());
+        fprintf(stderr, "addr_se是%s\n",addr_se->toStr().c_str());
         printf("指令类型是%d\n",alloca->getInstType());
-        printf("基本块是%p\n",entry);
         entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
         printf("已将alloca指令插入到基本块的最前面\n");
         se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
@@ -420,7 +434,6 @@ void DeclStmt::genCode()
         if(expr != nullptr)
         {
             expr->genCode();
-            fprintf(stderr, "expr是\n");
             Operand *src = expr->getOperand();
             new StoreInstruction(addr, src, entry);
         }

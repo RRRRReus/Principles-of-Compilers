@@ -1,10 +1,8 @@
-int zero=100;
-int min()
-{
-    return 0;
-}
+int zero=100+1;
+int sss=11+9;
 int main()
 {
-    int b=4;
+    int b;
+    b=zero+sss+6;
    
 }

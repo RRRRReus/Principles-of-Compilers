@@ -8,6 +8,7 @@ class GlobalVariable
 {
 private:
     SymbolEntry *se;
+    
 
 public:
     GlobalVariable(SymbolEntry *se) : se(se) {}

@@ -110,7 +110,13 @@ public:
     std::string getName() const {return name;};
     // You can add any function you need here.
     std::string getInitialValue() const { return globalInitialValue; } // 获取全局变量初始值
-    void setInitialValue(const std::string &value) { globalInitialValue = value; } // 设置全局变量初始值
+    void setInitialValue(const std::string &value) { 
+        if(!value.empty()){
+            globalInitialValue = value;
+            }
+            else{
+                globalInitialValue = "0";//默认初始值为0！！！
+            } } // 设置全局变量初始值
 };
 
 
