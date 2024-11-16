@@ -47,8 +47,8 @@
 %token CONTINUE
 
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt FuncCallStmt EmptyStmt ParamList Param funcStmt 
-%nterm <stmttype> BreakStmt ContinueStmt DeclStmtNode DeclStmtNodes
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt  EmptyStmt ParamList Param funcStmt 
+%nterm <stmttype> BreakStmt ContinueStmt DeclStmtNode DeclStmtNodes ExprStmt
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp FuncCall Array InitVal UnaryExp MulExp EqExp
 %nterm <arglisttype> ArgList InitValList// 实参 声明 ArgList 的类型
 
@@ -85,10 +85,10 @@ Stmt
     | DeclStmt {$$=$1;}
     | FuncDef {$$=$1;}
     | WhileStmt {$$=$1;}
-    | FuncCallStmt {$$=$1;}
     | EmptyStmt {$$=$1;}
     | BreakStmt {$$=$1;}
     | ContinueStmt {$$=$1;}
+    | ExprStmt{$$=$1;}
     ;
 BreakStmt
     : BREAK SEMICOLON{
@@ -113,13 +113,11 @@ WhileStmt
     }
     ;
 
-// 函数调用语句（函数调用 + ）
-FuncCallStmt
-    : FuncCall SEMICOLON {
+ExprStmt
+    : Exp SEMICOLON{
         $$ = new ExprStmt($1);
-    }
-    ;
 
+    }
 
 // 函数调用
 FuncCall

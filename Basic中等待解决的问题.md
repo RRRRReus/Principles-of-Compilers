@@ -1,7 +1,12 @@
 ### 库函数
+
+
 test/functional_test/Basic/33_multi_branch.sy
+情况复杂
 test/functional_test/Basic/046_op_priority4.sy
+找不到getint()
 test/functional_test/Basic/047_op_priority5.sy
+void函数怎么办
 test/functional_test/Basic/048_stmt_expr.sy
 test/functional_test/Basic/050_unary_op2.sy
 test/functional_test/Basic/051_logi_assign.sy
