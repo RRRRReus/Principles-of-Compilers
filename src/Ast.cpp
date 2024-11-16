@@ -318,7 +318,16 @@ void IfElseStmt::genCode()
     elseStmt->genCode();
     BasicBlock *else_over_bb = builder->getInsertBB();
     new UncondBrInstruction(end_bb, else_over_bb);
-    new CondBrInstruction(then_bb, else_bb, cond->getOperand(), now_bb);
+    Operand *Condsrc=cond->getOperand();
+    Type *Condtype=cond->getSymbolEntry()->getType();
+
+    if(Condtype->isInt()&& dynamic_cast<IntType*>(Condtype)->getSize()==32)
+    {
+        Condsrc = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
+        new CmpInstruction(CmpInstruction::NE, Condsrc, cond->getOperand(), new Operand(new ConstantSymbolEntry(0)), now_bb);
+    }
+
+    new CondBrInstruction(then_bb, else_bb, Condsrc, now_bb);
     
     builder->setInsertBB(end_bb);
 
@@ -435,7 +444,7 @@ void DeclStmt::genCode()
         {
             expr->genCode();
             Operand *src = expr->getOperand();
-            new StoreInstruction(addr, src, entry);
+            new StoreInstruction(addr, src, builder->getInsertBB());
         }
     
     }
@@ -472,7 +481,17 @@ void DeclStmt::genCode()
 void ReturnStmt::genCode()
 {
     this->getRetValue()->genCode();
-    new RetInstruction(this->getRetValue()->getOperand(), builder->getInsertBB());
+    Function *func = builder->getInsertBB()->getParent();
+    Operand *retValue = this->getRetValue()->getOperand();
+    //BasicBlock *exit = func->getExit();
+    BasicBlock *bb = builder->getInsertBB();
+    Operand *addr = func->getRetValue();
+    
+    new StoreInstruction(addr, retValue, bb);
+    new UncondBrInstruction(func->getExit(), bb);
+    builder->getInsertBB()->addSucc(func->getExit());
+    func->getExit()->addPred(builder->getInsertBB());
+    //new RetInstruction(this->getRetValue()->getOperand(), builder->getInsertBB());
 }
 
 void AssignStmt::genCode()
@@ -528,6 +547,11 @@ void BinaryExpr::typeCheck()
     printf("BinaryExpr::typeCheck\n");
     expr1->typeCheck();
     expr2->typeCheck();
+    if(op==DIV&&expr2->CanBeCalculatedInt&&expr2->CalculatedInt==0)
+    {
+        fprintf(stderr, "LAB3类型检查报错:除数为0\n");
+        exit(1);
+    }
      //printf("检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
      //printf("看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
     if(expr1->CanBeCalculatedInt&&expr2->CanBeCalculatedInt)
@@ -653,13 +677,13 @@ void BinaryExpr::typeCheck()
             fprintf(stderr, "LAB3类型检查报错:未知运算符类型\n");
             exit(EXIT_FAILURE);
     }
-
+    //不在typecheck中设置类型，而是在genCode中设置类型
    // 设置当前表达式的类型
-    if (op == AND || op == OR || op == LESS || op == LESSOREQUAL || op == GREATER || op == GREATEROREQUAL || op == EQUAL || op == NOTEQUAL) {
-        this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果    //隐式转换
-    } else {
-        this->symbolEntry->setType(type1); // 数值运算符的结果类型与操作数类型相同  //隐式转换未实现（float+int）
-    }
+    // if (op == AND || op == OR || op == LESS || op == LESSOREQUAL || op == GREATER || op == GREATEROREQUAL || op == EQUAL || op == NOTEQUAL) {
+    //     this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果    //隐式转换
+    // } else {
+    //     this->symbolEntry->setType(type1); // 数值运算符的结果类型与操作数类型相同  //隐式转换未实现（float+int）
+    // }
 
 }
 void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何地方！！！
@@ -1283,7 +1307,13 @@ void WhileStmt::genCode()
     cond_bb = builder->getInsertBB();
     backPatch(cond->trueList(), body_bb);
     backPatch(cond->falseList(), end_bb);
-    new CondBrInstruction(body_bb, end_bb, cond->getOperand(), cond_bb);
+    Operand *cond_op = cond->getOperand();
+    if(cond_op->getType()->isInt()&& dynamic_cast<IntType*>(cond_op->getType())->getSize()==32)
+    {
+        cond_op = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
+        new CmpInstruction(CmpInstruction::NE, cond_op, cond->getOperand(), new Operand(new ConstantSymbolEntry(0)), cond_bb);
+    }
+    new CondBrInstruction(body_bb, end_bb, cond_op, cond_bb);
 
     builder->setInsertBB(body_bb);
     body_bb->while_cond=cond_bb;

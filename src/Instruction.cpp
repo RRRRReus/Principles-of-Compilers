@@ -329,6 +329,7 @@ StoreInstruction::~StoreInstruction()
 
 void StoreInstruction::output() const
 {
+    fprintf(stderr, "进入StoreInstruction::output函数\n");
     std::string dst = operands[0]->toStr();
     std::string src = operands[1]->toStr();
     std::string dst_type = operands[0]->getType()->toStr();
