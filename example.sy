@@ -1,4 +1,4 @@
-#include"sysyruntimelibrary/sylib.h"
+//#include"sysyruntimelibrary/sylib.h"
 //void putint(int k){}
 int main () {
     int k;
@@ -11,6 +11,7 @@ const int n = 10;
 		k + 1;
 		k = k + k;
 	}
-	putint(k);
+	getint();
+    //getint();
 	return k;
 }
