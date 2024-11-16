@@ -29,7 +29,7 @@ std::string VoidType::toStr()
 std::string FunctionType::toStr()
 {
     std::ostringstream buffer;
-    buffer << returnType->toStr() << "()";
+    buffer << returnType->toStr();
     return buffer.str();
 }
 
