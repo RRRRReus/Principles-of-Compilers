@@ -12,6 +12,7 @@ const int n = 10;
 		k = k + k;
 	}
 	getint();
+    putint(1);
     //getint();
 	return k;
 }

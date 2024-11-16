@@ -396,7 +396,13 @@ void CallInstruction::output() const
         args.push_back(operands[i]->toStr());//将实参加入到args中
         args_type.push_back(operands[i]->getType()->toStr());//将实参类型加入到args_type中
     }
-    fprintf(yyout, "  %s = call %s %s(", dst.c_str(), retType.c_str(), func.c_str()); 
+    if(retType!="void")
+        fprintf(yyout, "  %s = call %s %s(", dst.c_str(), retType.c_str(), func.c_str()); 
+    else
+    {
+        fprintf(yyout, "  call %s %s(" ,retType.c_str(), func.c_str()); 
+
+    }
 
      // 输出实参
     for (size_t i = 0; i < args.size(); i++)
