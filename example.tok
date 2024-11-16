@@ -1,0 +1,29 @@
+INT	int
+ID	main
+LPAREN	(
+RPAREN	)
+LBRACE	{
+INT	int
+ID	a
+COMMA	,
+ID	b
+SEMICOLON	;
+ID	a
+ASSIGN	=
+DECIMIAL            10                   3     0     10                  
+SEMICOLON	;
+ID	b
+ASSIGN	=
+DECIMIAL            2                    4     0     2                   
+SEMICOLON	;
+MULTI_COMMENT_START /*                   5     0    
+MULTI_COMMENT       /                    5     0    
+MULTI_COMMENT_STAR  *                    5     0    
+MULTI_COMMENT               b = 1;       5     0    
+MULTI_COMMENT               // b = 2     5     0    
+MULTI_COMMENT                            5     0    
+MULTI_COMMENT_END   */                   5     0    
+RETURN	return
+ID	b
+SEMICOLON	;
+RBRACE	}

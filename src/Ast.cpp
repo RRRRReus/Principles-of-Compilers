@@ -1238,9 +1238,11 @@ void FuncCall::genCode()//！！！！！！记得做
     //如果是库函数怎么怎么地
     if(funcSE==nullptr)//如果在标识符符号表里没有找到函数，那么他一定是库函数
     {
+        fprintf(stderr, "进入库函数\n");
         FunctionSymbolEntry *library_funcSE = dynamic_cast<FunctionSymbolEntry *>(func->getSymbolEntry());
         // 创建返回值操作数
         Operand *retOperand = nullptr;//初始化返回值操作数
+        fprintf(stderr, "库函数的类型是%d\n",library_funcSE->getReturnType()->isVoid());
         if (!library_funcSE->getType()->isVoid()) {//如果函数返回值不是void
         retOperand = new Operand(new TemporarySymbolEntry(library_funcSE->getType(), SymbolTable::getLabel()));//为什么是临时符号表项？？？？？？
         }
