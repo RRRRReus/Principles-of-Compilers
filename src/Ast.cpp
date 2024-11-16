@@ -1201,22 +1201,47 @@ void FuncCall::genCode()//！！！！！！记得做
         argsOperands.push_back(arg->getOperand());//将实参的操作数加入到argsOperands中
     }
 
-    // 获取函数符号表项
+    // 尝试获取函数符号表项
     IdentifierSymbolEntry *funcSE = dynamic_cast<IdentifierSymbolEntry *>(func->getSymbolEntry());
 
-    // 创建返回值操作数
-    Operand *retOperand = nullptr;//初始化返回值操作数
-    if (!funcSE->getType()->isVoid()) {//如果函数返回值不是void
+    //如果是库函数怎么怎么地
+    if(funcSE==nullptr)//如果在标识符符号表里没有找到函数，那么他一定是库函数
+    {
+        FunctionSymbolEntry *library_funcSE = dynamic_cast<FunctionSymbolEntry *>(func->getSymbolEntry());
+        // 创建返回值操作数
+        Operand *retOperand = nullptr;//初始化返回值操作数
+        if (!library_funcSE->getType()->isVoid()) {//如果函数返回值不是void
+        retOperand = new Operand(new TemporarySymbolEntry(library_funcSE->getType(), SymbolTable::getLabel()));//为什么是临时符号表项？？？？？？
+        }
+
+        // 生成函数调用指令
+        new CallInstruction(retOperand, library_funcSE, argsOperands, bb);
+
+        // 设置返回值操作数
+        if (retOperand != nullptr) {
+            dst = retOperand;
+        }
+
+    }
+    else{
+         // 创建返回值操作数
+        Operand *retOperand = nullptr;//初始化返回值操作数
+        if (!funcSE->getType()->isVoid()) {//如果函数返回值不是void
         retOperand = new Operand(new TemporarySymbolEntry(funcSE->getType(), SymbolTable::getLabel()));//为什么是临时符号表项？？？？？？
     }
 
-    // 生成函数调用指令
-    new CallInstruction(retOperand, funcSE, argsOperands, bb);
+        // 生成函数调用指令
+        new CallInstruction(retOperand, funcSE, argsOperands, bb);
 
-    // 设置返回值操作数
-    if (retOperand != nullptr) {
-        dst = retOperand;
+        // 设置返回值操作数
+        if (retOperand != nullptr) {
+            dst = retOperand;
+        }
+
     }
+
+   
+    
     
 }
 void BreakStmt::genCode()

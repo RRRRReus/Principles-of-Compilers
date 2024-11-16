@@ -351,6 +351,21 @@ CallInstruction::CallInstruction(Operand *dst, IdentifierSymbolEntry *funcSE, co
     }
 }
 
+//函数调用命令2
+CallInstruction::CallInstruction(Operand *dst, FunctionSymbolEntry *library_funcSE, const std::vector<Operand *> &args, BasicBlock *insert_bb)
+    : Instruction(CALL, insert_bb), library_funcSE(library_funcSE)
+{
+    if (dst != nullptr) {
+        operands.push_back(dst);
+        dst->setDef(this);
+    }
+    for (auto arg : args) {
+        operands.push_back(arg);
+        arg->addUse(this);
+    }
+}
+
+
 CallInstruction::~CallInstruction() {}
 
 void CallInstruction::output() const
@@ -358,9 +373,21 @@ void CallInstruction::output() const
     // 输出指令的字符串表示
     // 这里可以根据需要实现具体的输出逻辑
     std::string dst = operands[0]->toStr();//返回值操作数
-    std::string func = funcSE->toStr();//函数名
+    std::string func;
+    std::string retType;
+    if(funcSE==nullptr){
+        func = library_funcSE->toStr();//函数名
+        retType= dynamic_cast<FunctionType*>(library_funcSE->getType())->getRetType()->toStr();//由符号表获取返回值类型
+    }
+        
+
+    else{
+        func = funcSE->toStr();//函数名
+        retType= dynamic_cast<FunctionType*>(funcSE->getType())->getRetType()->toStr();//由符号表获取返回值类型
+    }
+        
     //Type* retType=funcSE->getType();//返回值类型
-    std::string retType= dynamic_cast<FunctionType*>(funcSE->getType())->getRetType()->toStr();//由符号表获取返回值类型
+    
     std::vector<std::string> args;//实参字符串列表
     std::vector<std::string> args_type;//实参类型列表
     for(long unsigned int i = 1; i < operands.size(); i++)

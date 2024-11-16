@@ -1,8 +1,9 @@
-int zero=100+1;
-int sss=11+9;
-int main()
-{
-    int b;
-    b=zero+sss+6;
-   
+//test global var define
+int a = 3;
+int b = 5;
+void min(int a){}
+int main(){
+    min(1);
+    putint(1+1);
+    return a + b;
 }

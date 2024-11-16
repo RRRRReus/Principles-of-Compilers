@@ -292,6 +292,7 @@ public:
  * 
  */
     CallInstruction(Operand *dst, IdentifierSymbolEntry *funcSE, const std::vector<Operand *> &args, BasicBlock *insert_bb = nullptr);
+    CallInstruction(Operand *dst, FunctionSymbolEntry *library_funcSE, const std::vector<Operand *> &args, BasicBlock *insert_bb = nullptr);
     ~CallInstruction();
     void output() const;
     Operand *getDef() { return operands.empty() ? nullptr : operands[0]; }//获取返回值操作数
@@ -299,6 +300,7 @@ public:
 
 private:
     IdentifierSymbolEntry *funcSE;
+    FunctionSymbolEntry *library_funcSE;
 };
 /**
  * @class ZextInstruction

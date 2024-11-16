@@ -117,13 +117,14 @@ std::string TemporarySymbolEntry::toStr()
 
 std::string FunctionSymbolEntry::toStr() 
 {
-    std::string str = name + "(";
-    for (size_t i = 0; i < paramTypes.size(); ++i) {
-        str += paramTypes[i]->toStr();
-        if (i < paramTypes.size() - 1) str += ", ";
-    }//输出所有参数类型
-    str += ") -> " + returnType->toStr();//返回类型
-    return str;
+    // std::string str = name + "(";
+    // for (size_t i = 0; i < paramTypes.size(); ++i) {
+    //     str += paramTypes[i]->toStr();
+    //     if (i < paramTypes.size() - 1) str += ", ";
+    // }//输出所有参数类型
+    // str += ") -> " + returnType->toStr();//返回类型
+    // return str;
+    return "@" + name;
 }
 
 SymbolTable::SymbolTable()
