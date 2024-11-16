@@ -299,8 +299,8 @@ public:
     std::vector<Operand *> getUse() { return std::vector<Operand *>(operands.begin() + 1, operands.end()); }//获取所有实参操作数
 
 private:
-    IdentifierSymbolEntry *funcSE;
-    FunctionSymbolEntry *library_funcSE;
+    IdentifierSymbolEntry *funcSE=nullptr;
+    FunctionSymbolEntry *library_funcSE=nullptr;
 };
 /**
  * @class ZextInstruction
