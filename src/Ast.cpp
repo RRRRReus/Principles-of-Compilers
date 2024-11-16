@@ -1222,7 +1222,14 @@ void FuncCall::genCode()//！！！！！！记得做
     std::vector<Operand *> argsOperands;//实参的操作数
     for (auto arg : args) {
         arg->genCode();
-        argsOperands.push_back(arg->getOperand());//将实参的操作数加入到argsOperands中
+        Operand *argOperand = arg->getOperand();
+        if(argOperand->getType()->isInt()&& dynamic_cast<IntType*>(argOperand->getType())->getSize()==1)
+        {
+            argOperand = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+            new ZextInstruction(argOperand, arg->getOperand(), bb);
+        }
+
+        argsOperands.push_back(argOperand);//将实参的操作数加入到argsOperands中
     }
 
     // 尝试获取函数符号表项

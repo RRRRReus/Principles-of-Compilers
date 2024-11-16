@@ -6,11 +6,6 @@ test/functional_test/Basic/33_multi_branch.sy
 
 
 
-test/functional_test/Basic/bang.sy
-找不到putch
-putint参数类型转换
-
-
 test/functional_test/Basic/mvn.sy
 -2147483648老朋友
 
