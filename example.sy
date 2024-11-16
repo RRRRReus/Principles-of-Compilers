@@ -4,4 +4,13 @@ int main() {
     //putint(-2147483648); putch(10);
     //putint(2147483647); putch(10);
     return a;
+int main(){
+    int a, b;
+    a = 10;
+    b = 2;
+    /*/*
+        b = 1;
+        // b = 2
+    */
+    return b;
 }

@@ -52,6 +52,8 @@ run:app
 	@$(BINARY) -o example.ll -i example.sy
 runa:app
 	@$(BINARY) -o example.ast -a example.sy
+runt:app
+	@$(BINARY) -o example.tok -t example.sy
 
 gdb:app
 	@gdb $(BINARY)

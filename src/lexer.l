@@ -330,8 +330,9 @@ WHITE [\t ]
 }
 
 {EOL} yylineno++;
+
 "//" {
-    //token_out("SINGLE_COMMENT_START");
+    token_out("SINGLE_COMMENT_START");
     BEGIN SINGLE_COMMENT;
 }
 "#" {
@@ -340,17 +341,16 @@ WHITE [\t ]
 }
 
 <SINGLE_COMMENT>.* {
-    //token_out("SINGLE_COMMENT");
+    token_out("SINGLE_COMMENT");
     // 处理单行注释的内容
 }
 
 <SINGLE_COMMENT>\n {
-    //token_out("SINGLE_COMMENT_END");
+    token_out("SINGLE_COMMENT_END");
     BEGIN INITIAL;
 }
 
 "/*" {
-
     //token_out("MULTI_COMMENT_START");
     BEGIN MULTI_COMMENT;
 }
@@ -362,15 +362,16 @@ WHITE [\t ]
 }
 
 
-<MULTI_COMMENT>[^*|\n]+ {
-    // 处理没有结束符的情况，匹配直到遇到 *
-    // 如果注释里有*呢
-    //token_out("MULTI_COMMENT");
+<MULTI_COMMENT>"*" {
+    // 处理注释中的 * 字符（下面没包含*，所以如果注释中出现不会识别，会直接出现在输出文件中）
+    //token_out("MULTI_COMMENT_STAR");
 }
 
 
-
-
+<MULTI_COMMENT>[^*\n]+ {
+    // 处理没有结束符的情况，匹配直到遇到 *
+    //token_out("MULTI_COMMENT");
+}
 
 <MULTI_COMMENT>\n {
     yycolno = 0;  // 遇到换行符，将列号重置为 0
