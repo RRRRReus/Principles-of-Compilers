@@ -89,5 +89,5 @@ std::string PointerType::toStr()
 
 std::string LongLongType::toStr()
 {
-    return "long long";
+    return "i32";
 }

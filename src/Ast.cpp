@@ -239,6 +239,7 @@ void BinaryExpr::genCode()
 void Constant::genCode()
 {
     // we don't need to generate code.//不需要生成代码
+
 }
 
 void Id::genCode()
@@ -931,7 +932,8 @@ void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹�
         {
             Type* type_real=args[i]->getSymbolEntry()->getType();
             Type* type_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType()[i];
-            if(type_real!=type_form)
+            bool int_longlong = (type_real->isInt() && type_form->isLongLong()) || (type_real->isLongLong() && type_form->isInt());
+            if((type_real!=type_form)&&!int_longlong)
             {
                 fprintf(stderr, "LAB3类型检查报错:实参与形参类型不匹配\n");
                 exit(EXIT_FAILURE);
@@ -1360,8 +1362,21 @@ void UnaryExpr::genCode()
             dst = src;
             break;
         case NEG:
-            dst = new Operand(new TemporarySymbolEntry(src->getType(), SymbolTable::getLabel()));
-            new BinaryInstruction(BinaryInstruction::SUB, dst, new Operand(new ConstantSymbolEntry(src->getType(),0)), src, bb);
+            if(src->getType()->isLongLong())
+            {
+                long long value = dynamic_cast<ConstantSymbolEntry*>(src->getSymbolEntry())->getLongLongValue();
+                dst = new Operand(new ConstantSymbolEntry(src->getType(), -value));
+                fprintf(stderr, "进入NEG,value是%lld\n",value); 
+
+            }
+            else
+            {
+                dst = new Operand(new TemporarySymbolEntry(src->getType(), SymbolTable::getLabel()));
+                new BinaryInstruction(BinaryInstruction::SUB, dst, new Operand(new ConstantSymbolEntry(src->getType(),0)), src, bb);
+
+            }
+
+
             break;
         case NOT:
             dst = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));

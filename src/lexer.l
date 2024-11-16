@@ -219,6 +219,7 @@ WHITE [\t ]
         dump_tokens("%-20s", "LONGLONG");
         dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
         dump_tokens("%-20" PRId64 "\n", decimal);
+        yylval.ltype = decimal;
         return LONGLONG;
     }
     else if(decimal<0&&decimal<INT_MIN)
@@ -330,6 +331,10 @@ WHITE [\t ]
 
 {EOL} yylineno++;
 "//" {
+    //token_out("SINGLE_COMMENT_START");
+    BEGIN SINGLE_COMMENT;
+}
+"#" {
     //token_out("SINGLE_COMMENT_START");
     BEGIN SINGLE_COMMENT;
 }

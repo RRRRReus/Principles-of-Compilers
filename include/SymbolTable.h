@@ -57,6 +57,7 @@ public:
     virtual ~ConstantSymbolEntry() {};
     int getValue() const {return value;};
     std::string toStr();
+    long long getLongLongValue() const {return llvalue;};
     // You can add any function you need here.
 };
 

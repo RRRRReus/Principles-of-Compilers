@@ -25,6 +25,7 @@ public:
     int usersNum() const {return uses.size();};
     Instruction *getDef() { return def; };
     std::vector<Instruction *> &getUse() { return uses; };
+    SymbolEntry *getSymbolEntry() { return se; };
 
     use_iterator use_begin() {return uses.begin();};
     use_iterator use_end() {return uses.end();};

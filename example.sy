@@ -1,19 +1,7 @@
 #include"sysyruntimelibrary/sylib.h"
-//void putint(int k){}
-int main () {
-    int k;
-const int n = 10;
-
-	int i = 0;
-	k = 1;
-	while (i <= n - 1) {
-		i = i + 1;
-		k + 1;
-		k = k + k;
-	}
-	getint();
-    putint(1);
-	putch(1);
-    //getint();
-	return k;
+int main() {
+    int a=-2147483648;
+    //putint(-2147483648); putch(10);
+    //putint(2147483647); putch(10);
+    return a;
 }
