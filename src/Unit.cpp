@@ -16,6 +16,10 @@ void Unit::output() const
 {
     //std::string target= "target triple = \"x86_64-pc-linux-gnu\"\n";
     fprintf(yyout, "target triple = \"armv7-unknown-linux-gnueabihf\"\n");
+
+    for (auto global : global_list)
+        global->output();
+
     for (auto &func : func_list)
         func->output();
 }
