@@ -829,9 +829,15 @@ void DeclStmt::typeCheck()
                     exit(EXIT_FAILURE);
                 }
 
+                if(array->getSymbolEntry()->getType()->isIntArray())
+                {
+                    dynamic_cast<IntArrayType*>(array->getSymbolEntry()->getType())->dimSize->push_back(array->arrayIndex->index[i]->CalculatedInt);
 
-                dynamic_cast<IntArrayType*>(array->getSymbolEntry()->getType())->dimSize->push_back(array->arrayIndex->index[i]->CalculatedInt);
-                
+                }
+                if(array->getSymbolEntry()->getType()->isFloatArray())
+                {
+                    dynamic_cast<FloatArrayType*>(array->getSymbolEntry()->getType())->dimSize->push_back(array->arrayIndex->index[i]->CalculatedInt);
+                }
             }
         }
     

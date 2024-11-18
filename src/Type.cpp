@@ -90,8 +90,16 @@ std::string IntArrayType::toStr()
     }
 
 }
+FloatArrayType::FloatArrayType(int dim):Type(Type::FLOATARRAY),dim(dim)
+{
+    this->dim = dim;
+    dimSize = new std::vector<int>();
+}
 std::string FloatArrayType::toStr()
 {
+    if(dimSize->size()==0)
+    {
+    
     std::ostringstream buffer;
     if(getConst())
         buffer << "const float[";
@@ -104,6 +112,22 @@ std::string FloatArrayType::toStr()
     }
     buffer << "]";
     return buffer.str();
+    }
+    else{
+
+    std::ostringstream buffer;
+    for(int i = 0; i < dim; i++)
+    {
+        buffer << "["<<(*dimSize)[i]<<" x ";
+    }
+    buffer << "float";
+    for(int i = 0; i < dim; i++)
+    {
+        buffer << "]";
+    }
+    return buffer.str();
+        
+    }
 }
 std::string PointerType::toStr()
 {
