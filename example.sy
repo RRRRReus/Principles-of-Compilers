@@ -1,16 +1,20 @@
 #include"sysyruntimelibrary/sylib.h"
+int a=0;
+void ee()
+{
+    a=5;
+    if(a<5)
+    {
+        a=5;
+    }
+    else
+    {
+        a=6;
+    }
+    //return;
+}
 int main() {
-    int a=-2147483648;
-    //putint(-2147483648); putch(10);
-    //putint(2147483647); putch(10);
+    ee();
     return a;
-int main(){
-    int a, b;
-    a = 10;
-    b = 2;
-    /*/*
-        b = 1;
-        // b = 2
-    */
-    return b;
+
 }

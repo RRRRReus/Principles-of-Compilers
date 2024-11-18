@@ -481,6 +481,16 @@ void DeclStmt::genCode()
 
 void ReturnStmt::genCode()
 {
+    if(this->getRetValue()==nullptr)
+    {
+        fprintf(stderr, "进入空ReturnStmt\n");
+        Function *func = builder->getInsertBB()->getParent();
+        BasicBlock *exit = func->getExit();
+        new UncondBrInstruction(exit, builder->getInsertBB());
+        builder->getInsertBB()->addSucc(exit);
+        exit->addPred(builder->getInsertBB());
+        return;
+    }
     this->getRetValue()->genCode();
     Function *func = builder->getInsertBB()->getParent();
     Operand *retValue = this->getRetValue()->getOperand();

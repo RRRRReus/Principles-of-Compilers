@@ -452,6 +452,9 @@ ReturnStmt
     RETURN Exp SEMICOLON{
         $$ = new ReturnStmt($2);
     }
+    | RETURN SEMICOLON{
+        $$ = new ReturnStmt(nullptr);
+    }
     ;
 // 表达式
 Exp
