@@ -828,10 +828,6 @@ void DeclStmt::typeCheck()
                     fprintf(stderr, "LAB3类型检查报错:数组大小小于等于0\n");
                     exit(EXIT_FAILURE);
                 }
-                if(array->getSymbolEntry()->getType()->isIntArray())
-                {
-                    IntArrayType* temp=dynamic_cast<IntArrayType*>(array->getSymbolEntry()->getType());
-                }
 
 
                 dynamic_cast<IntArrayType*>(array->getSymbolEntry()->getType())->dimSize->push_back(array->arrayIndex->index[i]->CalculatedInt);
