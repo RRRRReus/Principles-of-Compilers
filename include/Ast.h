@@ -151,9 +151,11 @@ class Array : public ExprNode//数组类
 {
 private:
     std::string name;
-    Id *id;
-    ArrayIndex *arrayIndex;
     public:
+    Id *id;
+
+    ArrayIndex *arrayIndex;
+
     Array( Id *id, ArrayIndex *arrayIndex) : ExprNode(id->getSymbolEntry()), id(id), arrayIndex(arrayIndex) {};
     void output(int level);
     void typeCheck();

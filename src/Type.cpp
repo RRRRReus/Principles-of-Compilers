@@ -49,19 +49,32 @@ std::string ConstFloatType::toStr()
     return "const float";
 }
 
+IntArrayType::IntArrayType(int dim):Type(Type::INTARRAY),dim(dim)
+{
+    fprintf(stderr,"IntArrayType::IntArrayType(int dim)函数被调用\n");
+    dimSize = new std::vector<int>();
+    //fprintf(stderr,"dimSize->size()是%ld\n",dimSize->size());
+}
 std::string IntArrayType::toStr()
 {
+    // std::ostringstream buffer;
+    // if(getConst())
+    //     buffer << "const int[";
+    // else
+    //     buffer << "int[";
+    // for(int i = 0; i < dim; i++)
+    // {
+    //     if(i != dim - 1)
+    //         buffer << "][";
+    // }
+    // buffer << "]";
+    // return buffer.str();
+
     std::ostringstream buffer;
-    if(getConst())
-        buffer << "const int[";
-    else
-        buffer << "int[";
     for(int i = 0; i < dim; i++)
     {
-        if(i != dim - 1)
-            buffer << "][";
+        buffer << "["<<(*dimSize)[i]<<" x i32]";
     }
-    buffer << "]";
     return buffer.str();
 }
 std::string FloatArrayType::toStr()

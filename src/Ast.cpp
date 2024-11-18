@@ -810,7 +810,37 @@ void DeclStmt::typeCheck()
 {
     fprintf(stderr,"DeclStmt::typeCheck\n");
     if(array != nullptr)
+    {
         array->typeCheck();
+        for(long unsigned int i=0;i<(array->arrayIndex->index.size());i++)
+        {
+
+            if(array->arrayIndex->index[i]->CanBeCalculatedInt==false)
+            {
+                fprintf(stderr, "LAB3类型检查报错:数组大小不为常数\n");
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+
+                if(array->arrayIndex->index[i]->CalculatedInt<=0)
+                {
+                    fprintf(stderr, "LAB3类型检查报错:数组大小小于等于0\n");
+                    exit(EXIT_FAILURE);
+                }
+                if(array->getSymbolEntry()->getType()->isIntArray())
+                {
+                    IntArrayType* temp=dynamic_cast<IntArrayType*>(array->getSymbolEntry()->getType());
+                }
+
+
+                dynamic_cast<IntArrayType*>(array->getSymbolEntry()->getType())->dimSize->push_back(array->arrayIndex->index[i]->CalculatedInt);
+                
+            }
+        }
+    
+        fprintf(stderr,"最后array的类型是%s\n",array->getSymbolEntry()->getType()->toStr().c_str());
+    }
     if(id != nullptr)
         id->typeCheck();
     if(expr != nullptr)
@@ -904,7 +934,7 @@ void Array::typeCheck()
     fprintf(stderr,"Array::typeCheck\n");
     id->typeCheck();
     arrayIndex->typeCheck();
-
+    fprintf(stderr,"Array::typeCheckOVER\n");
 }
 void ArrayIndex::typeCheck()
 {
@@ -913,6 +943,7 @@ void ArrayIndex::typeCheck()
     {
         i->typeCheck();
     }
+    fprintf(stderr,"ArrayIndex::typeCheckOVER\n");
 }
 void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹配//函数未定义即调用的报错，在语法分析阶段实现
 {
