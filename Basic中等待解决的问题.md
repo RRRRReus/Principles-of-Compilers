@@ -13,3 +13,4 @@ test/functional_test/Basic/mvn.sy
 test/functional_test/Basic/053_comment2.sy
 
 
+全部解决啦！！
