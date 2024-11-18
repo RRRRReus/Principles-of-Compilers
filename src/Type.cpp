@@ -57,18 +57,23 @@ IntArrayType::IntArrayType(int dim):Type(Type::INTARRAY),dim(dim)
 }
 std::string IntArrayType::toStr()
 {
-    // std::ostringstream buffer;
-    // if(getConst())
-    //     buffer << "const int[";
-    // else
-    //     buffer << "int[";
-    // for(int i = 0; i < dim; i++)
-    // {
-    //     if(i != dim - 1)
-    //         buffer << "][";
-    // }
-    // buffer << "]";
-    // return buffer.str();
+    if(dimSize->size()==0)
+    {
+    
+    std::ostringstream buffer;
+    if(getConst())
+        buffer << "const int[";
+    else
+        buffer << "i32[";
+    for(int i = 0; i < dim; i++)
+    {
+        if(i != dim - 1)
+            buffer << "][";
+    }
+    buffer << "]";
+    return buffer.str();
+    }
+    else{
 
     std::ostringstream buffer;
     for(int i = 0; i < dim; i++)
@@ -81,6 +86,9 @@ std::string IntArrayType::toStr()
         buffer << "]";
     }
     return buffer.str();
+        
+    }
+
 }
 std::string FloatArrayType::toStr()
 {
