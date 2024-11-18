@@ -44,7 +44,7 @@ std::string ConstantSymbolEntry::toStr()
     if((this->getType())->isInt())
     {
     buffer << value;
-    //printf("lookINT!!!%d\n",value);
+    //fprintf(stderr,"lookINT!!!%d\n",value);
     
     }
     
@@ -52,13 +52,13 @@ std::string ConstantSymbolEntry::toStr()
     {
     
     buffer << fvalue;
-    //printf("look!!!%f\n",fvalue);
+    //fprintf(stderr,"look!!!%f\n",fvalue);
 
     }
     if((this->getType())->isLongLong())
     {
     buffer << llvalue;
-    //printf("look!!!%lld\n",llvalue);
+    //fprintf(stderr,"look!!!%lld\n",llvalue);
     }
     if((this->getType())->isIntArray())
     {

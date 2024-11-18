@@ -452,6 +452,9 @@ ReturnStmt
     RETURN Exp SEMICOLON{
         $$ = new ReturnStmt($2);
     }
+    | RETURN SEMICOLON{
+        $$ = new ReturnStmt(nullptr);
+    }
     ;
 // 表达式
 Exp
@@ -479,9 +482,9 @@ PrimaryExp
 
     }
     | FLOAT {
-        //printf("1now is float%f\n", $1);
+        //fprintf(stderr,"1now is float%f\n", $1);
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
-        //printf("2now is float%f\n", se->fvalue);
+        //fprintf(stderr,"2now is float%f\n", se->fvalue);
         $$ = new Constant(se);
     }
     |LONGLONG{
@@ -778,13 +781,13 @@ DeclStmtNode
         Id *name=new Id(se);
         identifiers->install($1, se);
         if (name == nullptr) {
-    printf("Error: id is nullptr\n");
+    fprintf(stderr,"Error: id is nullptr\n");
 } else {
-    printf("id is valid\n");
+    fprintf(stderr,"id is valid\n");
     if (name->getSymbolEntry() == nullptr) {
-        printf("Error: id->getSymbolEntry() is nullptr\n");
+        fprintf(stderr,"Error: id->getSymbolEntry() is nullptr\n");
     } else {
-        printf("id->getSymbolEntry() is valid\n");
+        fprintf(stderr,"id->getSymbolEntry() is valid\n");
     }
 }
 
@@ -823,19 +826,19 @@ DeclStmtNode
         Id *name=new Id(se);
         identifiers->install($1, se);
         if (name == nullptr) {
-    printf("Error: id is nullptr\n");
+    fprintf(stderr,"Error: id is nullptr\n");
 } else {
-    printf("id is valid\n");
+    fprintf(stderr,"id is valid\n");
     if (name->getSymbolEntry() == nullptr) {
-        printf("Error: id->getSymbolEntry() is nullptr\n");
+        fprintf(stderr,"Error: id->getSymbolEntry() is nullptr\n");
     } else {
-        printf("id->getSymbolEntry() is valid\n");
+        fprintf(stderr,"id->getSymbolEntry() is valid\n");
     }
 }
 
         $$ = new DeclStmt(new Array(name, $2), new InitValList(*$5));
         
-        printf("what?");
+        fprintf(stderr,"what?");
         //delete []$2;
 
 
@@ -844,11 +847,11 @@ DeclStmtNode
 //连续定义
 DeclStmtNodes
     :DeclStmtNode{
-        //printf("DeclStmtNode!!!\n");
+        //fprintf(stderr,"DeclStmtNode!!!\n");
         $$=$1;
     }
     |DeclStmtNodes COMMA DeclStmtNode{
-        //printf("DeclStmtNodes!!!\n");
+        //fprintf(stderr,"DeclStmtNodes!!!\n");
         //$$->addNodeList($3);
         $$ = new SeqNode($1, $3);
     }
@@ -856,7 +859,7 @@ DeclStmtNodes
 DeclStmt//目前只有int类型！！！！都有了现在
     :Type 
      DeclStmtNodes SEMICOLON{
-        // printf("declstmt!!!\n");
+        // fprintf(stderr,"declstmt!!!\n");
         // while($2 != nullptr)
         // {
         //     (DeclStmt*)$2->getId()->getSymbolEntry()->setType($1);
@@ -905,19 +908,19 @@ DeclStmt//目前只有int类型！！！！都有了现在
         // std::vector<ExprNode*> IndexDim;
         // IndexDim.push_back($3);
         if (name == nullptr) {
-    printf("Error: id is nullptr\n");
+    fprintf(stderr,"Error: id is nullptr\n");
 } else {
-    printf("id is valid\n");
+    fprintf(stderr,"id is valid\n");
     if (name->getSymbolEntry() == nullptr) {
-        printf("Error: id->getSymbolEntry() is nullptr\n");
+        fprintf(stderr,"Error: id->getSymbolEntry() is nullptr\n");
     } else {
-        printf("id->getSymbolEntry() is valid\n");
+        fprintf(stderr,"id->getSymbolEntry() is valid\n");
     }
 }
 
         $$ = new DeclStmt(new Array(name, $3));
         
-        printf("what?");
+        fprintf(stderr,"what?");
         delete []$2;
     } */
 %%

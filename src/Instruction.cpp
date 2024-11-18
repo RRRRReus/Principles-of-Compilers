@@ -170,7 +170,7 @@ void CmpInstruction::output() const
 
 UncondBrInstruction::UncondBrInstruction(BasicBlock *to, BasicBlock *insert_bb) : Instruction(UNCOND, insert_bb)
 {
-    printf("UncondBrInstruction::UncondBrInstruction\n");
+    fprintf(stderr,"UncondBrInstruction::UncondBrInstruction\n");
     branch = to;
 }
 
@@ -195,7 +195,7 @@ CondBrInstruction::CondBrInstruction(BasicBlock*true_branch, BasicBlock*false_br
     this->false_branch = false_branch;
     cond->addUse(this);
     operands.push_back(cond);
-    printf("CondBrInstruction::CondBrInstruction\n");
+    fprintf(stderr,"CondBrInstruction::CondBrInstruction\n");
 }
 
 CondBrInstruction::~CondBrInstruction()
@@ -279,7 +279,7 @@ AllocaInstruction::~AllocaInstruction()
 
 void AllocaInstruction::output() const
 {
-    printf("进入AllocaInstruction::output函数\n");
+    fprintf(stderr,"进入AllocaInstruction::output函数\n");
     std::string dst, type;
     dst = operands[0]->toStr();
     type = se->getType()->toStr();

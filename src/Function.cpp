@@ -14,6 +14,13 @@ Function::Function(Unit *u, SymbolEntry *s)
     parent = u;
     //fprintf(stderr, "sym_ptr->getType()->getRetType()->toStr() = %s\n",dynamic_cast<FunctionType*>(sym_ptr->getType())->getRetType()->toStr().c_str());   
     Type *retType = dynamic_cast<FunctionType*>(sym_ptr->getType())->getRetType();//获取函数的返回值类型
+    
+    if(retType->isVoid())
+    {
+        return_val = nullptr;
+        new RetInstruction(nullptr, exit);// 返回
+    }
+    else{
     Type *PointRetType = new PointerType(retType);//返回值类型的指针类型
     SymbolEntry *ret = new TemporarySymbolEntry(retType,SymbolTable::getLabel());//创建一个新的临时符号表项
     this->return_val = new Operand(new TemporarySymbolEntry(PointRetType,SymbolTable::getLabel()));//返回值操作数
@@ -26,7 +33,7 @@ Function::Function(Unit *u, SymbolEntry *s)
     Operand *load = new Operand(new TemporarySymbolEntry(retType, SymbolTable::getLabel()));//创建一个新的临时符号表项
     new LoadInstruction(load, return_val, exit);// 加载返回值
     new RetInstruction(load, exit);// 返回
-
+    }
 }
 Function::~Function()
 {
@@ -47,7 +54,7 @@ void Function::output() const
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type *retType = funcType->getRetType();
     fprintf(yyout, "define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
-    printf("已输出define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
+    fprintf(stderr,"已输出define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
     std::set<BasicBlock *> v;   //用于记录已经访问过的基本块
     std::list<BasicBlock *> q;  //用于广度优先搜索
     q.push_back(entry);//将入口基本块加入队列
