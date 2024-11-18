@@ -884,6 +884,7 @@ void DeclStmt::typeCheck()
 void ReturnStmt::typeCheck()
 {
     fprintf(stderr,"ReturnStmt::typeCheck\n");
+    if(retValue != nullptr)
     retValue->typeCheck();
 
     // Todo
