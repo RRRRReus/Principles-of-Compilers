@@ -1,6 +1,7 @@
 #include "Instruction.h"
 #include "BasicBlock.h"
 #include <iostream>
+#include <string>
 #include "Function.h"
 #include "Type.h"
 extern FILE* yyout;
@@ -93,16 +94,28 @@ void BinaryInstruction::output() const
         break;
 
     case ADD:
-        op = "add";
+        if(type == "float")
+            op = "fadd";
+        else
+            op = "add";
         break;
     case SUB:
-        op = "sub";
+        if(type == "float")
+            op = "fsub";
+        else
+            op = "sub";
         break;
     case MUL:
-        op ="mul";
+        if(type == "float")
+            op = "fmul";
+        else
+            op = "mul";
         break;
     case DIV:
-        op = "sdiv";
+        if(type == "float")
+            op = "fdiv";
+        else
+            op = "sdiv";
         break;
     case MOD:
         op = "srem";
@@ -332,6 +345,15 @@ void StoreInstruction::output() const
     fprintf(stderr, "进入StoreInstruction::output函数\n");
     std::string dst = operands[0]->toStr();
     std::string src = operands[1]->toStr();
+    // bool isFloat = src.find('.') != std::string::npos;//这个判断方法对吗？？？？
+    // if (isFloat) {
+    //     double value = std::stod(src);//将字符串转换为double
+    //     uint64_t ieee754;
+    //     std::memcpy(&ieee754, &value, sizeof(value));//将double转换为uint64_t
+    //     std::stringstream ss;
+    //     ss << std::hex << ieee754;
+    //     src = ss.str();
+    // }
     std::string dst_type = operands[0]->getType()->toStr();
     std::string src_type = operands[1]->getType()->toStr();
 

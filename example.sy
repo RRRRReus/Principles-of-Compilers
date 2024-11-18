@@ -115,8 +115,9 @@ void min(){
 }
 int main()
 {
-    float a=1.2;
+    float a=1.2+1.1;
+    int s=1+2;
     float b=2.2;
-    float c=a+b;
+    b=a/a;
 
 }

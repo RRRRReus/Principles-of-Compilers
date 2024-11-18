@@ -118,5 +118,15 @@ Unit
 
 全局变量初始值如何设置？？？
 
+## float中间代码
+```
+float a=1.2;
 
+%1 = alloca float, align 4
+store float 0x3FF3333340000000, float* %1, align 4
+```
+0x3FF3333340000000 为 1.2 的 IEEE 754 双精度浮点数表示。
+
+
+加减乘除应为浮点数加减乘除（fadd,fsub,fmul,fdiv）
 

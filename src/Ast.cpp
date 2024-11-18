@@ -194,9 +194,9 @@ void BinaryExpr::genCode()
             opcode = -1;
             break;
         }
-        if(src1->getType()->isInt()&& dynamic_cast<IntType*>(src1->getType())->getSize()==1)
+        if(src1->getType()->isInt()&& dynamic_cast<IntType*>(src1->getType())->getSize()==1)//隐式转换
         {
-            src1 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+            src1 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));//创建一个临时符号表项
             new ZextInstruction(src1, expr1->getOperand(), bb);
         }
         if(src2->getType()->isInt()&& dynamic_cast<IntType*>(src2->getType())->getSize()==1)
