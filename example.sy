@@ -1,5 +1,5 @@
 #include"sysyruntimelibrary/sylib.h"
- int x[3][2][5-4] = {2344,1232,3435};
+ int x[3][2][9] = {2344,1232,3435};
 // int y[3] = {234,566,127378};
 // int d;
 // void modx()

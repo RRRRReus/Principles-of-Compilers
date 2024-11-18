@@ -73,7 +73,12 @@ std::string IntArrayType::toStr()
     std::ostringstream buffer;
     for(int i = 0; i < dim; i++)
     {
-        buffer << "["<<(*dimSize)[i]<<" x i32]";
+        buffer << "["<<(*dimSize)[i]<<" x ";
+    }
+    buffer << "i32";
+    for(int i = 0; i < dim; i++)
+    {
+        buffer << "]";
     }
     return buffer.str();
 }
