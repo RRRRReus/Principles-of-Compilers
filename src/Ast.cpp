@@ -38,7 +38,7 @@ void Ast::genCode(Unit *unit)   //根节点的中间代码生成
 
 void FunctionDef::genCode()
 {
-    printf("进入FunctionDef::genCode\n");
+    fprintf(stderr,"进入FunctionDef::genCode\n");
     Unit *unit = builder->getUnit();    //获取当前编译单元
     fprintf(stderr, "已经获取当前编译单元\n");
     Function *func = new Function(unit, se);    //创建函数对象（参数：当前编译单元，符号表项）//此处构造函数已将其放入unit的funclist中
@@ -252,7 +252,7 @@ void Id::genCode()
 
 void IfStmt::genCode()//????原来的代码不全？？？
 {
-    //printf("WJJIfStmt::genCode\n");
+    //fprintf(stderr,"WJJIfStmt::genCode\n");
     BasicBlock *now_bb = builder->getInsertBB();
     Function *func;
     BasicBlock *then_bb, *end_bb;
@@ -348,16 +348,16 @@ void IfElseStmt::genCode()
 void CompoundStmt::genCode()
 {
     // Todo
-    printf("进入CompoundStmt::genCode\n");
+    fprintf(stderr,"进入CompoundStmt::genCode\n");
     stmt->genCode();
-    printf("CompoundStmt::genCodeOVER\n");
+    fprintf(stderr,"CompoundStmt::genCodeOVER\n");
 
 }
 
 void SeqNode::genCode()
 {
     // Todo
-    printf("进入SeqNode::genCode\n");
+    fprintf(stderr,"进入SeqNode::genCode\n");
     stmt1->genCode();
     stmt2->genCode();
 }
@@ -367,7 +367,7 @@ void DeclStmt::genCode()
     fprintf(stderr,"进入DeclStmt::genCode\n");
     // if(id == nullptr)
     // {
-    //     printf("id为空\n");
+    //     fprintf(stderr,"id为空\n");
     //     return;
     // }
 
@@ -376,13 +376,13 @@ void DeclStmt::genCode()
 
     IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());//当前变量的符号表项
 
-    printf("符号表项是se->isGlobal() = %d\n",se->isGlobal());
-    printf("符号表项是se->isLocal() = %d\n",se->isLocal());
-    printf("符号表项是se->isParam() = %d\n",se->isParam());
+    fprintf(stderr,"符号表项是se->isGlobal() = %d\n",se->isGlobal());
+    fprintf(stderr,"符号表项是se->isLocal() = %d\n",se->isLocal());
+    fprintf(stderr,"符号表项是se->isParam() = %d\n",se->isParam());
     if(se->isGlobal())//全局变量
     {
         // //不属于任何函数，虚空变量
-        printf("进入DeclStmt::genCode中全局变量的部分\n");
+        fprintf(stderr,"进入DeclStmt::genCode中全局变量的部分\n");
         Operand *addr;
         SymbolEntry *addr_se;//用于存储新生成的符号表项
         Type *type;
@@ -423,7 +423,7 @@ void DeclStmt::genCode()
     }
     else if(se->isLocal())//局部变量
     {
-        printf("进入DeclStmt::genCode中局部变量的部分\n");
+        fprintf(stderr,"进入DeclStmt::genCode中局部变量的部分\n");
         Function *func = builder->getInsertBB()->getParent();//获取当前基本块所属的函数（即局部变量所属位置）
         BasicBlock *entry = func->getEntry();
         Instruction *alloca;//指令应为alloca指令
@@ -436,9 +436,9 @@ void DeclStmt::genCode()
         alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
         fprintf(stderr, "addr是%s\n",addr->toStr().c_str());
         fprintf(stderr, "addr_se是%s\n",addr_se->toStr().c_str());
-        printf("指令类型是%d\n",alloca->getInstType());
+        fprintf(stderr,"指令类型是%d\n",alloca->getInstType());
         entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
-        printf("已将alloca指令插入到基本块的最前面\n");
+        fprintf(stderr,"已将alloca指令插入到基本块的最前面\n");
         se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
     
         if(expr != nullptr)
@@ -451,7 +451,7 @@ void DeclStmt::genCode()
     }
     else if(se->isParam())//新加入参数检查
     {
-        printf("进入DeclStmt::genCode中参数的部分\n");
+        fprintf(stderr,"进入DeclStmt::genCode中参数的部分\n");
         Function *func = builder->getInsertBB()->getParent();//获取当前基本块所属的函数（即参数所属位置）
         BasicBlock *entry = func->getEntry();//获取函数的入口基本块
         Instruction *alloca;
@@ -476,7 +476,7 @@ void DeclStmt::genCode()
         }
     }
 
-    printf("DeclStmt::genCode结束\n");
+    fprintf(stderr,"DeclStmt::genCode结束\n");
 }
 
 void ReturnStmt::genCode()
@@ -532,10 +532,10 @@ void Ast::typeCheck()
 
 void FunctionDef::typeCheck()
 {
-    printf("FunctionDef::typeCheck\n");
+    fprintf(stderr,"FunctionDef::typeCheck\n");
     if(params != nullptr)//参数不为空
     {
-        printf("该函数不为空,开始检查params，params是\n");
+        fprintf(stderr,"该函数不为空,开始检查params，params是\n");
          params->typeCheck();
     }
     stmt->typeCheck();
@@ -545,7 +545,7 @@ void FunctionDef::typeCheck()
 
 void BinaryExpr::typeCheck()
 {
-    printf("BinaryExpr::typeCheck\n");
+    fprintf(stderr,"BinaryExpr::typeCheck\n");
     expr1->typeCheck();
     expr2->typeCheck();
     if(op==DIV&&expr2->CanBeCalculatedInt&&expr2->CalculatedInt==0)
@@ -553,8 +553,8 @@ void BinaryExpr::typeCheck()
         fprintf(stderr, "LAB3类型检查报错:除数为0\n");
         exit(1);
     }
-     //printf("检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
-     //printf("看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
+     //fprintf(stderr,"检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
+     //fprintf(stderr,"看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
     if(expr1->CanBeCalculatedInt&&expr2->CanBeCalculatedInt)
     {
         CanBeCalculatedInt = true;
@@ -570,7 +570,7 @@ void BinaryExpr::typeCheck()
                 CalculatedInt = expr1->CalculatedInt * expr2->CalculatedInt;
                 break;
             case DIV:
-                //printf("进来了吗");
+                //fprintf(stderr,"进来了吗");
                 if(expr2->CalculatedInt == 0)
                 {
                     fprintf(stderr, "LAB3类型检查报错:除数为0\n");
@@ -612,8 +612,8 @@ void BinaryExpr::typeCheck()
     Type* type1 = this->getExpr1()->getSymbolEntry()->getType();//要获取类型，首先要获取符号表项，然后获取类型
     Type* type2 = this->getExpr2()->getSymbolEntry()->getType();
 
-    printf("type1是%s\n",type1->toStr().c_str());
-    printf("type2是%s\n",type2->toStr().c_str());
+    fprintf(stderr,"type1是%s\n",type1->toStr().c_str());
+    fprintf(stderr,"type2是%s\n",type2->toStr().c_str());
 
      // 数值运算符要求操作数都是数值类型
     if (type1->isVoid() || type2->isVoid()) 
@@ -689,7 +689,7 @@ void BinaryExpr::typeCheck()
 }
 void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何地方！！！
 {
-    printf("UnaryExpr::typeCheck\n");
+    fprintf(stderr,"UnaryExpr::typeCheck\n");
     expr->typeCheck();
     Type* type = expr->getSymbolEntry()->getType();//获取表达式类型
 
@@ -737,20 +737,20 @@ void UnaryExpr::typeCheck()//补充说明：单目运算符可以出现在任何
 
 void Constant::typeCheck()
 {
-    //printf("???\n");
+    //fprintf(stderr,"???\n");
     
     if(symbolEntry->getType()->isInt())
     {
         this->CanBeCalculatedInt = true;
         this->CalculatedInt = atoi(symbolEntry->toStr().c_str());
     }
-    printf("Constant::typeCheck\n");
+    fprintf(stderr,"Constant::typeCheck\n");
     // Todo
 }
 
 void Id::typeCheck()
 {
-    printf("Id::typeCheck\n");
+    fprintf(stderr,"Id::typeCheck\n");
     if(this->getSymbolEntry()->getType()->getConst())
     {
         this->CanBeCalculatedInt = true;
@@ -763,7 +763,7 @@ void Id::typeCheck()
 
 void IfStmt::typeCheck()
 {
-    printf("IfStmt::typeCheck\n");
+    fprintf(stderr,"IfStmt::typeCheck\n");
     cond->typeCheck();
     thenStmt->typeCheck();
     // Todo
@@ -771,7 +771,7 @@ void IfStmt::typeCheck()
 
 void IfElseStmt::typeCheck()
 {
-    printf("IfElseStmt::typeCheck\n");
+    fprintf(stderr,"IfElseStmt::typeCheck\n");
     cond->typeCheck();
     thenStmt->typeCheck();
     elseStmt->typeCheck();
@@ -781,7 +781,7 @@ void IfElseStmt::typeCheck()
 
 void CompoundStmt::typeCheck()
 {
-    printf("CompoundStmt::typeCheck\n");
+    fprintf(stderr,"CompoundStmt::typeCheck\n");
     stmt->typeCheck();
 
     // Todo
@@ -789,7 +789,7 @@ void CompoundStmt::typeCheck()
 
 void SeqNode::typeCheck()
 {
-    printf("SeqNode::typeCheck\n");
+    fprintf(stderr,"SeqNode::typeCheck\n");
     stmt1->typeCheck();
     stmt2->typeCheck();
 
@@ -798,7 +798,7 @@ void SeqNode::typeCheck()
 
 void DeclStmt::typeCheck()
 {
-    printf("DeclStmt::typeCheck\n");
+    fprintf(stderr,"DeclStmt::typeCheck\n");
     if(array != nullptr)
         array->typeCheck();
     if(id != nullptr)
@@ -811,7 +811,7 @@ void DeclStmt::typeCheck()
         &&id->getSymbolEntry()->getType()->getConst() 
         &&id->getSymbolEntry()->getType()-> isInt())//
     {
-        printf("进入了常量初始化\n");
+        fprintf(stderr,"进入了常量初始化\n");
         if(expr->CanBeCalculatedInt)
         {
             id->CanBeCalculatedInt = true;
@@ -841,7 +841,7 @@ void DeclStmt::typeCheck()
 
 void ReturnStmt::typeCheck()
 {
-    printf("ReturnStmt::typeCheck\n");
+    fprintf(stderr,"ReturnStmt::typeCheck\n");
     retValue->typeCheck();
 
     // Todo
@@ -849,7 +849,7 @@ void ReturnStmt::typeCheck()
 
 void AssignStmt::typeCheck()//检查左值是否可以被赋值，右值是否可以用来赋值
 {
-    printf("AssignStmt::typeCheck\n");
+    fprintf(stderr,"AssignStmt::typeCheck\n");
     lval->typeCheck();
     expr->typeCheck();
 
@@ -891,14 +891,14 @@ void AssignStmt::typeCheck()//检查左值是否可以被赋值，右值是否�
 }
 void Array::typeCheck()
 {
-    printf("Array::typeCheck\n");
+    fprintf(stderr,"Array::typeCheck\n");
     id->typeCheck();
     arrayIndex->typeCheck();
 
 }
 void ArrayIndex::typeCheck()
 {
-    printf("ArrayIndex::typeCheck\n");
+    fprintf(stderr,"ArrayIndex::typeCheck\n");
     for(auto i : index)
     {
         i->typeCheck();
@@ -906,20 +906,20 @@ void ArrayIndex::typeCheck()
 }
 void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹配//函数未定义即调用的报错，在语法分析阶段实现
 {
-    printf("FuncCall::typeCheck\n");
+    fprintf(stderr,"FuncCall::typeCheck\n");
     for(auto i : args)//遍历参数列表进行递归检查
     {
-        printf("进入循环\n");
+        fprintf(stderr,"进入循环\n");
         i->typeCheck();
     }
 
     int size_real=args.size();//实参个数
-    printf("已算出实参个数：%d\n",size_real);
+    fprintf(stderr,"已算出实参个数：%d\n",size_real);
     //func是一个Id，其父类的SymbolEntry是一个IdentifierSymbolEntry，在调用IdentifierSymbolEntry的父类的getType函数，返回其类型为Func，
-    printf("func的类型是%s\n",func->getSymbolEntry()->getType()->toStr().c_str());
-    //printf("形参个数是%ld\n",func->getSymbolEntry()->getType()->getParamsType().size());
+    fprintf(stderr,"func的类型是%s\n",func->getSymbolEntry()->getType()->toStr().c_str());
+    //fprintf(stderr,"形参个数是%ld\n",func->getSymbolEntry()->getType()->getParamsType().size());
     int size_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType().size();//形参个数
-    printf("已算出形参个数：%d\n",size_form);
+    fprintf(stderr,"已算出形参个数：%d\n",size_form);
 
     if(size_real!=size_form)//检查实参个数和形参个数是否匹配
     {
@@ -944,20 +944,20 @@ void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹�
 }
 void BreakStmt::typeCheck()
 {
-    printf("BreakStmt::typeCheck\n");
+    fprintf(stderr,"BreakStmt::typeCheck\n");
 
 }
 void ContinueStmt::typeCheck()
 {
-    printf("ContinueStmt::typeCheck\n");
+    fprintf(stderr,"ContinueStmt::typeCheck\n");
 }
 void EmptyStmt::typeCheck()
 {
-    printf("EmptyStmt::typeCheck\n");
+    fprintf(stderr,"EmptyStmt::typeCheck\n");
 }
 void WhileStmt::typeCheck()
 {
-    printf("WhileStmt::typeCheck\n");
+    fprintf(stderr,"WhileStmt::typeCheck\n");
     cond->typeCheck();
     body->typeCheck();
 }
@@ -1217,7 +1217,7 @@ void ArrayIndex::genCode()
 }
 void FuncCall::genCode()//！！！！！！记得做
 {
-    printf("进入FuncCall::genCode\n");
+    fprintf(stderr,"进入FuncCall::genCode\n");
     BasicBlock *bb = builder->getInsertBB(); // 获取当前基本块
 
     // 生成实参的中间代码

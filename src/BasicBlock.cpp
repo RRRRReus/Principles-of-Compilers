@@ -48,17 +48,17 @@ void BasicBlock::output() const
 
     if (!pred.empty())//如果前驱不为空，则输出前驱
     {
-        printf("pred不为空\n");
+        fprintf(stderr,"pred不为空\n");
         fprintf(yyout, "%*c; preds = %%B%d", 32, '\t', pred[0]->getNo());
         for (auto i = pred.begin() + 1; i != pred.end(); i++)
             fprintf(yyout, ", %%B%d", (*i)->getNo());
     }
     fprintf(yyout, "\n");
-    printf("已输出B%d,开始遍历指令链表:\n", no);
-    printf("head->getNext()是否等于head:%d\n",head->getNext()==head);
+    fprintf(stderr,"已输出B%d,开始遍历指令链表:\n", no);
+    fprintf(stderr,"head->getNext()是否等于head:%d\n",head->getNext()==head);
     for (auto i = head->getNext(); i != head; i = i->getNext()){
-        //printf("进来了吗\n");
-        //printf("i的指令类型是%s\n",i->getDef()->toStr().c_str());
+        //fprintf(stderr,"进来了吗\n");
+        //fprintf(stderr,"i的指令类型是%s\n",i->getDef()->toStr().c_str());
         //注意注意！！！getDef()是获取操作数不是类型！！操作数可能为空！！类型是instype
         i->output();
     }

@@ -47,7 +47,7 @@ void Function::output() const
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type *retType = funcType->getRetType();
     fprintf(yyout, "define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
-    printf("已输出define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
+    fprintf(stderr,"已输出define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
     std::set<BasicBlock *> v;   //用于记录已经访问过的基本块
     std::list<BasicBlock *> q;  //用于广度优先搜索
     q.push_back(entry);//将入口基本块加入队列
