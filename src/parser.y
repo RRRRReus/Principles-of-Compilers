@@ -827,7 +827,8 @@ DeclStmtNode
         identifiers->install($1, se);
         if (name == nullptr) {
     fprintf(stderr,"Error: id is nullptr\n");
-} else {
+} 
+else {
     fprintf(stderr,"id is valid\n");
     if (name->getSymbolEntry() == nullptr) {
         fprintf(stderr,"Error: id->getSymbolEntry() is nullptr\n");
@@ -843,6 +844,58 @@ DeclStmtNode
 
 
     }
+    | ID ArrayDim ASSIGN LBRACE RBRACE {
+                if(identifiers->lookupOnlyNow($1) != nullptr)
+        {
+            fprintf(stderr, "LAB3类型检查报错:标识符 \"%s\" 重定义\n", (char*)$1);
+            assert(false);
+        }
+        SymbolEntry *se;
+        std::vector<ExprNode*> IndexDim= $2->index;
+        if(DefType->isInt())
+        {
+            IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+            intArrayType->setConst(DefType->getConst());
+            se = new IdentifierSymbolEntry(intArrayType, $1, identifiers->getLevel());
+        }
+        else if(DefType->isFloat())
+        {
+            FloatArrayType *floatArrayType = new FloatArrayType(IndexDim.size());
+            floatArrayType->setConst(DefType->getConst());
+            se = new IdentifierSymbolEntry(floatArrayType, $1, identifiers->getLevel());
+        }
+        else
+        {
+            fprintf(stderr, "Error: unknown type\n");
+            assert(false);
+        }
+        //IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+        //intArrayType->setConst($1->getConst());
+        //se = new IdentifierSymbolEntry(DefType, $1, identifiers->getLevel());
+        Id *name=new Id(se);
+        identifiers->install($1, se);
+        if (name == nullptr) {
+    fprintf(stderr,"Error: id is nullptr\n");
+} 
+else {
+    fprintf(stderr,"id is valid\n");
+    if (name->getSymbolEntry() == nullptr) {
+        fprintf(stderr,"Error: id->getSymbolEntry() is nullptr\n");
+    } else {
+        fprintf(stderr,"id->getSymbolEntry() is valid\n");
+    }
+}
+        fprintf(stderr,"可以吗？");
+        std::vector<ExprNode*> EmptyInitVal;
+        EmptyInitVal.push_back(new Constant(new ConstantSymbolEntry(0)));
+        $$ = new DeclStmt(new Array(name, $2), new InitValList(EmptyInitVal));
+        
+        fprintf(stderr,"what?");
+        //delete []$2;
+
+
+    }
+
     ;
 //连续定义
 DeclStmtNodes
