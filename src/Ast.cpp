@@ -1540,8 +1540,11 @@ std::string InitValList::Dim2ToIR(int dim1, int dim2)
             buffer << ",";
         }
         buffer<<"["<<dim1<<" x "<<type->toStr()<<"]";
-        
-
+        if(BasicI>=(int)this->initVal.size()-1)
+        {
+            buffer<<" zeroinitializer";
+            continue;
+        }
        if(initVal[BasicI]->getSymbolEntry()==nullptr)
        {
             std::vector<ExprNode*> BasiclineInitVal=dynamic_cast<InitValList*>(initVal[BasicI])->initVal;
@@ -1555,8 +1558,11 @@ std::string InitValList::Dim2ToIR(int dim1, int dim2)
         std::vector<ExprNode*> lineInitVal; 
         while(1)
         {
+            if(BasicI>=(int)this->initVal.size()-1)
+                break;
             if((int)lineInitVal.size()>=dim1||initVal[BasicI]->getSymbolEntry()==nullptr)
                 break;
+            
             lineInitVal.push_back(initVal[BasicI]);
             BasicI++;
 
