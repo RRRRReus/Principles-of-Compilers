@@ -18,6 +18,7 @@ public:
     virtual ~Type() {};
     virtual std::string toStr() = 0;
     bool isInt() const {return kind == INT;};
+    bool isRetInt32();
     bool isVoid() const {return kind == VOID;};
     bool isFunc() const {return kind == FUNC;};
     bool isFloat() const {return kind == FLOAT;};
