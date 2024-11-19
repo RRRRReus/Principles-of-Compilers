@@ -6,6 +6,7 @@
 #include <string>
 #include "Type.h"
 #include <cstdio>
+#include <sstream>
 
 extern FILE *yyout;
 int Node::counter = 0;
@@ -373,8 +374,11 @@ void DeclStmt::genCode()
 
     //se 表示变量本身的符号表项，而 addr_se 表示指向该变量的指针的符号表项。
     //addr_se 的类型是 PointerType，它指向 se 所表示的变量的类型。
-
-    IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());//当前变量的符号表项
+    IdentifierSymbolEntry *se=nullptr;
+    if(id != nullptr)
+    se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());//当前变量的符号表项
+     else if(array != nullptr)
+    se = dynamic_cast<IdentifierSymbolEntry *>(array->getSymPtr());//当前变量的符号表项
 
     fprintf(stderr,"符号表项是se->isGlobal() = %d\n",se->isGlobal());
     fprintf(stderr,"符号表项是se->isLocal() = %d\n",se->isLocal());
@@ -418,6 +422,23 @@ void DeclStmt::genCode()
                 exit(1);
             }
             
+        }
+        if(initValList != nullptr)//如果有初始化值列表
+        {
+            fprintf(stderr, "具有初始化值列表\n");
+            initValList->genCode();
+            int DIM=dynamic_cast<IntArrayType*>(se->getType())->getDim();//获取维度
+            long unsigned int dim1 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+            
+            fprintf(stderr,"开始设置数组初值\n");
+            if(DIM==1)
+                se->setInitialValue(initValList->Dim1ToIR(dim1).c_str()); // 设置初始值
+            if(DIM==2)
+            {
+            long unsigned int dim2 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(1);//获取第二维
+            se->setInitialValue(initValList->Dim2ToIR(dim1,dim2).c_str()); // 设置初始值
+
+            }
         }
 
     }
@@ -848,7 +869,8 @@ void DeclStmt::typeCheck()
     if(expr != nullptr)
         expr->typeCheck();
 
-
+    if(initValList!=nullptr)
+        initValList->typeCheck();
     if(id!=nullptr && expr!=nullptr
         &&id->getSymbolEntry()->getType()->getConst() 
         &&id->getSymbolEntry()->getType()-> isInt())//
@@ -1451,6 +1473,54 @@ void ExprStmt::genCode()
 {
     expr->genCode();
 }
+//将一维数组的大小转换为IR代码，只能在typecheck后调用
+std::string InitValList::Dim1ToIR(int dim1)
+{
+    std::ostringstream buffer;
+    Type* type = initVal[0]->getSymbolEntry()->getType();
+
+    buffer << " [";
+
+    for(int i=0;i<dim1;i++)
+    {
+        fprintf(stderr,"%d",i);
+        
+        if(i!=0)
+        {
+            buffer << ",";
+        }
+        if(i>(int)initVal.size()-1)
+        {
+            buffer <<type->toStr() <<" "<<0;
+            continue;
+
+        }
+        if(type->isInt()&&initVal[i]->CanBeCalculatedInt)
+        {
+            buffer <<type->toStr() <<" "<<initVal[i]->CalculatedInt;
+        }
+        // else if(type->isFloat()&& initVal[i]->CalculatedFloat)
+        // {
+        //     buffer << initVal[i]->CalculatedFloat;
+        // }
+        // else
+        // {
+        //     fprintf(stderr, "LAB3类型检查报错:数组初始化值不是整数\n");
+        //     exit(EXIT_FAILURE);
+        // }
+
+    }
+    buffer << "]";
+    fprintf(stderr,"buffer.str()是%s\n",buffer.str().c_str());
+    return buffer.str();
+}
+
+std::string InitValList::Dim2ToIR(int dim1, int dim2)
+{
+    std::ostringstream buffer;
+    buffer<<"我还没做，dim1="<<dim1<<"dim2="<<dim2<<"\n";
+    return buffer.str();
+}
 
 void InitValList::output(int level)
 {
@@ -1462,6 +1532,7 @@ void InitValList::output(int level)
 }
 void InitValList::typeCheck()
 {
+    fprintf(stderr,"InitValList::typeCheck\n");
     for(auto i : initVal)
     {
         i->typeCheck();

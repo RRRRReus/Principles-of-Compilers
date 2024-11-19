@@ -140,8 +140,11 @@ public:
 class InitValList:public ExprNode//初始化值列表类
 {
 private:
-    std::vector<ExprNode*> initVal;
 public:
+    std::vector<ExprNode*> initVal;
+
+    std::string Dim1ToIR(int dim1);
+    std::string Dim2ToIR(int dim1,int dim2);
     InitValList(std::vector<ExprNode*> initVal) : ExprNode(nullptr),initVal(initVal) {};
     void output(int level);
     void typeCheck();
