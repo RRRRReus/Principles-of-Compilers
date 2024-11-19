@@ -436,7 +436,7 @@ void DeclStmt::genCode()
             if(DIM==2)
             {
             long unsigned int dim2 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(1);//获取第二维
-            se->setInitialValue(initValList->Dim2ToIR(dim1,dim2).c_str()); // 设置初始值
+            se->setInitialValue(initValList->Dim2ToIR(dim2,dim1).c_str()); // 设置初始值
 
             }
         }
@@ -1518,7 +1518,57 @@ std::string InitValList::Dim1ToIR(int dim1)
 std::string InitValList::Dim2ToIR(int dim1, int dim2)
 {
     std::ostringstream buffer;
-    buffer<<"我还没做，dim1="<<dim1<<"dim2="<<dim2<<"\n";
+    ExprNode* node= initVal[0];
+    SymbolEntry *se=node->getSymbolEntry();
+    Type *type;
+        if(se!=nullptr)
+        {
+            type=se->getType();
+        }
+        else
+        {
+
+            node=dynamic_cast<InitValList*>(node)->initVal[0];
+            type=node->getSymbolEntry()->getType();
+        }
+        buffer<<"[";
+    int BasicI=0;//本来初始化列表的第一级索引
+    for(int i=0;i<dim2;i++)
+    {
+        if(i!=0)
+        {
+            buffer << ",";
+        }
+        buffer<<"["<<dim1<<" x "<<type->toStr()<<"]";
+        
+
+       if(initVal[BasicI]->getSymbolEntry()==nullptr)
+       {
+            std::vector<ExprNode*> BasiclineInitVal=dynamic_cast<InitValList*>(initVal[BasicI])->initVal;
+            InitValList *line=new InitValList(BasiclineInitVal);
+            buffer<<line->Dim1ToIR(dim1);
+            BasicI++;
+            continue;
+       }
+       else
+       {
+        std::vector<ExprNode*> lineInitVal; 
+        while(1)
+        {
+            if((int)lineInitVal.size()>=dim1||initVal[BasicI]->getSymbolEntry()==nullptr)
+                break;
+            lineInitVal.push_back(initVal[BasicI]);
+            BasicI++;
+
+        }
+            InitValList *line=new InitValList(lineInitVal);
+            buffer<<line->Dim1ToIR(dim1);
+            continue;
+
+       }
+
+    }
+    buffer<<"]";
     return buffer.str();
 }
 
