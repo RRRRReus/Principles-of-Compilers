@@ -41,7 +41,9 @@ protected:
             CMP, 
             ALLOCA, 
             CALL,//增加函数调用的call
-            ZEXT//增加零扩展指令
+            ZEXT,//增加零扩展指令
+            FPTOI, // 增加浮点数到整数的转换指令
+            SITOF // 增加整数到浮点数的转换指令
     };
 };
 
@@ -317,4 +319,40 @@ public:
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
 };
+
+/**
+ * @class FpToSiInstruction
+ * @brief 表示编译器中间表示中的浮点数到有符号整数的转换指令。
+ *
+ * 该类负责处理浮点数到有符号整数的转换操作。
+ * 它继承自基类 Instruction。
+ */
+class FpToSiInstruction : public Instruction
+{
+public:
+    FpToSiInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb = nullptr);
+    ~FpToSiInstruction();
+    void output() const override;
+    Operand *getDef() override {return operands[0];}
+    std::vector<Operand *> getUse() override {return {operands[1]};}
+};
+
+/**
+ * @class SiToFpInstruction
+ * @brief 表示编译器中间表示中的有符号整数到浮点数的转换指令。
+ *
+ * 该类负责处理有符号整数到浮点数的转换操作。
+ * 它继承自基类 Instruction。
+ */
+class SiToFpInstruction : public Instruction
+{
+public:
+    SiToFpInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb = nullptr);
+    ~SiToFpInstruction();
+    void output() const override;
+    Operand *getDef() override {return operands[0];}
+    std::vector<Operand *> getUse() override {return {operands[1]};}
+};
+
+
 #endif

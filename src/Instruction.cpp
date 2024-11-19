@@ -358,6 +358,7 @@ void StoreInstruction::output() const
     std::string src_type = operands[1]->getType()->toStr();
 
     fprintf(yyout, "  store %s %s, %s %s, align 4\n", src_type.c_str(), src.c_str(), dst_type.c_str(), dst.c_str());
+    //把src存给dst，后面为被赋值的
 }
 
 //函数调用命令
@@ -484,4 +485,59 @@ Operand *ZextInstruction::getDef()
 std::vector<Operand *> ZextInstruction::getUse()
 {
     return {operands[1]};
+}
+
+
+
+//浮点数转整数指令
+
+FpToSiInstruction::FpToSiInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(FPTOI, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+FpToSiInstruction::~FpToSiInstruction()
+{
+    operands[0]->setDef(nullptr);
+    if(operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void FpToSiInstruction::output() const
+{
+    fprintf(yyout, "  %s = fptosi %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
+}
+
+//整数转浮点数指令
+SiToFpInstruction::SiToFpInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(SITOF, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+SiToFpInstruction::~SiToFpInstruction()
+{   
+    operands[0]->setDef(nullptr);
+    if(operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void SiToFpInstruction::output() const
+{
+    fprintf(yyout, "  %s = sitofp %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
 }

@@ -24,6 +24,7 @@ public:
     bool isIntArray() const {return kind == INTARRAY;};
     bool isFloatArray() const {return kind == FLOATARRAY;};
     bool isLongLong() const {return kind == LONGLONG;};
+    int getKind() const {return kind;};
     
 };
 class LongLongType : public Type//长整型类型
@@ -82,6 +83,7 @@ public:
     Type* getRetType() {return returnType;};
     std::vector<Type*> getParamsType() {return paramsType;};//返回所有的参数类型
     void setParamsType(std::vector<Type*> paramTypes) {paramsType = paramTypes;}
+    //void setParamsType_single(Type* paramType,int index) {paramsType[index] = paramType;}//用于在隐式转换时修改对应的参数类型
     std::string toStr();
 };
 

@@ -204,6 +204,22 @@ void BinaryExpr::genCode()
             src2 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
             new ZextInstruction(src2, expr2->getOperand(), bb);
         }
+        //float+int 或 int+float，将结果转换为float
+        if((src1->getType()->isFloat() && src2->getType()->isInt()) || (src1->getType()->isInt() && src2->getType()->isFloat()))
+        {
+            if(src1->getType()->isInt())
+            {
+                src1 = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+                new SiToFpInstruction(src1, expr1->getOperand(), bb);
+            }
+            else
+            {
+                src2 = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+                new SiToFpInstruction(src2, expr2->getOperand(), bb);
+            }
+
+        }
+
         new BinaryInstruction(opcode, dst, src1, src2, bb);
     }
     else if(op == MUL || op == DIV || op == MOD)//乘除取模
@@ -388,7 +404,7 @@ void DeclStmt::genCode()
         Type *type;
         type = new PointerType(se->getType());//创建一个指针类型
         addr_se = new IdentifierSymbolEntry(*se);//创建一个新的符号表项
-        //addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());//这个到底是干什么使的啊啊啊啊啊啊啊！！！！！！！！！！！
+        //addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
         addr_se->setType(type);//设置类型(变量的数据类型)
         GlobalVariable *global = new GlobalVariable(se);//创建一个新的全局变量
          
@@ -424,7 +440,8 @@ void DeclStmt::genCode()
     else if(se->isLocal())//局部变量
     {
         fprintf(stderr,"进入DeclStmt::genCode中局部变量的部分\n");
-        Function *func = builder->getInsertBB()->getParent();//获取当前基本块所属的函数（即局部变量所属位置）
+        BasicBlock *bb = builder->getInsertBB();//获取当前基本块
+        Function *func = bb->getParent();//获取当前基本块所属的函数（即局部变量所属位置）
         BasicBlock *entry = func->getEntry();
         Instruction *alloca;//指令应为alloca指令
         Operand *addr;  //操作数
@@ -441,10 +458,24 @@ void DeclStmt::genCode()
         fprintf(stderr,"已将alloca指令插入到基本块的最前面\n");
         se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
     
-        if(expr != nullptr)
+        if(expr != nullptr)//如果有初始化表达式
         {
             expr->genCode();
             Operand *src = expr->getOperand();
+            fprintf(stderr, "src是%s\n",src->getType()->toStr().c_str());
+            fprintf(stderr, "se是%s\n",se->getType()->toStr().c_str());
+
+            if(src->getType()->isFloat() && se->getType()->isInt())//int=float, int赋值为float的隐式转换，要求省去float小数点后的部分
+            {
+                fprintf(stderr, "int=float！！！！！！！！！！！！！！！！！\n");
+                src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+                new FpToSiInstruction(src, expr->getOperand(), bb);
+            }
+            else if(src->getType()->isInt() && se->getType()->isFloat())//float=int, float赋值为int的隐式转换，要求在int后面加上.0
+            {
+                src = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+                new SiToFpInstruction(src, expr->getOperand(), bb);
+            }
             new StoreInstruction(addr, src, builder->getInsertBB());
         }
     
@@ -452,7 +483,8 @@ void DeclStmt::genCode()
     else if(se->isParam())//新加入参数检查
     {
         fprintf(stderr,"进入DeclStmt::genCode中参数的部分\n");
-        Function *func = builder->getInsertBB()->getParent();//获取当前基本块所属的函数（即参数所属位置）
+        BasicBlock *bb = builder->getInsertBB();//获取当前基本块
+        Function *func = bb->getParent();//获取当前基本块所属的函数（即参数所属位置）
         BasicBlock *entry = func->getEntry();//获取函数的入口基本块
         Instruction *alloca;
         Operand *addr;  //操作数
@@ -468,10 +500,23 @@ void DeclStmt::genCode()
         alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
         entry->insertFront(alloca);
         se->setAddr(addr);
+        fprintf(stderr,"开始检查函数有没有初始化表达式！！！\n");
         if(expr != nullptr)
         {
+            fprintf(stderr, "函数实参有初始化表达式\n");
             expr->genCode();
             Operand *src = expr->getOperand();
+            if(src->getType()->isFloat() && se->getType()->isInt())//int=float, int赋值为float的隐式转换，要求省去float小数点后的部分
+            {
+                fprintf(stderr, "int=float！！！！！！！！！！！！！！！！！\n");
+                src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+                new FpToSiInstruction(src, expr->getOperand(), bb);
+            }
+            else if(src->getType()->isInt() && se->getType()->isFloat())//float=int, float赋值为int的隐式转换，要求在int后面加上.0
+            {
+                src = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+                new SiToFpInstruction(src, expr->getOperand(), bb);
+            }
             new StoreInstruction(addr, src, entry);//store指令
         }
     }
@@ -510,15 +555,28 @@ void AssignStmt::genCode()
     fprintf(stderr, "进入AssignStmt::genCode\n");
     BasicBlock *bb = builder->getInsertBB();//获取当前基本块
     lval->genCode();//需要加吗？？？？？？？？？
-    expr->genCode();////////////////////////////////////////////这个地方出现的问题
+    expr->genCode();
     fprintf(stderr, "expr递归结束\n");
-    Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(lval->getSymPtr())->getAddr();//获取地址
-    fprintf(stderr, "lval是\n");
-    Operand *src = expr->getOperand();
+    IdentifierSymbolEntry *lval_se = dynamic_cast<IdentifierSymbolEntry*>(lval->getSymPtr());//获取符号表项
+    Operand *addr = lval_se->getAddr();//存储的地方
+    Operand *src = expr->getOperand();//存储的结果
+    fprintf(stderr, "addr是%s\n",addr->getType()->toStr().c_str());
+    fprintf(stderr, "src是%s\n",src->getType()->toStr().c_str());
     /***
      * We haven't implemented array yet, the lval can only be ID. So we just store the result of the `expr` to the addr of the id.
      * If you want to implement array, you have to caculate the address first and then store the result into it.
      */
+    if(src->getType()->isInt() && lval_se->getType()->isFloat()){//如果float=int
+            fprintf(stderr, "float=int！！！！！！！！！！！！！！！！！\n");
+            src = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+        new SiToFpInstruction(src, expr->getOperand(), bb);
+    }
+    else if(src->getType()->isFloat() && lval_se->getType()->isInt()){//如果int=float
+        fprintf(stderr, "int=float！！！！！！！！！！！！！！！！！\n");
+        src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+        new FpToSiInstruction(src, expr->getOperand(), bb);
+    }
+    
     new StoreInstruction(addr, src, bb);
     fprintf(stderr, "AssignStmt::genCode结束\n");
 }
@@ -680,7 +738,7 @@ void BinaryExpr::typeCheck()
         case NOTEQUAL:
             // 比较运算符要求操作数类型相同吗？？？？？？？
             if (type1 != type2) {
-                fprintf(stderr, "LAB3类型检查报错:比较运算符两操作数类型不同\n");
+                fprintf(stderr, "LAB3类型检查报错:比较运算符两操作数类型不同（仅为警告）\n");
                 //exit(EXIT_FAILURE);
             }
             break;
@@ -961,6 +1019,7 @@ void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹�
     fprintf(stderr,"已算出实参个数：%d\n",size_real);
     //func是一个Id，其父类的SymbolEntry是一个IdentifierSymbolEntry，在调用IdentifierSymbolEntry的父类的getType函数，返回其类型为Func，
     fprintf(stderr,"func的类型是%s\n",func->getSymbolEntry()->getType()->toStr().c_str());
+    fprintf(stderr,"func的名字是%s\n",func->getSymbolEntry()->toStr().c_str());
     //fprintf(stderr,"形参个数是%ld\n",func->getSymbolEntry()->getType()->getParamsType().size());
     int size_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType().size();//形参个数
     fprintf(stderr,"已算出形参个数：%d\n",size_form);
@@ -974,10 +1033,25 @@ void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹�
 
         for(int i=0;i<size_real;i++)
         {
-            Type* type_real=args[i]->getSymbolEntry()->getType();
-            Type* type_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType()[i];
+            Type* type_real=args[i]->getSymbolEntry()->getType();//实参类型
+            if(type_real->isFunc()){//如果实参是个函数，那么找他的返回值类型
+                // 获取函数的返回值类型
+                Type* returnType = dynamic_cast<FunctionType*>(type_real)->getRetType();//将type转换为其子类func类型，然后获取函数返回值的类型
+                type_real=returnType;
+            }
+            fprintf(stderr,"实参的类型是%d\n",type_real->getKind());
+            Type* type_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType()[i];//形参类型
+            fprintf(stderr,"形参的类型是%d\n",type_form->getKind());
             bool int_longlong = (type_real->isInt() && type_form->isLongLong()) || (type_real->isLongLong() && type_form->isInt());
-            if((type_real!=type_form)&&!int_longlong)
+            if(type_real->isInt() && type_form->isFloat()){//如果给float形参的赋值是一个int，则将实参的int转为float,在后续gencode时实现，此处放生！！！！
+                continue;
+            }
+            else if(type_real->isFloat() && type_form->isInt()){//如果给int形参的赋值是一个float，则将实参的float转为int，并省去小数部分
+
+                continue;
+            }
+            
+            if((type_real->getKind()!=type_form->getKind()) && !int_longlong)
             {
                 fprintf(stderr, "LAB3类型检查报错:实参与形参类型不匹配\n");
                 exit(EXIT_FAILURE);
