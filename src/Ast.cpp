@@ -999,8 +999,10 @@ void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹�
             Type* type_real=args[i]->getSymbolEntry()->getType();
             Type* type_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType()[i];
             bool int_longlong = (type_real->isInt() && type_form->isLongLong()) || (type_real->isLongLong() && type_form->isInt());
-            if((type_real!=type_form)&&!int_longlong)
+            if((type_real->getKind()!=type_form->getKind())&&!int_longlong)
             {
+                fprintf(stderr,"type_real是%s\n",type_real->toStr().c_str());
+                fprintf(stderr,"type_form是%s\n",type_form->toStr().c_str());
                 fprintf(stderr, "LAB3类型检查报错:实参与形参类型不匹配\n");
                 exit(EXIT_FAILURE);
             }
