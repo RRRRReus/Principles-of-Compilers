@@ -1160,7 +1160,7 @@ void FuncCall::typeCheck() // 检查形参和实参的类型、数量，是否�
                 continue;
             }
 
-            if ((type_real->getKind()->getKind() != type_form->getKind()->getKind()) && !int_longlong&&!element_array)
+            if ((type_real->getKind() != type_form->getKind()) && !int_longlong&&!element_array)
             {
                 fprintf(stderr,"type_real是%s\n",type_real->toStr().c_str());
                 fprintf(stderr,"type_form是%s\n",type_form->toStr().c_str());
