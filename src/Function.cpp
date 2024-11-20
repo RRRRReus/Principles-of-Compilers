@@ -62,6 +62,7 @@ void Function::output() const
     fprintf(yyout, "define %s %s(", retType->toStr().c_str(), sym_ptr->toStr().c_str());
     for(long unsigned int i = 0; i < params.size(); i++)
     {
+        fprintf(stderr,"params[%ld] = %s\n",i,params[i]->toStr().c_str());
         fprintf(yyout, "%s %s", params[i]->getType()->toStr().c_str(), params[i]->toStr().c_str());
         if(i != params.size() - 1)
             fprintf(yyout, ", ");
@@ -76,6 +77,14 @@ void Function::output() const
     {
         auto bb = q.front();//取出队列的第一个元素
         q.pop_front();//删除队列的第一个元素
+
+
+        if(!(bb->rbegin()->isCond()||bb->rbegin()->isUncond()||bb==exit))
+        {
+            new UncondBrInstruction(exit, bb);//插入无条件跳转指令
+            bb->addSucc(exit);//将出口基本块加入基本块的后继
+            exit->addPred(bb);//将基本块加入出口基本块的前驱
+        }
         if(bb->empty())//如果基本块为空
         {
             new UncondBrInstruction(exit, bb);//插入无条件跳转指令

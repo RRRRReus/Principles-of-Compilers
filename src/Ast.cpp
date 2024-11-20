@@ -50,10 +50,20 @@ void FunctionDef::genCode()
     {
         while (params != nullptr)
         {
-           
+           fprintf(stderr, "params->getId()->getSymbolEntry()->toStr()->getType()->toStr() = %s\n", params->getId()->getSymbolEntry()->getType()->toStr().c_str());
             //new一个新的函数参数操作数
-            Operand *paramOperand = new Operand(new TemporarySymbolEntry(params->getId()->getSymbolEntry()->getType(), SymbolTable::getLabel()));
+            Type *type = params->getId()->getSymbolEntry()->getType();
+            if(type->isIntArray())
+            {
+                type = new PointerType(TypeSystem::intType);
+            }
+            if(type->isFloatArray())
+            {
+                type = new PointerType(TypeSystem::floatType);
+            }
+            Operand *paramOperand = new Operand(new TemporarySymbolEntry(type, SymbolTable::getLabel()));
             fprintf(stderr, "参数operand是 %s\n", paramOperand->toStr().c_str());
+            fprintf(stderr, "在放进去之前的参数操作数的类型是 %s\n", paramOperand->getType()->toStr().c_str());
             func->addParam(paramOperand);//为函数添加参数的操作数！！！
             //此时，function的params中的最后一个元素即是马上要进行genCode的参数
             params->genCode();
@@ -469,6 +479,7 @@ void DeclStmt::genCode()
     }
     else if (se->isLocal()) // 局部变量
     {
+
         fprintf(stderr, "进入DeclStmt::genCode中局部变量的部分\n");
         BasicBlock *bb = builder->getInsertBB(); // 获取当前基本块
         Function *func = bb->getParent();        // 获取当前基本块所属的函数（即局部变量所属位置）
@@ -517,16 +528,28 @@ void DeclStmt::genCode()
         BasicBlock *entry = func->getEntry();    // 获取函数的入口基本块
         Instruction *alloca;
         Operand *addr;        // 操作数
+        SymbolEntry *OKse=se; //用来把数组类型变成指针类型的权宜之计
         SymbolEntry *addr_se; // 符号表项
         Type *type;
-        type = new PointerType(se->getType());
+        if(OKse->getType()->isIntArray())
+        {
+
+           //type = new PointerType(TypeSystem::intType);
+           OKse=new TemporarySymbolEntry(new PointerType(TypeSystem::intType), SymbolTable::getLabel());
+        }
+        if(OKse->getType()->isFloatArray())
+        {
+            //type = new PointerType(TypeSystem::floatType);
+            OKse=new TemporarySymbolEntry(new PointerType(TypeSystem::floatType), SymbolTable::getLabel());
+        }
+        type = new PointerType(OKse->getType());
         fprintf(stderr, "指针参数类型是%s\n", type->toStr().c_str());
         fprintf(stderr, "是%s\n", se->getType()->toStr().c_str());
 
         addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel()); // 创建一个新的临时符号表项
         addr = new Operand(addr_se);
 
-        alloca = new AllocaInstruction(addr, se); // allocate space for local id in function stack.
+        alloca = new AllocaInstruction(addr, OKse); // allocate space for local id in function stack.
         entry->insertFront(alloca);
         se->setAddr(addr);
 
@@ -639,7 +662,15 @@ void FunctionDef::typeCheck()
     if (params != nullptr) // 参数不为空
     {
         fprintf(stderr, "该函数不为空,开始检查params，params是\n");
-        params->typeCheck();
+        DeclStmt *paramsNow = dynamic_cast<DeclStmt *>(this->params); // 获取参数列表
+        while(params != nullptr)
+        {
+            params->typeCheck();
+            params = (DeclStmt *)(params->getNext()); // 遍历参数列表（params是DeclStmt，通过指针在.y文件中连成一个链表）
+
+        }
+        params = paramsNow;
+
     }
     stmt->typeCheck();
 
@@ -1191,6 +1222,7 @@ void WhileStmt::typeCheck()
 
 void Ast::output()
 {
+    fprintf(stderr, "语法树输出\n");
     fprintf(yyout, "program\n");
     if (root != nullptr)
         root->output(4);
@@ -1288,6 +1320,7 @@ void Id::output(int level)
 
 void FuncCall::output(int level) // 函数调用输出
 {
+    fprintf(stderr, "FuncCall::output\n");
     fprintf(yyout, "%*cFuncCall\tname: %s\n", level, ' ', func->getSymbolEntry()->toStr().c_str()); // 输出函数名
     for (auto arg : args)                                                                           // 遍历参数
     {
@@ -1305,6 +1338,14 @@ void SeqNode::output(int level)
 {
     stmt1->output(level);
     stmt2->output(level);
+}
+
+ExprNode *DeclStmt::getId()
+{
+    if(id!=nullptr)
+        return id;
+    else
+        return array;
 }
 
 void DeclStmt::output(int level)
@@ -1338,6 +1379,7 @@ void IfElseStmt::output(int level)
 void ReturnStmt::output(int level)
 {
     fprintf(yyout, "%*cReturnStmt\n", level, ' ');
+    if(retValue!=nullptr)
     retValue->output(level + 4);
 }
 
@@ -1361,12 +1403,14 @@ void FunctionDef::output(int level)
 
     while (params != nullptr) // 遍历参数列表
     {
+        fprintf(stderr, "进入循环1\n");
         std::string paramName = params->getId()->getSymbolEntry()->toStr();                                         // 通过参数获取参数名(必须先从DeclStmt提取出Id，才能获取其符号表项，进而输出)
         std::string paramType = params->getId()->getSymbolEntry()->getType()->toStr();                              // 通过参数获取参数类型
         int paramScope = dynamic_cast<IdentifierSymbolEntry *>(params->getId()->getSymbolEntry())->getScope();      // 获取参数的作用域
         fprintf(yyout, "%*c%s: %s, scope: %d\n", level + 8, ' ', paramName.c_str(), paramType.c_str(), paramScope); // 输出参数名和参数类型
         params = (DeclStmt *)(params->getNext());
     }
+    fprintf(stderr, "退出循环1\n");
 
     // for (auto param : params) {
     //     std::string paramName = param->getSymbolEntry()->toStr();   // 通过参数获取参数名

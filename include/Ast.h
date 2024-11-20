@@ -227,7 +227,8 @@ public:
     DeclStmt(Array *array) : array(array), initValList(nullptr) {};
     DeclStmt(Id *id) : id(id), expr(nullptr) {};
     DeclStmt(Array *array, InitValList *initValList) : array(array), initValList(initValList) {};
-    Id *getId() { return id; }  //返回标识符
+    ExprNode *getId();  //返回标识符
+    Array *getArray() { return array; }  //返回数组
     void output(int level);
     void typeCheck();
     void genCode();
