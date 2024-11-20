@@ -423,6 +423,14 @@ void DeclStmt::genCode()
             }
             
         }
+        if(array!=nullptr&&initValList==nullptr)
+        {
+            std::vector<ExprNode*> initVal;
+            initVal.push_back(new Constant(new ConstantSymbolEntry(0)));
+            initVal[0]->typeCheck();
+            //initVal.push_back(new ConstantSymbolEntry(new IntType(32),0));
+            initValList = new InitValList(initVal);
+        }
         if(initValList != nullptr)//如果有初始化值列表
         {
             fprintf(stderr, "具有初始化值列表\n");
@@ -997,9 +1005,18 @@ void FuncCall::typeCheck()//检查形参和实参的类型、数量，是否匹�
         for(int i=0;i<size_real;i++)
         {
             Type* type_real=args[i]->getSymbolEntry()->getType();
+
+            if (type_real->isFunc())
+            { // 如果实参是个函数，那么找他的返回值类型
+                // 获取函数的返回值类型
+                Type *returnType = dynamic_cast<FunctionType *>(type_real)->getRetType(); // 将type转换为其子类func类型，然后获取函数返回值的类型
+                type_real = returnType;
+            }
+
             Type* type_form=dynamic_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType()[i];
             bool int_longlong = (type_real->isInt() && type_form->isLongLong()) || (type_real->isLongLong() && type_form->isInt());
-            if((type_real->getKind()!=type_form->getKind())&&!int_longlong)
+            bool element_array =(type_real->isIntArray() && type_form->isInt()) || (type_real->isFloatArray() && type_form->isFloat());
+            if((type_real->getKind()!=type_form->getKind())&&!int_longlong&&!element_array)
             {
                 fprintf(stderr,"type_real是%s\n",type_real->toStr().c_str());
                 fprintf(stderr,"type_form是%s\n",type_form->toStr().c_str());
@@ -1346,10 +1363,17 @@ void FuncCall::genCode()//！！！！！！记得做
     // 生成实参的中间代码
     std::vector<Operand *> argsOperands;//实参的操作数
     for (auto arg : args) {
+        fprintf(stderr,"arg是%s\n",arg->getSymbolEntry()->toStr().c_str());
         if(arg->getSymbolEntry()->getType()->isIntArray()||arg->getSymbolEntry()->getType()->isFloatArray())
         {
-            
+            if(dynamic_cast<Array*>(arg)!=nullptr)
+            {}
+            else
+            {
+            fprintf(stderr,"进入数组\n");
             arg=new Array(dynamic_cast<Id*>(arg),nullptr);
+            fprintf(stderr,"arg是");
+            }
         }
         arg->genCode();
         Operand *argOperand = arg->getOperand();
@@ -1538,11 +1562,19 @@ void ExprStmt::genCode()
 //将一维数组的大小转换为IR代码，只能在typecheck后调用
 std::string InitValList::Dim1ToIR(int dim1)
 {
+    fprintf(stderr,"InitValList::Dim1ToIR\n");
+    fprintf(stderr,"initVal.size()是%ld\n",initVal.size());
+    fprintf(stderr,"initVal[0]->CanBeCalculatedInt是%d\n",initVal[0]->CanBeCalculatedInt);
+    
+    if(initVal.size()==1&&initVal[0]->CanBeCalculatedInt&&initVal[0]->CalculatedInt==0)
+    {
+        return "zeroinitializer";
+    }
+
     std::ostringstream buffer;
     Type* type = initVal[0]->getSymbolEntry()->getType();
 
     buffer << " [";
-
     for(int i=0;i<dim1;i++)
     {
         fprintf(stderr,"%d",i);

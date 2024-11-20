@@ -43,6 +43,8 @@ protected:
             CALL,//增加函数调用的call
             ZEXT,//增加零扩展指令
             GEP//增加数组访问指令
+            ,BITCAST//增加类型转换指令
+
     };
 };
 
@@ -329,5 +331,19 @@ public:
 private:
     std::vector<Operand *> indices;
 };
-
+/**
+ * @class BitcastInstruction
+ * @brief 表示编译器中间表示中的 bitcast 指令。
+ *
+ * 该类负责处理 bitcast 操作。
+ * 它继承自基类 Instruction。
+ */
+class BitcastInstruction : public Instruction
+{
+public:
+    BitcastInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb = nullptr);
+    void output() const override;
+    Operand *getDef() override;
+    std::vector<Operand *> getUse() override;
+};
 #endif

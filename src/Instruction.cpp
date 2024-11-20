@@ -1,6 +1,7 @@
 #include "Instruction.h"
 #include "BasicBlock.h"
 #include <iostream>
+#include <sstream>
 #include "Function.h"
 #include "Type.h"
 extern FILE* yyout;
@@ -515,4 +516,48 @@ Operand *GetElementPtrInstruction::getDef()
 std::vector<Operand *> GetElementPtrInstruction::getUse()
 {
     return std::vector<Operand *>(operands.begin() + 1, operands.end());
+}
+
+
+/**
+ * @brief 构造一个新的 BitcastInstruction 对象。
+ * @param dst 目标操作数。
+ * @param src 源操作数。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ */
+BitcastInstruction::BitcastInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(BITCAST, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+}
+
+/**
+ * @brief 输出指令的字符串表示。
+ */
+void BitcastInstruction::output() const
+{
+    fprintf(yyout, "  %s = bitcast %s %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
+}
+
+/**
+ * @brief 获取定义操作数。
+ * @return 定义操作数。
+ */
+Operand *BitcastInstruction::getDef()
+{
+    return operands[0];
+}
+
+/**
+ * @brief 获取使用操作数。
+ * @return 使用操作数的向量。
+ */
+std::vector<Operand *> BitcastInstruction::getUse()
+{
+    return {operands[1]};
 }
