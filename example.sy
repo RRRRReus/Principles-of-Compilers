@@ -1,75 +1,11 @@
 # include "sysyruntimelibrary/sylib.h"
 
-int x[3] = {2344,1232,3435};
-int y[3] = {234,566,127378};
-int d;
-void modx()
-{
-  x[0] = x[0] + 2;
-  x[1] = x[1] + 2;
-  x[2] = x[2] + 2;
-}
-void mody()
-{
-  y[0] = y[0] + 2;
-  y[1] = y[1] + 2;
-  y[2] = y[2] + 2;
-}
-
-void refx()
-{
-  d = x[0] + x[1] + x[2];
-}
-
-void refy()
-{
-  d = y[0] + y[1] + y[2];
-}
-
-void modxrefy()
-{
-  x[0] = y[0] + 3;
-  x[1] = y[1] + 4;
-  x[2] = y[2] + 5;
-}
-
-void modyrefx()
-{
-  y[0] = x[0] + 5;
-  y[1] = x[1] + 6;
-  y[2] = x[2] + 7;
-}
-
-int main()
-{
-  int t = x[2];
-  y[2] = 3;
-  t = t + x[2];
-  x[2] = 3;
-  t = t + x[2] + d;
-  d = 5;
-  t = t + x[2] + d + d;
-  refx();
-  t = t + x[2] + d;
-  modx();
-  t = t + x[2] + d;
-  mody();
-  t = t + x[2] + d;
-  modyrefx();
-  t = t + x[2] + y[2] + d;
-  modxrefy();
-  t = t + x[2] + d;
-  t = t + y[1] + y[2] + d;
-  modyrefx();
-  t = t + y[1] + y[2] + d;
-  refy();
-  t = t + y[1] + y[2] + d;
-  putint(t);
-  putch(10);
-  putarray(3,x);
-  putarray(3,y);
-  putint(d);
-  putch(10);
-
-  return 0;
+//test array define
+int main(){
+    int a[4][2] = {};
+    int b[4][2] = {1, 2, 3, 4, 5, 6, 7, 8};
+    int c[4][2] = {{1, 2}, {3, 4}, {5, 6}, {7, 8}};
+    int d[4][2] = {1, 2, {3}, {5}, 7 , 8};
+    int e[4][2] = {{d[2][1], c[2][1]}, {3, 4}, {5, 6}, {7, 8}};
+    return e[3][1] + e[0][0] + e[0][1] + a[2][0];
 }

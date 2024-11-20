@@ -1279,9 +1279,64 @@ void ContinueStmt::output(int level)
 
 void Array::genCode()
 {
+    fprintf(stderr,"Array::genCode\n");
+    // if(id!=nullptr)
+    //     id->genCode();
+    if(arrayIndex!=nullptr)
+        arrayIndex->genCode();
+
+
+    Type *ElementType=nullptr;
+    int dimSize = 0;
+    if(this->getSymbolEntry()->getType()->isIntArray())
+    {
+        dimSize = dynamic_cast<IntArrayType*>(this->getSymbolEntry()->getType())->dimSize->size();
+        ElementType =TypeSystem::intType;
+    }
+    if(this->getSymbolEntry()->getType()->isFloatArray())
+    {
+        dimSize = dynamic_cast<FloatArrayType*>(this->getSymbolEntry()->getType())->dimSize->size();
+        ElementType =TypeSystem::floatType;
+    }
+
+    std::vector<Operand *> IndexOperands;
+    if(arrayIndex==nullptr)
+    {
+        for(int i=0;i<dimSize;i++)
+        IndexOperands.push_back(new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)));
+    }
+    else
+    {
+        for(auto i:arrayIndex->index)
+        {
+            IndexOperands.push_back(i->getOperand());
+        }
+
+    }
+
+        Operand *addr = new Operand(new TemporarySymbolEntry(new PointerType(ElementType), SymbolTable::getLabel()));
+        Operand *id = new Operand(this->getSymbolEntry());
+        new GetElementPtrInstruction(addr, id, IndexOperands, builder->getInsertBB());
+        fprintf(stderr,"Array::genCodeOVER\n");
+        //this->dst=addr;
+        if(arrayIndex!=nullptr)
+        {
+            dst =new Operand(new TemporarySymbolEntry(ElementType, SymbolTable::getLabel()));
+            new LoadInstruction(dst, addr, builder->getInsertBB()); //生成load指令
+            dynamic_cast<IdentifierSymbolEntry*>(this->getSymPtr())->setAddr(addr);
+        }
+        else
+        {
+            this->dst=addr;
+        }
 }
 void ArrayIndex::genCode()
 {
+    fprintf(stderr,"ArrayIndex::genCode\n");
+    for(auto i:index)
+    {
+        i->genCode();
+    }
 }
 void FuncCall::genCode()//！！！！！！记得做
 {
@@ -1291,6 +1346,11 @@ void FuncCall::genCode()//！！！！！！记得做
     // 生成实参的中间代码
     std::vector<Operand *> argsOperands;//实参的操作数
     for (auto arg : args) {
+        if(arg->getSymbolEntry()->getType()->isIntArray()||arg->getSymbolEntry()->getType()->isFloatArray())
+        {
+            
+            arg=new Array(dynamic_cast<Id*>(arg),nullptr);
+        }
         arg->genCode();
         Operand *argOperand = arg->getOperand();
         if(argOperand->getType()->isInt()&& dynamic_cast<IntType*>(argOperand->getType())->getSize()==1)
@@ -1308,7 +1368,7 @@ void FuncCall::genCode()//！！！！！！记得做
     //如果是库函数怎么怎么地
     if(funcSE==nullptr)//如果在标识符符号表里没有找到函数，那么他一定是库函数
     {
-        fprintf(stderr, "进入库函数\n");
+        fprintf(stderr, "进入库函数%s\n",func->getSymbolEntry()->toStr().c_str());
         FunctionSymbolEntry *library_funcSE = dynamic_cast<FunctionSymbolEntry *>(func->getSymbolEntry());
         // 创建返回值操作数
         Operand *retOperand = nullptr;//初始化返回值操作数
@@ -1542,7 +1602,7 @@ std::string InitValList::Dim2ToIR(int dim1, int dim2)
             buffer << ",";
         }
         buffer<<"["<<dim1<<" x "<<type->toStr()<<"]";
-        if(BasicI>=(int)this->initVal.size()-1)
+        if(BasicI>=(int)this->initVal.size())
         {
             buffer<<" zeroinitializer";
             continue;
@@ -1560,7 +1620,7 @@ std::string InitValList::Dim2ToIR(int dim1, int dim2)
         std::vector<ExprNode*> lineInitVal; 
         while(1)
         {
-            if(BasicI>=(int)this->initVal.size()-1)
+            if(BasicI>=(int)this->initVal.size())
                 break;
             if((int)lineInitVal.size()>=dim1||initVal[BasicI]->getSymbolEntry()==nullptr)
                 break;

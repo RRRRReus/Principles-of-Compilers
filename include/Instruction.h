@@ -41,7 +41,8 @@ protected:
             CMP, 
             ALLOCA, 
             CALL,//增加函数调用的call
-            ZEXT//增加零扩展指令
+            ZEXT,//增加零扩展指令
+            GEP//增加数组访问指令
     };
 };
 
@@ -317,4 +318,16 @@ public:
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
 };
+class GetElementPtrInstruction : public Instruction
+{
+public:
+    GetElementPtrInstruction(Operand *dst, Operand *src, const std::vector<Operand *> &indices, BasicBlock *insert_bb = nullptr);
+    void output() const override;
+    Operand *getDef() override;
+    std::vector<Operand *> getUse() override;
+
+private:
+    std::vector<Operand *> indices;
+};
+
 #endif

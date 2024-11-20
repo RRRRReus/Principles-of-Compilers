@@ -463,3 +463,56 @@ std::vector<Operand *> ZextInstruction::getUse()
 {
     return {operands[1]};
 }
+
+/**
+ * @brief 构造一个新的 GetElementPtrInstruction 对象。
+ * @param dst 目标操作数。
+ * @param src 源操作数。
+ * @param indices 索引操作数的向量。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ */
+GetElementPtrInstruction::GetElementPtrInstruction(Operand *dst, Operand *src, const std::vector<Operand *> &indices, BasicBlock *insert_bb)
+    : Instruction(GEP, insert_bb), indices(indices)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    operands.insert(operands.end(), indices.begin(), indices.end());
+}
+
+/**
+ * @brief 输出指令的字符串表示。
+ */
+void GetElementPtrInstruction::output() const
+{
+    fprintf(yyout, "  %s = getelementptr inbounds %s,%s* %s",
+            operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->toStr().c_str());
+    fprintf(yyout,", i32 0");
+    for (size_t i = 2; i < operands.size(); ++i)
+    {
+        fprintf(yyout, ", %s %s",
+                operands[i]->getType()->toStr().c_str(),
+                operands[i]->toStr().c_str());
+    }
+    fprintf(yyout, "\n");
+}
+
+/**
+ * @brief 获取定义操作数。
+ * @return 定义操作数。
+ */
+Operand *GetElementPtrInstruction::getDef()
+{
+    return operands[0];
+}
+
+/**
+ * @brief 获取使用操作数。
+ * @return 使用操作数的向量。
+ */
+std::vector<Operand *> GetElementPtrInstruction::getUse()
+{
+    return std::vector<Operand *>(operands.begin() + 1, operands.end());
+}
