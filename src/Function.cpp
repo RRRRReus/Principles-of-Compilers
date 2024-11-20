@@ -53,8 +53,14 @@ void Function::output() const
 {
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type *retType = funcType->getRetType();
-    //std::vector<Type *> paraType = funcType->getParamsType();
-    fprintf(yyout, "define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
+    fprintf(yyout, "define %s %s(", retType->toStr().c_str(), sym_ptr->toStr().c_str());
+    for(long unsigned int i = 0; i < params.size(); i++)
+    {
+        fprintf(yyout, "%s %s", params[i]->getType()->toStr().c_str(), params[i]->toStr().c_str());
+        if(i != params.size() - 1)
+            fprintf(yyout, ", ");
+    }
+    fprintf(yyout, ") {\n");
     fprintf(stderr,"已输出define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
     std::set<BasicBlock *> v;   //用于记录已经访问过的基本块
     std::list<BasicBlock *> q;  //用于广度优先搜索

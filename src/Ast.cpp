@@ -40,9 +40,7 @@ void FunctionDef::genCode()
 {
     fprintf(stderr, "进入FunctionDef::genCode\n");
     Unit *unit = builder->getUnit(); // 获取当前编译单元
-    fprintf(stderr, "已经获取当前编译单元\n");
     Function *func = new Function(unit, se); // 创建函数对象（参数：当前编译单元，符号表项）//此处构造函数已将其放入unit的funclist中
-    fprintf(stderr, "已经创建函数对象\n");
     BasicBlock *entry = func->getEntry(); // 获取函数的入口基本块
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry); // 把所有定义语句都放到函数的入口基本块中
@@ -51,6 +49,12 @@ void FunctionDef::genCode()
     {
         while (params != nullptr)
         {
+           
+            //new一个新的函数参数操作数
+            Operand *paramOperand = new Operand(new TemporarySymbolEntry(params->getId()->getSymbolEntry()->getType(), SymbolTable::getLabel()));
+            fprintf(stderr, "参数operand是 %s\n", paramOperand->toStr().c_str());
+            func->addParam(paramOperand);//为函数添加参数的操作数！！！
+            //此时，function的params中的最后一个元素即是马上要进行genCode的参数
             params->genCode();
             params = (DeclStmt *)(params->getNext()); // 遍历参数列表（params是DeclStmt，通过指针在.y文件中连成一个链表）
         }
@@ -120,12 +124,12 @@ void BinaryExpr::genCode()
         Type *type1 = src1->getType();
         Type *type2 = src2->getType();
 
-        if (type1->isInt() && dynamic_cast<IntType *>(type1)->getSize() == 32)
+        if ((type1->isInt() && dynamic_cast<IntType *>(type1)->getSize() == 32) || type1->isRetInt32())
         {
             src1 = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
             new CmpInstruction(CmpInstruction::NE, src1, expr1->getOperand(), new Operand(new ConstantSymbolEntry(0)), bb);
         }
-        if (type2->isInt() && dynamic_cast<IntType *>(type2)->getSize() == 32)
+        if ((type2->isInt() && dynamic_cast<IntType *>(type2)->getSize() == 32) || type2->isRetInt32())
         {
             src2 = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
             new CmpInstruction(CmpInstruction::NE, src2, expr2->getOperand(), new Operand(new ConstantSymbolEntry(0)), bb);
@@ -284,7 +288,7 @@ void IfStmt::genCode() //????原来的代码不全？？？
 
     Type *Condtype = cond->getSymbolEntry()->getType();
     Operand *Condsrc = cond->getOperand();
-    if (Condtype->isInt() && dynamic_cast<IntType *>(Condtype)->getSize() == 32)
+    if ((Condtype->isInt() && dynamic_cast<IntType *>(Condtype)->getSize() == 32) || Condtype->isRetInt32())
     {
         Condsrc = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
         new CmpInstruction(CmpInstruction::NE, Condsrc, cond->getOperand(), new Operand(new ConstantSymbolEntry(0)), now_bb);
@@ -330,7 +334,7 @@ void IfElseStmt::genCode()
     Operand *Condsrc = cond->getOperand();
     Type *Condtype = cond->getSymbolEntry()->getType();
 
-    if (Condtype->isInt() && dynamic_cast<IntType *>(Condtype)->getSize() == 32)
+    if ((Condtype->isInt() && dynamic_cast<IntType *>(Condtype)->getSize() == 32) || Condtype->isRetInt32())
     {
         Condsrc = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
         new CmpInstruction(CmpInstruction::NE, Condsrc, cond->getOperand(), new Operand(new ConstantSymbolEntry(0)), now_bb);
@@ -495,9 +499,11 @@ void DeclStmt::genCode()
         alloca = new AllocaInstruction(addr, se); // allocate space for local id in function stack.
         entry->insertFront(alloca);
         se->setAddr(addr);
-        fprintf(stderr, "开始检查函数有没有初始化表达式！！！\n");
 
-        
+        Operand* currentParam = func->getParams().back();//获取当前参数(即vector中的最后一个)
+        new StoreInstruction(addr, currentParam, builder->getInsertBB());
+
+        fprintf(stderr, "开始检查函数有没有初始化表达式！！！\n");
         if (expr != nullptr)
         {
             fprintf(stderr, "函数实参有初始化表达式\n");
@@ -1565,7 +1571,7 @@ void UnaryExpr::genCode()
         Operand *ToBoolSrc = src;
         Type *Srctype = src->getType();
         fprintf(stderr, "进入NOT,src->getType()->toStr()是%s\n", src->getType()->toStr().c_str());
-        if (Srctype->isInt() && dynamic_cast<IntType *>(Srctype)->getSize() == 32)
+        if ((Srctype->isInt() && dynamic_cast<IntType *>(Srctype)->getSize() == 32) || Srctype->isRetInt32())
         {
             ToBoolSrc = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
             new CmpInstruction(CmpInstruction::NE, ToBoolSrc, src, new Operand(new ConstantSymbolEntry(0)), bb);
