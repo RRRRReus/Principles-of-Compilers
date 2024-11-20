@@ -277,6 +277,8 @@ void IfStmt::genCode() //????原来的代码不全？？？
     then_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
 
+    
+
     cond->genCode();
     backPatch(cond->trueList(), then_bb);
     backPatch(cond->falseList(), end_bb);
@@ -434,7 +436,7 @@ void DeclStmt::genCode()
                 fprintf(stderr, "设置初始值结束\n");
             }
             else
-            { // 未实现浮点数！！！！！！！！！！！！！！
+            { 
 
                 fprintf(stderr, "LAB3中间代码生成报错:全局变量的赋值不为常数\n");
                 exit(1);
@@ -559,15 +561,42 @@ void DeclStmt::genCode()
 
 void ReturnStmt::genCode()
 {
-    if (this->getRetValue() == nullptr)
+    if (this->getRetValue() == nullptr)//返回值为空
     {
-        fprintf(stderr, "进入空ReturnStmt\n");
+            fprintf(stderr, "进入空ReturnStmt\n");
+            Function *func = builder->getInsertBB()->getParent();
+
+            Operand* func_ret=func->getRetValue();
+            fprintf(stderr, "？？？？？？？？？？？？当前的RetValue的类型是 %s\n",func_ret->getSymbolEntry()->getType()->toStr().c_str());
+            if(!func->getSymPtr()->getType()->isFuncVoid())
+            {
+                fprintf(stderr,"lab3的ReturnStmt::genCode()报错：函数没有返回值，但函数不是void\n");
+                exit(EXIT_FAILURE);
+            }
+            BasicBlock *exit = func->getExit();
+            new UncondBrInstruction(exit, builder->getInsertBB());
+            builder->getInsertBB()->addSucc(exit);
+            exit->addPred(builder->getInsertBB());
+            return;
+       
+    }
+    else   //返回值不为空，但是函数返回值类型为void
+    {
         Function *func = builder->getInsertBB()->getParent();
-        BasicBlock *exit = func->getExit();
-        new UncondBrInstruction(exit, builder->getInsertBB());
-        builder->getInsertBB()->addSucc(exit);
-        exit->addPred(builder->getInsertBB());
-        return;
+
+        fprintf(stderr, "当前的RetValue的类型是 %d\n",static_cast<FunctionSymbolEntry*>(this->getRetValue()->getSymbolEntry())->getType()->isFuncVoid());
+        fprintf(stderr,"当前所属函数的返回值类型是 %d\n",func->getSymPtr()->getType()->isFunc());
+        if(func->getSymPtr()->getType()->isFuncVoid() && !this->getRetValue()->getSymbolEntry()->getType()->isFuncVoid())
+        {
+            fprintf(stderr,"lab3的ReturnStmt::genCode()报错：函数返回值类型为void，但仍有返回值\n");
+                exit(EXIT_FAILURE);
+        }
+        else if(!func->getSymPtr()->getType()->isFuncVoid() && this->getRetValue()->getSymbolEntry()->getType()->isFuncVoid())
+        {
+            fprintf(stderr,"lab3的ReturnStmt::genCode()报错：函数返回值类型不为void，返回值为void\n");
+            exit(EXIT_FAILURE);
+        }
+   
     }
     this->getRetValue()->genCode();
     Function *func = builder->getInsertBB()->getParent();
@@ -937,6 +966,11 @@ void Id::typeCheck()
 void IfStmt::typeCheck()
 {
     fprintf(stderr, "IfStmt::typeCheck\n");
+    if(cond->getSymbolEntry()->getType()->isFuncVoid())//覆盖只有一个表达式，并且为函数调用且函数返回值为void的情况
+    {
+        fprintf(stderr, "LAB3类型检查报错:if语句条件不能为void\n");
+        exit(EXIT_FAILURE);
+    }
     cond->typeCheck();
     thenStmt->typeCheck();
     // Todo
@@ -945,6 +979,11 @@ void IfStmt::typeCheck()
 void IfElseStmt::typeCheck()
 {
     fprintf(stderr, "IfElseStmt::typeCheck\n");
+    if(cond->getSymbolEntry()->getType()->isFuncVoid())
+    {
+        fprintf(stderr, "LAB3类型检查报错:if语句条件不能为void\n");
+        exit(EXIT_FAILURE);
+    }
     cond->typeCheck();
     thenStmt->typeCheck();
     elseStmt->typeCheck();
@@ -1036,6 +1075,14 @@ void DeclStmt::typeCheck()
             fprintf(stderr, "LAB3类型检查报错:常量初始化失败\n");
             exit(EXIT_FAILURE);
         }
+    }
+
+    //检查定义语句初始化语句是否为void
+    //fprintf(stderr,"vvvvvvvvvvv %d\n", expr->getSymbolEntry()->getType()->isFuncVoid());
+    if(expr!=nullptr && expr->getSymbolEntry()->getType()->isFuncVoid())//如果存在初始化表达式，并且赋值为void
+    {
+        fprintf(stderr, "LAB3类型检查报错:变量不能被初始化为void\n");
+        exit(EXIT_FAILURE);
     }
 
     // Todo
@@ -1542,10 +1589,10 @@ void FuncCall::genCode()//！！！！！！记得做
         FunctionSymbolEntry *library_funcSE = dynamic_cast<FunctionSymbolEntry *>(func->getSymbolEntry());
         // 创建返回值操作数
         Operand *retOperand = nullptr; // 初始化返回值操作数
-        fprintf(stderr, "库函数的类型是%d\n", library_funcSE->getReturnType()->isVoid());
-        if (!library_funcSE->getType()->isVoid())
+        fprintf(stderr, "库函数的类型是%d\n", library_funcSE->getType()->isFuncVoid());
+        if (!library_funcSE->getType()->isVoid())//目前恒为1!!!!!!!!!!!!!!但是这个逻辑是正确的，就应该恒为1（生成一个operand存返回值，然后在输出的时候会判断，如果为void，则根本不输出）
         {                                                                                                           // 如果函数返回值不是void
-            retOperand = new Operand(new TemporarySymbolEntry(library_funcSE->getType(), SymbolTable::getLabel())); // 为什么是临时符号表项？？？？？？
+            retOperand = new Operand(new TemporarySymbolEntry(library_funcSE->getType(), SymbolTable::getLabel()));
         }
 
         // 生成函数调用指令

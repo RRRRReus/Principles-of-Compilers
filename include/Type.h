@@ -22,6 +22,7 @@ public:
     bool isRetInt32();
     bool isVoid() const {return kind == VOID;};
     bool isFunc() const {return kind == FUNC;};
+    bool isFuncVoid();//判断一个type是不是函数，并且返回值是不是为空
     bool isFloat() const {return kind == FLOAT;};
     bool isIntArray() const {return kind == INTARRAY;};
     bool isFloatArray() const {return kind == FLOATARRAY;};
