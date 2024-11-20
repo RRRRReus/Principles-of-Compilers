@@ -51,6 +51,12 @@ void Function::remove(BasicBlock *bb)
 
 void Function::output() const
 {
+    if(this->block_list.size() == 2)
+    {
+        new UncondBrInstruction(exit, entry);//插入无条件跳转指令
+        entry->addSucc(exit);//将出口基本块加入基本块的后继
+        exit->addPred(entry);//将基本块加入出口基本块的前驱
+    }
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type *retType = funcType->getRetType();
     fprintf(yyout, "define %s %s(", retType->toStr().c_str(), sym_ptr->toStr().c_str());
