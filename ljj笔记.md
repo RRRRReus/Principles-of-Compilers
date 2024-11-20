@@ -118,5 +118,30 @@ Unit
 
 全局变量初始值如何设置？？？
 
+## float中间代码
+```
+float a=1.2;
+
+%1 = alloca float, align 4
+store float 0x3FF3333340000000, float* %1, align 4
+```
+0x3FF3333340000000 为 1.2 的 IEEE 754 双精度浮点数表示。
+
+
+1. 加减乘除应为浮点数加减乘除（fadd,fsub,fmul,fdiv）
+2. float+int结果应为float
+
+
+```
+int a=1;
+float s=a;
+
+    %1 = alloca i32, align 4
+    %2 = alloca float, align 4
+    store i32 1, i32* %1, align 4
+    %3 = load i32, i32* %1, align 4
+    %4 = sitofp i32 %3 to float
+    store float %4, float* %2, align 4
+```
 
 

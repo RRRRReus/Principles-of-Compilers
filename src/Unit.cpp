@@ -34,6 +34,9 @@ void Unit::output() const
     
     //fprintf(yyout, "declare void @putint(i32) \n");
 
+    fprintf(yyout, "declare i32 @getch()\n");
+    fprintf(yyout, "declare void @putfloat(float)\n");
+    fprintf(yyout, "declare float @getfloat()\n");
 
 }
 

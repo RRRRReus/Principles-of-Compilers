@@ -2,6 +2,7 @@
 #include "BasicBlock.h"
 #include <iostream>
 #include <sstream>
+#include <string>
 #include "Function.h"
 #include "Type.h"
 extern FILE* yyout;
@@ -94,16 +95,28 @@ void BinaryInstruction::output() const
         break;
 
     case ADD:
-        op = "add";
+        if(type == "float")
+            op = "fadd";
+        else
+            op = "add";
         break;
     case SUB:
-        op = "sub";
+        if(type == "float")
+            op = "fsub";
+        else
+            op = "sub";
         break;
     case MUL:
-        op ="mul";
+        if(type == "float")
+            op = "fmul";
+        else
+            op = "mul";
         break;
     case DIV:
-        op = "sdiv";
+        if(type == "float")
+            op = "fdiv";
+        else
+            op = "sdiv";
         break;
     case MOD:
         op = "srem";
@@ -333,10 +346,20 @@ void StoreInstruction::output() const
     fprintf(stderr, "进入StoreInstruction::output函数\n");
     std::string dst = operands[0]->toStr();
     std::string src = operands[1]->toStr();
+    // bool isFloat = src.find('.') != std::string::npos;//这个判断方法对吗？？？？
+    // if (isFloat) {
+    //     double value = std::stod(src);//将字符串转换为double
+    //     uint64_t ieee754;
+    //     std::memcpy(&ieee754, &value, sizeof(value));//将double转换为uint64_t
+    //     std::stringstream ss;
+    //     ss << std::hex << ieee754;
+    //     src = ss.str();
+    // }
     std::string dst_type = operands[0]->getType()->toStr();
     std::string src_type = operands[1]->getType()->toStr();
 
     fprintf(yyout, "  store %s %s, %s %s, align 4\n", src_type.c_str(), src.c_str(), dst_type.c_str(), dst.c_str());
+    //把src存给dst，后面为被赋值的
 }
 
 //函数调用命令
@@ -560,4 +583,57 @@ Operand *BitcastInstruction::getDef()
 std::vector<Operand *> BitcastInstruction::getUse()
 {
     return {operands[1]};
+}
+
+//浮点数转整数指令
+
+FpToSiInstruction::FpToSiInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(FPTOI, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+FpToSiInstruction::~FpToSiInstruction()
+{
+    operands[0]->setDef(nullptr);
+    if(operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void FpToSiInstruction::output() const
+{
+    fprintf(yyout, "  %s = fptosi %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
+}
+
+//整数转浮点数指令
+SiToFpInstruction::SiToFpInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(SITOF, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+SiToFpInstruction::~SiToFpInstruction()
+{   
+    operands[0]->setDef(nullptr);
+    if(operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void SiToFpInstruction::output() const
+{
+    fprintf(yyout, "  %s = sitofp %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
 }

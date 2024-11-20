@@ -36,7 +36,7 @@ std::string FunctionType::toStr()
 std::string FloatType::toStr()
 {
     if(getConst())
-        return "const void";
+        return "float";
     else
         return "float";
 }
@@ -140,4 +140,17 @@ std::string PointerType::toStr()
 std::string LongLongType::toStr()
 {
     return "i32";
+}
+
+bool Type::isRetInt32()
+{
+    if(!this->isFunc())
+        return false;
+    else
+    {
+        if(dynamic_cast<FunctionType*>(this)->getRetType()->isInt())
+            return true;
+        else
+            return false;
+    }
 }

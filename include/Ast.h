@@ -66,6 +66,8 @@ protected:
 public:
     bool CanBeCalculatedInt = false;//是否可以计算成一个整数
     int CalculatedInt;//如果可以计算成一个整数，那么这个整数是多少
+    bool CanBeCalculatedFloat = false;//是否可以计算成一个浮点数
+    float CalculatedFloat;//如果可以计算成一个浮点数，那么这个浮点数是多少
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
     Operand* getOperand() {return dst;};//获取操作数
     SymbolEntry* getSymPtr() {return symbolEntry;};
