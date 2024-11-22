@@ -114,6 +114,7 @@ class FloatArrayType : public Type//数组类型
 private:
     int dim;
 public:
+    int getDim(){return dim;}
     std::vector<int> *dimSize=nullptr;
     FloatArrayType(int dim);
     std::string toStr();

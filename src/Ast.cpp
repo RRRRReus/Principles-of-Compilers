@@ -454,7 +454,18 @@ void DeclStmt::genCode()
         if(array!=nullptr&&initValList==nullptr)
         {
             std::vector<ExprNode*> initVal;
-            initVal.push_back(new Constant(new ConstantSymbolEntry(0)));
+            fprintf(stderr, "全局数组变量的初始化,,目前的类型是%s\n",se->getType()->toStr().c_str());
+            if(se->getType()->isIntArray())
+            {
+                fprintf(stderr, "全局数组变量的初始化,,目前的类型是int\n");
+                initVal.push_back(new Constant(new ConstantSymbolEntry(0)));
+            }
+            if(se->getType()->isFloatArray())
+            {
+                fprintf(stderr, "全局数组变量的初始化,,目前的类型是float\n");
+                initVal.push_back(new Constant(new ConstantSymbolEntry(TypeSystem::floatType,0.0f)));
+            }
+            //initVal.push_back(new Constant(new ConstantSymbolEntry(0)));
             initVal[0]->typeCheck();
             //initVal.push_back(new ConstantSymbolEntry(new IntType(32),0));
             initValList = new InitValList(initVal);
@@ -463,15 +474,38 @@ void DeclStmt::genCode()
         {
             fprintf(stderr, "具有初始化值列表\n");
             initValList->genCode();
-            int DIM=dynamic_cast<IntArrayType*>(se->getType())->getDim();//获取维度
-            long unsigned int dim1 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+            int DIM=0;
+            long unsigned int dim1=0;
+            if(se->getType()->isIntArray())
+            {
+                DIM=dynamic_cast<IntArrayType*>(se->getType())->getDim();//获取维度
+                dim1 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+
+            }
+            if(se->getType()->isFloatArray())
+            {
+                DIM=dynamic_cast<FloatArrayType*>(se->getType())->getDim();//获取维度
+                dim1 = dynamic_cast<FloatArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+
+            }
             
             fprintf(stderr,"开始设置数组初值\n");
             if(DIM==1)
                 se->setInitialValue(initValList->Dim1ToIR(dim1).c_str()); // 设置初始值
             if(DIM==2)
             {
-            long unsigned int dim2 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(1);//获取第二维
+            long unsigned int dim2=0;
+            if(se->getType()->isIntArray())
+            {
+                dim2 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(1);//获取第二维
+
+            }
+            if(se->getType()->isFloatArray())
+            {
+                dim2 = dynamic_cast<FloatArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+
+            }
+
             se->setInitialValue(initValList->Dim2ToIR(dim2,dim1).c_str()); // 设置初始值
 
             }
@@ -795,6 +829,9 @@ void BinaryExpr::typeCheck()
             CalculatedInt = expr1->CalculatedInt != expr2->CalculatedInt;
             break;
         }
+        CanBeCalculatedFloat = true;
+        CalculatedFloat = CalculatedInt;
+    
     }
     else if(expr1->CanBeCalculatedFloat || expr2->CanBeCalculatedFloat)
     {
@@ -843,7 +880,11 @@ void BinaryExpr::typeCheck()
             CalculatedFloat = expr1->CalculatedFloat != expr2->CalculatedFloat;
             break;
         }
+        CanBeCalculatedInt = true;
+        CalculatedInt = CalculatedFloat;
     }
+    
+    
     // Todo
     // 获取 expr1 和 expr2 的类型
     Type *type1 = this->getExpr1()->getSymbolEntry()->getType(); // 要获取类型，首先要获取符号表项，然后获取类型
@@ -965,6 +1006,8 @@ void UnaryExpr::typeCheck() // 补充说明：单目运算符可以出现在任�
             CalculatedInt = !expr->CalculatedInt;
             break;
         }
+        CanBeCalculatedFloat = true;
+        CalculatedFloat = CalculatedInt;
     }
     else if(expr->CanBeCalculatedFloat)
     {
@@ -981,6 +1024,9 @@ void UnaryExpr::typeCheck() // 补充说明：单目运算符可以出现在任�
             CalculatedFloat = !expr->CalculatedFloat;
             break;
         }
+    
+        CanBeCalculatedInt = true;
+        CalculatedInt = CalculatedFloat;
     }
 
     // ？？？？？？对吗？？？？
@@ -1116,6 +1162,13 @@ void DeclStmt::typeCheck()
             id->CalculatedInt = expr->CalculatedInt;
 
             // id->setSymbolEntry(new ConstantSymbolEntry(TypeSystem::intType,expr->CalculatedInt));
+        }
+        else if(expr->CanBeCalculatedFloat)
+        {
+            fprintf(stderr, "进入了浮点的常量初始化，这数字是%f\n",expr->CalculatedFloat);
+            id->CanBeCalculatedInt = true;
+            dynamic_cast<IdentifierSymbolEntry *>(id->getSymbolEntry())->ConstantValue =(int) expr->CalculatedFloat;
+            id->CalculatedInt = (int)expr->CanBeCalculatedFloat;
         }
         else
         {
@@ -1973,6 +2026,10 @@ std::string InitValList::Dim1ToIR(int dim1)
     fprintf(stderr,"initVal[0]->CanBeCalculatedInt是%d\n",initVal[0]->CanBeCalculatedInt);
     
     if(initVal.size()==1&&initVal[0]->CanBeCalculatedInt&&initVal[0]->CalculatedInt==0)
+    {
+        return "zeroinitializer";
+    }
+    if(initVal.size()==1&&initVal[0]->CanBeCalculatedFloat&&initVal[0]->CalculatedFloat==0.0f)
     {
         return "zeroinitializer";
     }

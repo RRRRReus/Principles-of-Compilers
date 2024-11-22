@@ -165,6 +165,7 @@ SymbolTable::SymbolTable()
 
     // 创建标准库函数 int getarray(int[])并添加到符号表
     Type* intArrayType = new IntArrayType(1);
+    Type* floatArrayType =new FloatArrayType(1);
     paramTypes = {intArrayType};
     FunctionType* getarray_funcType = new FunctionType(intType, paramTypes);
     FunctionSymbolEntry* getarrayEntry = new FunctionSymbolEntry(getarray_funcType, intType, paramTypes, "getarray");
@@ -175,6 +176,20 @@ SymbolTable::SymbolTable()
     FunctionType* putarray_funcType = new FunctionType(voidType, paramTypes);
     FunctionSymbolEntry* putarrayEntry = new FunctionSymbolEntry(putarray_funcType, voidType, paramTypes, "putarray");
     install("putarray", putarrayEntry);
+
+
+    //创建标准库函数 void putfarray(int n, float a[])并添加到符号表
+    paramTypes = {intType, floatArrayType};
+    FunctionType* putfarray_funcType = new FunctionType(voidType, paramTypes);
+    FunctionSymbolEntry* putfarrayEntry = new FunctionSymbolEntry(putfarray_funcType, voidType, paramTypes, "putfarray");
+    install("putfarray", putfarrayEntry);
+
+    // 创建标准库函数 int getfarray(float a[])并添加到符号表
+    paramTypes={floatArrayType};
+    FunctionType* getfarray_funcType = new FunctionType(intType, paramTypes);
+    FunctionSymbolEntry* getfarrayEntry = new FunctionSymbolEntry(getfarray_funcType, intType, paramTypes, "getfarray");
+    install("getfarray", getfarrayEntry);
+
 
     // 创建标准库函数 void putch(int) 并添加到符号表(将整数参数的值作为 ASCII 码，输出该 ASCII 码对应的字符)
     paramTypes = {intType};
