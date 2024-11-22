@@ -1952,7 +1952,7 @@ void WhileStmt::genCode()
     backPatch(cond->trueList(), body_bb);
     backPatch(cond->falseList(), end_bb);
     Operand *cond_op = cond->getOperand();
-    if (cond_op->getType()->isInt() && dynamic_cast<IntType *>(cond_op->getType())->getSize() == 32)
+    if ((cond_op->getType()->isInt() && dynamic_cast<IntType *>(cond_op->getType())->getSize() == 32)||(cond_op->getType()->isRetInt32()))
     {
         cond_op = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
         new CmpInstruction(CmpInstruction::NE, cond_op, cond->getOperand(), new Operand(new ConstantSymbolEntry(0)), cond_bb);
@@ -2089,6 +2089,16 @@ std::string InitValList::Dim1ToIR(int dim1)
 
 std::string InitValList::Dim2ToIR(int dim1, int dim2)
 {
+
+    if(initVal.size()==1&&initVal[0]->CanBeCalculatedInt&&initVal[0]->CalculatedInt==0)
+    {
+        return "zeroinitializer";
+    }
+    if(initVal.size()==1&&initVal[0]->CanBeCalculatedFloat&&initVal[0]->CalculatedFloat==0.0f)
+    {
+        return "zeroinitializer";
+    }
+
     std::ostringstream buffer;
     ExprNode* node= initVal[0];
     SymbolEntry *se=node->getSymbolEntry();
