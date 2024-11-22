@@ -102,7 +102,7 @@ void BinaryExpr::genCode()
         fprintf(stderr, "观察type1%s\n", type1->toStr().c_str());
         fprintf(stderr, "观察type2%s\n", type2->toStr().c_str());
         fprintf(stderr,"到底是不是longlong %d",type2->isFunc());
-        fprintf(stderr, "dynamic_cast<IntType*>(type1)->getSize():%d\n", dynamic_cast<IntType *>(type1)->getSize());
+        //fprintf(stderr, "dynamic_cast<IntType*>(type1)->getSize():%d\n", dynamic_cast<IntType *>(type1)->getSize());
         if ((type1->isInt() && dynamic_cast<IntType *>(type1)->getSize() == 32) || type1->isRetInt32())
         {
             fprintf(stderr, "expr1有变化\n");
@@ -560,6 +560,76 @@ void DeclStmt::genCode()
             }
             new StoreInstruction(addr, src, builder->getInsertBB());
         }
+    
+        if(initValList!=nullptr)
+        {
+            int DIM=0;
+            long unsigned int dim1=0;
+            Type *Element=nullptr;
+
+            Type* arraytype=array->getSymbolEntry()->getType();
+            if(arraytype->isIntArray())
+            {
+                DIM=dynamic_cast<IntArrayType*>(arraytype)->getDim();
+                Element=TypeSystem::intType;
+                dim1 = dynamic_cast<IntArrayType*>(arraytype)->dimSize->at(0);//获取第一维
+            }
+            if(arraytype->isFloatArray())
+            {
+                DIM=dynamic_cast<FloatArrayType*>(arraytype)->getDim();
+                Element=TypeSystem::floatType;
+                dim1 = dynamic_cast<FloatArrayType*>(arraytype)->dimSize->at(0);//获取第一维
+            }
+            fprintf(stderr,"element的类型是%s\n",Element->toStr().c_str());
+            fprintf(stderr,"array的地址是%s\n",dynamic_cast<IdentifierSymbolEntry*>(array->getSymPtr())->getAddr()->toStr().c_str());
+            fprintf(stderr,"开始设置数组初值\n");
+        if(DIM==1)
+        {
+            Operand *baseAddr=dynamic_cast<IdentifierSymbolEntry*>(array->getSymPtr())->getAddr();
+            Operand *first=new Operand(new TemporarySymbolEntry(new PointerType(Element),SymbolTable::getLabel()));
+            Operand *ElementAddr=new Operand(new TemporarySymbolEntry(array->getSymPtr()->getType(),SymbolTable::getLabel()));
+            std::vector<Operand*>   ONEindex;//用来存放一个维度的索引，一维遍历，
+            ONEindex.push_back(new Operand(new ConstantSymbolEntry(new IntType(32),0)));
+            Operand *src=nullptr;
+            for(int i=0;i<(int)dim1;i++)
+            {
+                if(i<(int)initValList->initVal.size())
+                {
+                    new GetElementPtrInstruction(first,ElementAddr,baseAddr,ONEindex,bb);
+                    initValList->initVal[i]->genCode();
+                    src=initValList->initVal[i]->getOperand();
+                    if(src->getType()->isFloat() && Element->isInt())
+                    {
+                        src = new Operand(new TemporarySymbolEntry(new PointerType(new IntType(32)), SymbolTable::getLabel()));
+                        new FpToSiInstruction(src, initValList->initVal[i]->getOperand(), bb);
+                    }
+                    else if(src->getType()->isInt() && Element->isFloat())
+                    {
+                        src = new Operand(new TemporarySymbolEntry(new PointerType(new FloatType(32)), SymbolTable::getLabel()));
+                        new SiToFpInstruction(src, initValList->initVal[i]->getOperand(), bb);
+                    }
+                    new StoreInstruction(first,src,bb);
+
+                }
+                else
+                {
+                    new GetElementPtrInstruction(first,ElementAddr,baseAddr,ONEindex,bb);
+                    
+                    new StoreInstruction(first,src,bb);
+
+                }
+
+                baseAddr=first;
+                first=new Operand(new TemporarySymbolEntry(new PointerType(Element),SymbolTable::getLabel()));
+                ElementAddr=new Operand(new TemporarySymbolEntry(Element,SymbolTable::getLabel()));
+                ONEindex.pop_back();
+                ONEindex.push_back(new Operand(new ConstantSymbolEntry(new IntType(32),1)));
+
+            }
+        }
+
+        }
+    
     }
     else if (se->isParam()) // 新加入参数检查
     {
