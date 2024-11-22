@@ -39,7 +39,7 @@
 DECIMIAL ([1-9][0-9]*|0)
 OCTAL 0[0-7]+
 HEX 0[xX][0-9a-fA-F]+ 
-FLOAT_DECIMAL (([1-9][0-9]*\.[0-9]*([eE][+-]?[0-9]+)?)|(0?\.[0-9]+([eE][+-]?[0-9]+)?)|([1-9][0-9]*([eE][+-]?[0-9]+)))
+FLOAT_DECIMAL ((([0-9]*[.][0-9]*([eE][+-]?[0-9]+)?)|([0-9]+[eE][+-]?[0-9]+))[fLlL]?)
 FLOAT_HEX 0[xX]([0-9a-fA-F]+)?\.[0-9a-fA-F]*([pP][+-]?[0-9]+)?
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
@@ -241,12 +241,15 @@ WHITE [\t ]
     }
 }
 {FLOAT_DECIMAL} {
-    float value;
-    value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
+    double value;
+    value = strtod(yytext, NULL);  // 将浮点型字符串转换为 float 类型
     dump_tokens("%-20s", "FLOAT_DECIMAL");
     dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
-    yylval.floattype = value;
+
+    yylval.floattype = float(value);
+    fprintf(stderr, "FLOAT_DECIMAL\t%f\n", value);
+    fprintf(stderr, "FLOAT_DECIMAL\t%f\n", float(value));
     return FLOAT;
 }
 

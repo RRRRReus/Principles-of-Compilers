@@ -243,6 +243,7 @@ FuncDef
         $$ = new FunctionDef(se, (DeclStmt*)$5, new CompoundStmt($8));//se,参数列表，函数体(复合语句)
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();//返回上一层符号表
+        identifiers = identifiers->getPrev();//返回上一层符号表
         delete top;
         delete []$2;
     }
@@ -483,6 +484,7 @@ PrimaryExp
     }
     | FLOAT {
         //fprintf(stderr,"1now is float%f\n", $1);
+        fprintf(stderr,"见证奇迹的时刻%f\n", $1);
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
         //fprintf(stderr,"2now is float%f\n", se->fvalue);
         $$ = new Constant(se);
@@ -525,7 +527,7 @@ UnaryExp
 MulExp
     : UnaryExp { $$ = $1; }
     | MulExp MUL UnaryExp {
-        if ($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat()) {
+        if ($1->getSymbolEntry()->getType()->isAllFloat() || $3->getSymbolEntry()->getType()->isAllFloat()) {
             SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
             $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
         } else {
@@ -534,7 +536,7 @@ MulExp
         }
     }
     | MulExp DIV UnaryExp {
-        if ($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat()) {
+        if ($1->getSymbolEntry()->getType()->isAllFloat() || $3->getSymbolEntry()->getType()->isAllFloat()) {
             SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
             $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
         } else {
@@ -543,7 +545,7 @@ MulExp
         }
     }
     | MulExp MOD UnaryExp {
-        if ($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat()) {
+        if ($1->getSymbolEntry()->getType()->isAllFloat() || $3->getSymbolEntry()->getType()->isAllFloat()) {
             fprintf(stderr, "Error: float type can't use MOD operator\n");
             assert(false);
         } else {
@@ -562,7 +564,7 @@ AddExp
     AddExp ADD MulExp
     {
         //PrimaryExp是一个左值/整数/浮点数，若为整数或浮点数，其是一个Exprnode子类Constant，需调用getSymbolEntry()访问其符号表项，再调用getType()访问其类型
-        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())//注意，只要有一个是浮点数，结果就是浮点数！！！！
+        if($1->getSymbolEntry()->getType()->isAllFloat() || $3->getSymbolEntry()->getType()->isAllFloat())//注意，只要有一个是浮点数，结果就是浮点数！！！！
         {
             SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());//处理整形变量
             $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);//接收四个变量，一个是符号表项，一个是运算符，操作数1，操作数2
@@ -577,7 +579,7 @@ AddExp
     |
     AddExp SUB MulExp
     {
-        if($1->getSymbolEntry()->getType()->isFloat() || $3->getSymbolEntry()->getType()->isFloat())
+        if($1->getSymbolEntry()->getType()->isAllFloat() || $3->getSymbolEntry()->getType()->isAllFloat())
         {
             SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
             $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
@@ -839,7 +841,6 @@ else {
 
         $$ = new DeclStmt(new Array(name, $2), new InitValList(*$5));
         
-        fprintf(stderr,"what?");
         //delete []$2;
 
 

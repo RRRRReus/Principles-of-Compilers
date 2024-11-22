@@ -155,6 +155,20 @@ bool Type::isRetInt32()
     }
 }
 
+bool Type::isRetFloat32()
+{
+    if(!this->isFunc())
+        return false;
+    else
+    {
+        if(dynamic_cast<FunctionType*>(this)->getRetType()->isFloat())
+            return true;
+        else
+            return false;
+    }
+}
+
+
 bool Type::isFuncVoid()
 {
     if(!this->isFunc())

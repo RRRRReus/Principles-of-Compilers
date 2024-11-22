@@ -36,5 +36,14 @@ void GlobalVariable::output() const
     // memcpy(&ieee754Value, &doubleValue, sizeof(doubleValue));
     // fprintf(yyout, "%s = global %s 0x%016" PRIx64 ", align 8\n", se->toStr().c_str(), se->getType()->toStr().c_str(), ieee754Value);
     // }
-    fprintf(yyout, "%s = global %s %s, align 4\n", se->toStr().c_str(), se->getType()->toStr().c_str(), initialValue.c_str());
+
+    //是否常量
+
+    if(se->getType()->getConst()){
+        fprintf(yyout, "%s = constant %s %s, align 4\n", se->toStr().c_str(), se->getType()->toStr().c_str(), initialValue.c_str());
+    }
+    else{
+        fprintf(yyout, "%s = global %s %s, align 4\n", se->toStr().c_str(), se->getType()->toStr().c_str(), initialValue.c_str());
+    }
+
 }
