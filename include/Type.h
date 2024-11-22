@@ -26,6 +26,7 @@ public:
     bool isAllFloat() {return this->isFloat() || this->isRetFloat32();};//判断一个变量或者是函数是不是浮点型
     bool isVoid() const {return kind == VOID;};
     bool isFunc() const {return kind == FUNC;};
+    bool isFuncVoid();
     bool isFloat() const {return kind == FLOAT;};
     bool isConstFloat() const {return kind == FLOAT && isConst;};
     bool isIntArray() const {return kind == INTARRAY;};
