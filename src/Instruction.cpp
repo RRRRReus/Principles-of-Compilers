@@ -153,32 +153,47 @@ void CmpInstruction::output() const
     s1 = operands[0]->toStr();
     s2 = operands[1]->toStr();
     s3 = operands[2]->toStr();
-    type = operands[1]->getType()->toStr();
+    type = operands[1]->getType()->toStr();//能到这里来，说明两个操作数一定已经是同一种类型的了
     switch (opcode)
     {
     case E:
         op = "eq";
+        if(type == "float")
+            op = "oeq";
         break;
     case NE:
         op = "ne";
+        if(type == "float")
+            op = "one";
         break;
     case L:
         op = "slt";
+        if(type == "float")
+            op = "olt";
         break;
     case LE:
         op = "sle";
+        if(type == "float")
+            op = "ole";
         break;
     case G:
         op = "sgt";
+        if(type == "float")
+            op = "ogt";
         break;
     case GE:
         op = "sge";
+        if(type == "float")
+            op = "oge";
         break;
     default:
         op = "";
         break;
     }
 
+    if(type == "float")
+        fprintf(yyout, "  %s = fcmp %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+    else
     fprintf(yyout, "  %s = icmp %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
 }
 
@@ -648,8 +663,9 @@ FpToSiInstruction::~FpToSiInstruction()
 
 void FpToSiInstruction::output() const
 {
-    fprintf(yyout, "  %s = fptosi %s to %s\n",
+    fprintf(yyout, "  %s = fptosi %s %s to %s\n",
             operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
             operands[1]->toStr().c_str(),
             operands[0]->getType()->toStr().c_str());
 }
@@ -674,8 +690,9 @@ SiToFpInstruction::~SiToFpInstruction()
 
 void SiToFpInstruction::output() const
 {
-    fprintf(yyout, "  %s = sitofp %s to %s\n",
+    fprintf(yyout, "  %s = sitofp %s %s to %s\n",
             operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
             operands[1]->toStr().c_str(),
             operands[0]->getType()->toStr().c_str());
 }

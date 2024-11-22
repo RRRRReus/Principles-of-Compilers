@@ -241,12 +241,15 @@ WHITE [\t ]
     }
 }
 {FLOAT_DECIMAL} {
-    float value;
-    value = strtof(yytext, NULL);  // 将浮点型字符串转换为 float 类型
+    double value;
+    value = strtod(yytext, NULL);  // 将浮点型字符串转换为 float 类型
     dump_tokens("%-20s", "FLOAT_DECIMAL");
     dump_tokens("%-20s %-5d %-5d ", yytext, yylineno, yycolno);
     dump_tokens("%-20f\n", value);
-    yylval.floattype = value;
+
+    yylval.floattype = float(value);
+    fprintf(stderr, "FLOAT_DECIMAL\t%f\n", value);
+    fprintf(stderr, "FLOAT_DECIMAL\t%f\n", float(value));
     return FLOAT;
 }
 

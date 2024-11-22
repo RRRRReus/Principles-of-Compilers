@@ -53,9 +53,10 @@ public:
     ConstantSymbolEntry(Type *type, float fvalue);
     ConstantSymbolEntry(Type *type, long long llvalue);
     ConstantSymbolEntry(Type *type, int *pvalue);
-    ConstantSymbolEntry(Type *type, float *pfvalue);
+    ConstantSymbolEntry(Type *type, float* pfvalue);
     virtual ~ConstantSymbolEntry() {};
     int getValue() const {return value;};
+    float getFloatValue() const {return fvalue;};
     std::string toStr();
     long long getLongLongValue() const {return llvalue;};
     // You can add any function you need here.

@@ -7,6 +7,7 @@
 #include "Type.h"
 #include <cstdio>
 #include <sstream>
+#include <string>
 
 extern FILE *yyout;
 int Node::counter = 0;
@@ -182,6 +183,21 @@ void BinaryExpr::genCode()
         }
         fprintf(stderr, "生成比较指令\n");
         dst = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel())); // 创建一个临时符号表项
+        //注意，两个比较的操作数必须是同一类型，如果为float和int，则需要将int转为float
+        if((src1->getType()->isInt() && src2->getType()->isFloat()) || (src1->getType()->isFloat() && src2->getType()->isInt()))
+        {
+            if(src1->getType()->isInt())//src1是int
+            {
+                src1 = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+                new SiToFpInstruction(src1, expr1->getOperand(), bb);
+            }
+            else
+            {
+                src2 = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+                new SiToFpInstruction(src2, expr2->getOperand(), bb);
+            }
+        }
+
         new CmpInstruction(opcode, dst, src1, src2, bb);                                      // 生成比较指令
         fprintf(stderr, "COMthis->dst->getType()->toStr() = %s\n", this->dst->getType()->toStr().c_str());
 
@@ -217,19 +233,20 @@ void BinaryExpr::genCode()
             new ZextInstruction(src2, expr2->getOperand(), bb);
         }
         // float+int 或 int+float，将结果转换为float
-        if ((src1->getType()->isFloat() && src2->getType()->isInt()) || (src1->getType()->isInt() && src2->getType()->isFloat()))
+        if ((src1->getType()->isAllFloat() && src2->getType()->isAllInt()) || (src1->getType()->isAllInt() && src2->getType()->isAllFloat()))
         {
-            if (src1->getType()->isInt())
+            if (src1->getType()->isAllInt())//src1是int
             {
                 src1 = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
                 new SiToFpInstruction(src1, expr1->getOperand(), bb);
             }
-            else
+            else if(src2->getType()->isAllInt())//src2是int
             {
                 src2 = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
                 new SiToFpInstruction(src2, expr2->getOperand(), bb);
             }
         }
+
 
         new BinaryInstruction(opcode, dst, src1, src2, bb);
     }
@@ -255,7 +272,34 @@ void BinaryExpr::genCode()
             opcode = -1;
             break;
         }
+
+        if (src1->getType()->isInt() && dynamic_cast<IntType *>(src1->getType())->getSize() == 1) // 隐式转换
+        {
+            src1 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel())); // 创建一个临时符号表项
+            new ZextInstruction(src1, expr1->getOperand(), bb);
+        }
+        if (src2->getType()->isInt() && dynamic_cast<IntType *>(src2->getType())->getSize() == 1)
+        {
+            src2 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+            new ZextInstruction(src2, expr2->getOperand(), bb);
+        }
+        // float+int 或 int+float，将结果转换为float
+        if ((src1->getType()->isAllFloat() && src2->getType()->isAllInt()) || (src1->getType()->isAllInt() && src2->getType()->isAllFloat()))
+        {
+            if (src1->getType()->isAllInt())//src1是int
+            {
+                src1 = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+                new SiToFpInstruction(src1, expr1->getOperand(), bb);
+            }
+            else if(src2->getType()->isAllInt())//src2是int
+            {
+                src2 = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+                new SiToFpInstruction(src2, expr2->getOperand(), bb);
+            }
+        }
+
         new BinaryInstruction(opcode, dst, src1, src2, bb);
+        fprintf(stderr,"dst的类型是！！！！！！！！！！！！！！！！%s\n",dst->getType()->toStr().c_str());
     }
     else
     {
@@ -443,9 +487,8 @@ void DeclStmt::genCode()
             }
             else if (expr->CanBeCalculatedFloat)
             {
-                // 已实现浮点数！！！！！！！！！！！！！！
-                fprintf(stderr, "全局变量的赋值为常浮点数\n");
-                ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedFloat); 
+                fprintf(stderr, "全局变量的赋值为常数\n");
+                ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedFloat); // 此处只有int
                 fprintf(stderr, "获取操作数结束, %s\n", src->toStr().c_str());
                 se->setInitialValue(src->toStr().c_str()); // 设置初始值
                 fprintf(stderr, "设置初始值结束\n");
@@ -740,7 +783,24 @@ void ReturnStmt::genCode()
     BasicBlock *bb = builder->getInsertBB();
     Operand *addr = func->getRetValue();
 
-    new StoreInstruction(addr, retValue, bb);
+    //fprintf(stderr, "retValue的类型是!!!!!!!!!!!!!!%s\n", retValue->getType()->toStr().c_str());
+    //fprintf(stderr, "函数的返回值类型是!!!!!!!!!!!!!!%s\n", func->getSymPtr()->getType()->toStr().c_str());
+
+    if (retValue->getType()->isAllInt() && func->getSymPtr()->getType()->isAllFloat())//如果返回值是整数，但是函数规定的返回值是浮点数
+    { // 如果float=int
+        fprintf(stderr, "仰天大笑出门去\n");
+        retValue = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
+        new SiToFpInstruction(retValue, this->getRetValue()->getOperand(), bb);
+    }
+    else if (retValue->getType()->isAllFloat() && func->getSymPtr()->getType()->isAllInt())//如果返回值是浮点数，但是函数规定的返回值是整数
+    { // 如果int=float
+        retValue = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
+        new FpToSiInstruction(retValue, this->getRetValue()->getOperand(), bb);
+    }
+
+    fprintf(stderr, "现在的retValue的类型是！！！！%s\n", retValue->getType()->toStr().c_str());
+
+    new StoreInstruction(addr, retValue, bb);//保存返回值//第二个参数为程序写的返回值
     new UncondBrInstruction(func->getExit(), bb);
     builder->getInsertBB()->addSucc(func->getExit());
     func->getExit()->addPred(builder->getInsertBB());
@@ -785,13 +845,13 @@ void AssignStmt::genCode()
      * We haven't implemented array yet, the lval can only be ID. So we just store the result of the `expr` to the addr of the id.
      * If you want to implement array, you have to caculate the address first and then store the result into it.
      */
-    if (src->getType()->isInt() && lval_se->getType()->isFloat())
+    if (src->getType()->isAllInt() && lval_se->getType()->isAllFloat())
     { // 如果float=int
         fprintf(stderr, "float=int！！！！！！！！！！！！！！！！！\n");
         src = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
         new SiToFpInstruction(src, expr->getOperand(), bb);
     }
-    else if (src->getType()->isFloat() && lval_se->getType()->isInt())
+    else if (src->getType()->isAllFloat() && lval_se->getType()->isAllInt())
     { // 如果int=float
         fprintf(stderr, "int=float！！！！！！！！！！！！！！！！！\n");
         src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
@@ -847,13 +907,19 @@ void BinaryExpr::typeCheck()
     fprintf(stderr, "BinaryExpr::typeCheck\n");
     expr1->typeCheck();
     expr2->typeCheck();
+
+    fprintf(stderr, "expr1的类型是%s\n", expr1->getSymbolEntry()->getType()->toStr().c_str());
+    fprintf(stderr, "expr2的类型是%s\n", expr2->getSymbolEntry()->getType()->toStr().c_str());
+    fprintf(stderr, "expr2的值是%f\n", expr2->CalculatedFloat);
+    fprintf(stderr, "expr1的值是%d\n", expr1->CanBeCalculatedFloat);
+    fprintf(stderr, "expr2可不可以为float%d\n", expr2->CanBeCalculatedFloat);
     if (op == DIV && expr2->CanBeCalculatedInt && expr2->CalculatedInt == 0)
     {
         fprintf(stderr, "LAB3类型检查报错:除数为0\n");
         exit(1);
     }
-    // fprintf(stderr,"检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
-    // fprintf(stderr,"看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
+     //fprintf(stderr,"检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
+     //fprintf(stderr,"看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
     if (expr1->CanBeCalculatedInt && expr2->CanBeCalculatedInt)
     {
         CanBeCalculatedInt = true;
@@ -957,10 +1023,9 @@ void BinaryExpr::typeCheck()
             CalculatedFloat = expr1->CalculatedFloat != expr2->CalculatedFloat;
             break;
         }
+        
         CanBeCalculatedInt = true;
-        CalculatedInt = CalculatedFloat;
-        fprintf(stderr,"开始计算有浮点的，结果是%d\n",CalculatedInt);
-
+        CalculatedInt=CalculatedFloat;
     }
     
     
@@ -1085,8 +1150,9 @@ void UnaryExpr::typeCheck() // 补充说明：单目运算符可以出现在任�
             CalculatedInt = !expr->CalculatedInt;
             break;
         }
+
         CanBeCalculatedFloat = true;
-        CalculatedFloat = CalculatedInt;
+        CalculatedFloat=CalculatedInt;
     }
     else if(expr->CanBeCalculatedFloat)
     {
@@ -1103,21 +1169,19 @@ void UnaryExpr::typeCheck() // 补充说明：单目运算符可以出现在任�
             CalculatedFloat = !expr->CalculatedFloat;
             break;
         }
-    
         CanBeCalculatedInt = true;
         CalculatedInt = CalculatedFloat;
     }
 
-    // ？？？？？？对吗？？？？
-    //  if (op == NOT) {
-    //      this->symbolEntry->setType(TypeSystem::intType); // 使用整数类型表示布尔结果    //隐式转换
-    //  }
+
 }
 
 void Constant::typeCheck()
 {
     // fprintf(stderr,"???\n");
-
+    fprintf(stderr, "Constant::typeCheck\n");
+    fprintf(stderr, "常量的类型是%s\n", this->getSymbolEntry()->getType()->toStr().c_str());
+    fprintf(stderr, "常量的值是%s\n", this->getSymbolEntry()->toStr().c_str());
     if (symbolEntry->getType()->isInt())
     {
         this->CanBeCalculatedInt = true;
@@ -1126,18 +1190,19 @@ void Constant::typeCheck()
     }
     else if(symbolEntry->getType()->isFloat())
     {
+        
         this->CanBeCalculatedFloat = true;
-        this->CalculatedFloat = atof(symbolEntry->toStr().c_str());
-        this->CalculatedInt =this->CalculatedFloat;
+        ConstantSymbolEntry *cse = dynamic_cast<ConstantSymbolEntry *>(symbolEntry);
+        this->CalculatedFloat = cse->getFloatValue();
     }
-    fprintf(stderr, "Constant::typeCheck\n");
+    fprintf(stderr, "symbolentry的名字是%s\n", symbolEntry->toStr().c_str());
     // Todo
 }
 
 void Id::typeCheck()
 {
     fprintf(stderr, "Id::typeCheck\n");
-    if (this->getSymbolEntry()->getType()->getConst())
+    if (this->getSymbolEntry()->getType()->isConstInt())
     {
         this->CanBeCalculatedInt = true;
         this->CalculatedInt = dynamic_cast<IdentifierSymbolEntry *>(this->getSymbolEntry())->ConstantValue;
@@ -1146,7 +1211,7 @@ void Id::typeCheck()
 
 
     }
-    // fprintf(stderr,"多少？？%d\n",this->CanBeCalculatedInt);
+    //fprintf(stderr,"多少？？%d\n",this->CanBeCalculatedInt);
 
     // Todo
 }
@@ -1883,13 +1948,15 @@ void FuncCall::genCode()//！！！！！！记得做
     BasicBlock *bb = builder->getInsertBB(); // 获取当前基本块
 
     fprintf(stderr, "当前函数是！！！！！！%s\n", func->getSymbolEntry()->toStr().c_str());
-    //fprintf(stderr, "当前函数的类型是！！！！！！%s\n", static_cast<FunctionType*>(func->getSymbolEntry()->getType())->toStr().c_str());
     //SymbolEntry *se = func->getSymbolEntry(); // 获取函数的符号表项
     //fprintf(stderr, "当前函数的类型是！！！！！！%s\n", se->getType()->toStr().c_str());
 
     // 生成实参的中间代码
     std::vector<Operand *> argsOperands;//实参的操作数
+    std::vector<Type *> formsTypes = static_cast<FunctionType*>(func->getSymbolEntry()->getType())->getParamsType();//形参的类型（用于判断隐式转换）
+    int temp=0;
     for (auto arg : args) {
+        
         fprintf(stderr,"arg是%s\n",arg->getSymbolEntry()->toStr().c_str());
         fprintf(stderr,"arg的类型是%s\n",arg->getSymbolEntry()->getType()->toStr().c_str());
         Type *Element=arg->getSymbolEntry()->getType();
@@ -1932,12 +1999,22 @@ void FuncCall::genCode()//！！！！！！记得做
             new ZextInstruction(argOperand, arg->getOperand(), bb);
         }
         fprintf(stderr, "调用函数！！！实参的类型是%s\n", argOperand->getType()->toStr().c_str());
-        fprintf(stderr, "调用函数！！！实参所属的函数是%s\n", func->getSymbolEntry()->toStr().c_str());
-        if (argOperand->getType()->isFloat())
+        fprintf(stderr, "调用函数！！！实参所属的函数是%s\n", argOperand->getSymbolEntry()->toStr().c_str());
+        if (argOperand->getType()->isAllInt() && formsTypes[temp]->isFloat())//如果参数定义为浮点数，但是传入的是整数，需要转换
         {
-
+                Operand *temp = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));//将传入的整数转换为浮点数
+                new SiToFpInstruction(temp, argOperand, bb);
+                argOperand = temp;
+        }
+        else if(argOperand->getType()->isAllFloat() && formsTypes[temp]->isInt())//如果参数定义为整数，但是传入的是浮点数，需要转换
+        {
+            Operand *temp = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));//将传入的浮点数转换为整数
+            new FpToSiInstruction(temp, argOperand, bb);
+            argOperand = temp;
         }
 
+
+        temp++;//用于迭代形参类型
         argsOperands.push_back(argOperand); // 将实参的操作数加入到argsOperands中
     }
 

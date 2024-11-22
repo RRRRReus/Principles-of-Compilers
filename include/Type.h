@@ -19,10 +19,16 @@ public:
     virtual std::string toStr() = 0;
     int getKind(){return kind;}
     bool isInt() const {return kind == INT;};
+    bool isConstInt() const {return kind == INT && isConst;};
     bool isRetInt32();
+    bool isRetFloat32();
+    bool isAllInt() {return this->isInt() || this->isRetInt32();};//判断一个变量或者是函数是不是整型
+    bool isAllFloat() {return this->isFloat() || this->isRetFloat32();};//判断一个变量或者是函数是不是浮点型
     bool isVoid() const {return kind == VOID;};
     bool isFunc() const {return kind == FUNC;};
+    bool isFuncVoid();
     bool isFloat() const {return kind == FLOAT;};
+    bool isConstFloat() const {return kind == FLOAT && isConst;};
     bool isIntArray() const {return kind == INTARRAY;};
     bool isFloatArray() const {return kind == FLOATARRAY;};
     bool isLongLong() const {return kind == LONGLONG;};

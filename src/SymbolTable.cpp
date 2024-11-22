@@ -2,6 +2,8 @@
 #include "Type.h"
 #include <iostream>
 #include <sstream>
+#include <cstring>
+#include <iomanip>
 
 SymbolEntry::SymbolEntry(Type *type, int kind) 
 {
@@ -55,9 +57,22 @@ std::string ConstantSymbolEntry::toStr()
     
     if((this->getType())->isFloat())
     {
+        fprintf(stderr,"!!!!!!!!!!!!一个常量float\n");
+        fprintf(stderr, "floatValue: %f\n", fvalue);
+         // 将 float 转换为 double，确保得到双精度值
+        double doubleValue = double(fvalue);
+        fprintf(stderr, "doubleValue: %f\n", doubleValue);
+
+        // 解释为 IEEE 754 单精度浮点数
+        uint64_t hexValue;
+        std::memcpy(&hexValue, &doubleValue, sizeof(double)); // 将 double 转换为其二进制表示
+
+
+        buffer << "0x" << std::hex << std::setw(16) << std::setfill('0') << hexValue;
+
+
     
-    buffer << fvalue;
-    //fprintf(stderr,"look!!!%f\n",fvalue);
+          //buffer << fvalue;
 
     }
     if((this->getType())->isLongLong())

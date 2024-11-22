@@ -36,10 +36,21 @@ void GlobalVariable::output() const
     // memcpy(&ieee754Value, &doubleValue, sizeof(doubleValue));
     // fprintf(yyout, "%s = global %s 0x%016" PRIx64 ", align 8\n", se->toStr().c_str(), se->getType()->toStr().c_str(), ieee754Value);
     // }
+
+    //是否常量
     std::string type = se->getType()->toStr();
     if(se->getType()->isPtr())
     {
         type=dynamic_cast<PointerType*>(se->getType())->getValueType()->toStr();
     }
-    fprintf(yyout, "%s = global %s %s, align 4\n", se->toStr().c_str(), type.c_str(), initialValue.c_str());
+
+    
+    if(se->getType()->getConst()){
+        fprintf(yyout, "%s = constant %s %s, align 4\n", se->toStr().c_str(), type.c_str(), initialValue.c_str());
+    }
+    else{
+        fprintf(yyout, "%s = global %s %s, align 4\n", se->toStr().c_str(), type.c_str(), initialValue.c_str());
+    }
+
+    
 }
