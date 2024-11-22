@@ -323,6 +323,7 @@ void Id::genCode()
 
 void IfStmt::genCode() //????原来的代码不全？？？
 {
+
     // fprintf(stderr,"WJJIfStmt::genCode\n");
     BasicBlock *now_bb = builder->getInsertBB();
     Function *func;
@@ -366,6 +367,8 @@ void IfStmt::genCode() //????原来的代码不全？？？
 
 void IfElseStmt::genCode()
 {
+   
+
     Function *func;
     BasicBlock *then_bb, *else_bb, *end_bb;
     BasicBlock *now_bb = builder->getInsertBB();
@@ -476,9 +479,13 @@ void DeclStmt::genCode()
             if (expr->CanBeCalculatedInt)
             {
                 fprintf(stderr, "全局变量的赋值为常整数\n");
-                fprintf(stderr,"expr->CalculatedInt是%d\n",expr->CalculatedInt);
-                fprintf(stderr,"expr->getSymbolEntry()->getType()是%s\n",expr->getSymbolEntry()->getType()->toStr().c_str());
-                ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedInt); // 此处只有int
+
+                fprintf(stderr,"全局变量的类型是%s\n",se->getType()->toStr().c_str());
+                fprintf(stderr,"expr的int值是%d\n",expr->CalculatedInt);
+                fprintf(stderr,"expr的float值是%f\n",expr->CalculatedFloat);
+                ConstantSymbolEntry *src = new ConstantSymbolEntry(se->getType(), expr->CalculatedInt); // 此处只有int
+                fprintf(stderr, "expr的类型是?????, %s\n", expr->getSymbolEntry()->getType()->toStr().c_str());
+                fprintf(stderr, "src的类型是?????, %d\n", expr->CalculatedInt);
                 
                 
                 fprintf(stderr, "获取初始值结束, %s\n", src->toStr().c_str());
@@ -487,8 +494,9 @@ void DeclStmt::genCode()
             }
             else if (expr->CanBeCalculatedFloat)
             {
-                fprintf(stderr, "全局变量的赋值为常数\n");
+                fprintf(stderr, "全局变量的赋值为常浮点数\n");
                 ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedFloat); // 此处只有int
+                fprintf(stderr, "expr的类型是?????, %s\n", expr->getSymbolEntry()->getType()->toStr().c_str());
                 fprintf(stderr, "获取操作数结束, %s\n", src->toStr().c_str());
                 se->setInitialValue(src->toStr().c_str()); // 设置初始值
                 fprintf(stderr, "设置初始值结束\n");
@@ -585,6 +593,11 @@ void DeclStmt::genCode()
 
         if (expr != nullptr) // 如果有初始化表达式
         {
+            if(expr->getSymbolEntry()->getType()->isFuncVoid())
+            {
+                fprintf(stderr,"LAB3中间代码生成报错：函数void不能作初始化表达式\n");
+                exit(1);
+            }
             expr->genCode();
             Operand *src = expr->getOperand();
             fprintf(stderr, "src是%s\n", src->getType()->toStr().c_str());
@@ -840,9 +853,10 @@ void BinaryExpr::typeCheck()
 
     fprintf(stderr, "expr1的类型是%s\n", expr1->getSymbolEntry()->getType()->toStr().c_str());
     fprintf(stderr, "expr2的类型是%s\n", expr2->getSymbolEntry()->getType()->toStr().c_str());
-    fprintf(stderr, "expr2的值是%f\n", expr2->CalculatedFloat);
-    fprintf(stderr, "expr1的值是%d\n", expr1->CanBeCalculatedFloat);
-    fprintf(stderr, "expr2可不可以为float%d\n", expr2->CanBeCalculatedFloat);
+    fprintf(stderr, "expr2的float值是%f\n", expr2->CalculatedFloat);
+    fprintf(stderr, "expr2的int值是%d\n", expr2->CalculatedInt);
+    fprintf(stderr, "expr1的float值是%f\n", expr1->CalculatedFloat);
+    fprintf(stderr, "expr1的int值是%d\n", expr1->CalculatedInt);
     if (op == DIV && expr2->CanBeCalculatedInt && expr2->CalculatedInt == 0)
     {
         fprintf(stderr, "LAB3类型检查报错:除数为0\n");
@@ -850,13 +864,15 @@ void BinaryExpr::typeCheck()
     }
      //fprintf(stderr,"检查：%d %d\n",expr1->CanBeCalculatedInt,expr2->CanBeCalculatedInt);
      //fprintf(stderr,"看看：%d %d\n",expr1->CalculatedInt,expr2->CalculatedInt);
-    if (expr1->CanBeCalculatedInt && expr2->CanBeCalculatedInt)
+    if (expr1->CanBeCalculatedInt && expr2->CanBeCalculatedInt && expr1->getSymbolEntry()->getType()->isAllInt() && expr2->getSymbolEntry()->getType()->isAllInt())
     {
         CanBeCalculatedInt = true;
         switch (op)
         {
         case ADD:
             CalculatedInt = expr1->CalculatedInt + expr2->CalculatedInt;
+            CalculatedFloat = CalculatedInt;
+            fprintf(stderr,"踏破铁鞋无觅处：%d\n",CalculatedInt);
             break;
         case SUB:
             CalculatedInt = expr1->CalculatedInt - expr2->CalculatedInt;
@@ -913,6 +929,8 @@ void BinaryExpr::typeCheck()
         {
         case ADD:
             CalculatedFloat = expr1->CalculatedFloat + expr2->CalculatedFloat;
+            CalculatedInt = CalculatedFloat;
+
             break;
         case SUB:
             CalculatedFloat = expr1->CalculatedFloat - expr2->CalculatedFloat;
@@ -1110,13 +1128,14 @@ void Constant::typeCheck()
 {
     // fprintf(stderr,"???\n");
     fprintf(stderr, "Constant::typeCheck\n");
-    fprintf(stderr, "常量的类型是%s\n", this->getSymbolEntry()->getType()->toStr().c_str());
-    fprintf(stderr, "常量的值是%s\n", this->getSymbolEntry()->toStr().c_str());
+
+
     if (symbolEntry->getType()->isInt())
     {
         this->CanBeCalculatedInt = true;
         this->CalculatedInt = atoi(symbolEntry->toStr().c_str());
         this->CalculatedFloat =this->CalculatedInt;
+        fprintf(stderr, "常量的值是！！！！！！！！%d\n", this->CalculatedInt);
     }
     else if(symbolEntry->getType()->isFloat())
     {
@@ -1124,6 +1143,9 @@ void Constant::typeCheck()
         this->CanBeCalculatedFloat = true;
         ConstantSymbolEntry *cse = dynamic_cast<ConstantSymbolEntry *>(symbolEntry);
         this->CalculatedFloat = cse->getFloatValue();
+        this->CalculatedInt = (int)this->CalculatedFloat;
+        fprintf(stderr, "浮点常量的值为！！！！！！！%f\n", this->CalculatedFloat);
+        fprintf(stderr, "整数常量的值为！！！！！！！%d\n", this->CalculatedInt);
     }
     fprintf(stderr, "symbolentry的名字是%s\n", symbolEntry->toStr().c_str());
     // Todo
@@ -1149,6 +1171,11 @@ void Id::typeCheck()
 void IfStmt::typeCheck()
 {
     fprintf(stderr, "IfStmt::typeCheck\n");
+    if(cond->getSymbolEntry()->getType()->isFuncVoid())//如果cond只有一个表达式，那么如果是void类型就报错，如果有多个表达式，则在运算符的genCode中报错
+    {
+        fprintf(stderr,"if语句条件类型为void，无法进行比较\n");
+        exit(1);
+    }
     cond->typeCheck();
     thenStmt->typeCheck();
     // Todo
@@ -1157,6 +1184,11 @@ void IfStmt::typeCheck()
 void IfElseStmt::typeCheck()
 {
     fprintf(stderr, "IfElseStmt::typeCheck\n");
+     if(cond->getSymbolEntry()->getType()->isFuncVoid())
+    {
+        fprintf(stderr,"if语句条件类型为void，无法进行比较\n");
+        exit(1);
+    }
     cond->typeCheck();
     thenStmt->typeCheck();
     elseStmt->typeCheck();
@@ -1223,7 +1255,7 @@ void DeclStmt::typeCheck()
     {
         expr->typeCheck();
     //fprintf(stderr,"expr->CalculatedInt是%d",expr->CalculatedInt);
-    fprintf(stderr,"expr->CanBeCalculatedFloat是%f",expr->CalculatedFloat);
+    fprintf(stderr,"expr->CanBeCalculatedFloat是%f\n",expr->CalculatedFloat);
     }
     
 
@@ -1238,6 +1270,7 @@ void DeclStmt::typeCheck()
         if (expr->CanBeCalculatedInt)
         {
             id->CanBeCalculatedInt = true;
+            id->CanBeCalculatedFloat = true;
             if (id->getSymbolEntry() == nullptr)
             {
                 fprintf(stderr, "LAB3类型检查报错:>>>>>\n");
@@ -1246,15 +1279,17 @@ void DeclStmt::typeCheck()
 
             dynamic_cast<IdentifierSymbolEntry *>(id->getSymbolEntry())->ConstantValue = expr->CalculatedInt;
             id->CalculatedInt = expr->CalculatedInt;
-
+            id->CalculatedFloat = expr->CalculatedInt;
             // id->setSymbolEntry(new ConstantSymbolEntry(TypeSystem::intType,expr->CalculatedInt));
         }
         else if(expr->CanBeCalculatedFloat)
         {
             fprintf(stderr, "进入了浮点的常量初始化，这数字是%f\n",expr->CalculatedFloat);
             id->CanBeCalculatedInt = true;
+            id->CanBeCalculatedFloat = true;
             dynamic_cast<IdentifierSymbolEntry *>(id->getSymbolEntry())->ConstantValue =(int) expr->CalculatedFloat;
             id->CalculatedInt = (int)expr->CanBeCalculatedFloat;
+            id->CalculatedFloat = expr->CalculatedFloat;
         }
         else
         {
@@ -1271,6 +1306,11 @@ void ReturnStmt::typeCheck()
     fprintf(stderr, "ReturnStmt::typeCheck\n");
     if (retValue != nullptr)
         retValue->typeCheck();
+    if (retValue != nullptr && retValue->getSymbolEntry()->getType()->isFuncVoid())
+    {
+        fprintf(stderr, "LAB3类型检查报错:返回值为void\n");
+        exit(EXIT_FAILURE);
+    }
 
     // Todo
 }
