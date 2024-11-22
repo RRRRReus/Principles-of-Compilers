@@ -18,25 +18,6 @@ void GlobalVariable::output() const
         initialValue = "0"; // 默认初始值
     }
 
-    // bool isInteger = true;
-    // for (char c : initialValue)
-    // {
-    //     if (!isdigit(c) && c != '-')
-    //     {
-    //         isInteger = false;
-    //         break;
-    //     }
-    // }
-    // if(isInteger){
-    //     fprintf(yyout, "%s = global %s %s, align 4\n", se->toStr().c_str(), se->getType()->toStr().c_str(), initialValue.c_str());
-    // }
-    // else{//除了float还有其他情况吗？
-    // double doubleValue = std::stod(initialValue);
-    // uint64_t ieee754Value;
-    // memcpy(&ieee754Value, &doubleValue, sizeof(doubleValue));
-    // fprintf(yyout, "%s = global %s 0x%016" PRIx64 ", align 8\n", se->toStr().c_str(), se->getType()->toStr().c_str(), ieee754Value);
-    // }
-
     //是否常量
     std::string type = se->getType()->toStr();
     if(se->getType()->isPtr())
