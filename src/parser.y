@@ -232,7 +232,10 @@ FuncDef
         //如何获取参数类型：遍历所有的定义语句，找出Id，然后获取Id的符号表项，再获取此符号表项的类型
         while(params != nullptr)
         {
-            paramsType.push_back(params->getId()->getSymbolEntry()->getType());
+            if(params->getId()!=nullptr)
+                paramsType.push_back(params->getId()->getSymbolEntry()->getType());
+            else
+                paramsType.push_back(params->getArray()->getSymbolEntry()->getType());
             params = (DeclStmt*)(params->getNext());
         }//获取所有的参数类型
         SymbolEntry *se;
@@ -271,7 +274,12 @@ ArgList
     ;
 
 ArrayDim
-    :LBRACKET Exp RBRACKET{
+    :LBRACKET RBRACKET{
+        ArrayIndex *IndexDim = new ArrayIndex();
+        IndexDim->isVar = true;
+        $$ = IndexDim;
+    }
+    |LBRACKET Exp RBRACKET{
         ArrayIndex *IndexDim = new ArrayIndex();
         IndexDim->index.push_back($2);
         $$ = IndexDim;
@@ -386,6 +394,32 @@ Param
         identifiers->install($2, se);
         $$ = new DeclStmt(new Id(se), $4);
         delete []$2;
+    }
+    |Type ID ArrayDim
+    {
+        SymbolEntry *se;
+        std::vector<ExprNode*> IndexDim= $3->index;
+        if($1->isInt())
+        {
+            IntArrayType *intArrayType = new IntArrayType(IndexDim.size());
+            intArrayType->setConst($1->getConst());
+            se = new IdentifierSymbolEntry(intArrayType, $2, identifiers->getLevel());
+        }
+        else if($1->isFloat())
+        {
+            FloatArrayType *floatArrayType = new FloatArrayType(IndexDim.size());
+            floatArrayType->setConst($1->getConst());
+            se = new IdentifierSymbolEntry(floatArrayType, $2, identifiers->getLevel());
+        }
+        else
+        {
+            fprintf(stderr, "Error: unknown type\n");
+            assert(false);
+        }
+        Id *name=new Id(se);
+        identifiers->install($2, se);
+        $$ = new DeclStmt(new Array(name, $3));
+
     }
     ;//是否添加数组类型的参数
 

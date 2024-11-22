@@ -37,7 +37,7 @@ public:
     Function *getParent() { return parent; };
     Instruction* begin() { return head->getNext();};
     Instruction* end() { return head;};
-    Instruction* rbegin() { return head->getPrev();};
+    Instruction* rbegin() { return head->getPrev();};//反向迭代器
     Instruction* rend() { return head;};
     bb_iterator succ_begin() { return succ.begin(); };
     bb_iterator succ_end() { return succ.end(); };//后继的开始和结束

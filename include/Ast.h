@@ -69,6 +69,7 @@ public:
     bool CanBeCalculatedFloat = false;//是否可以计算成一个浮点数
     float CalculatedFloat;//如果可以计算成一个浮点数，那么这个浮点数是多少
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
+    void setDst(Operand *op) {dst = op;};//设置操作数
     Operand* getOperand() {return dst;};//获取操作数
     SymbolEntry* getSymPtr() {return symbolEntry;};
     SymbolEntry* getSymbolEntry() const { return symbolEntry; } // 添加访问器方法
@@ -131,6 +132,7 @@ class ArrayIndex //数组索引类
 private:
     
 public:
+    bool isVar = false;
     std::vector<ExprNode*> index;
     ArrayIndex(std::vector<ExprNode*> index) :  index(index) {};
     ArrayIndex() {};
@@ -158,7 +160,7 @@ private:
     std::string name;
     public:
     Id *id;
-
+    Operand *element_addr=nullptr;
     ArrayIndex *arrayIndex;
 
     Array( Id *id, ArrayIndex *arrayIndex) : ExprNode(id->getSymbolEntry()), id(id), arrayIndex(arrayIndex) {};
@@ -227,7 +229,8 @@ public:
     DeclStmt(Array *array) : array(array), initValList(nullptr) {};
     DeclStmt(Id *id) : id(id), expr(nullptr) {};
     DeclStmt(Array *array, InitValList *initValList) : array(array), initValList(initValList) {};
-    Id *getId() { return id; }  //返回标识符
+    ExprNode *getId();  //返回标识符
+    Array *getArray() { return array; }  //返回数组
     void output(int level);
     void typeCheck();
     void genCode();

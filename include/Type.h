@@ -26,12 +26,12 @@ public:
     bool isAllFloat() {return this->isFloat() || this->isRetFloat32();};//判断一个变量或者是函数是不是浮点型
     bool isVoid() const {return kind == VOID;};
     bool isFunc() const {return kind == FUNC;};
-    bool isFuncVoid();//判断一个type是不是函数，并且返回值是不是为空
     bool isFloat() const {return kind == FLOAT;};
     bool isConstFloat() const {return kind == FLOAT && isConst;};
     bool isIntArray() const {return kind == INTARRAY;};
     bool isFloatArray() const {return kind == FLOATARRAY;};
     bool isLongLong() const {return kind == LONGLONG;};
+    bool isPtr() const {return kind == PTR;};  
     int getKind() const {return kind;};
     
 };
@@ -100,6 +100,7 @@ class PointerType : public Type//指针类型
 private:
     Type *valueType;
 public:
+    Type* getValueType() {return valueType;}
     PointerType(Type* valueType) : Type(Type::PTR) {this->valueType = valueType;};
     std::string toStr();
 };
@@ -118,6 +119,7 @@ class FloatArrayType : public Type//数组类型
 private:
     int dim;
 public:
+    int getDim(){return dim;}
     std::vector<int> *dimSize=nullptr;
     FloatArrayType(int dim);
     std::string toStr();

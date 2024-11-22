@@ -72,6 +72,9 @@ class AllocaInstruction : public Instruction
 public:
 /** 
  * @brief 构造一个新的 AllocaInstruction 对象。
+ * 
+ *   `dst` = alloca `se->type`, align 4
+ * 
  * @param dst 分配结果将存储的目标操作数。
  * @param se 与此分配关联的符号条目。
  * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
@@ -96,6 +99,8 @@ class LoadInstruction : public Instruction
 public:
 /**
  * @brief 构造一个新的 LoadInstruction 对象。
+ * 
+ *   dst = load `dst->type`, `src_addr->type` `src_addr`, align 4
  * @param dst 加载结果将存储的目标操作数。
  * @param src_addr 源地址操作数。
  * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
@@ -120,6 +125,8 @@ class StoreInstruction : public Instruction
 public:
 /**
  * @brief 构造一个新的 StoreInstruction 对象。
+ * 
+ *  store `src->type` `src`, `dst_addr->type` `dst_addr`, align 4
  * @param dst_addr 存储地址操作数。
  * @param src 源操作数。
  * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
@@ -326,7 +333,8 @@ public:
 class GetElementPtrInstruction : public Instruction
 {
 public:
-    GetElementPtrInstruction(Operand *dst, Operand *src, const std::vector<Operand *> &indices, BasicBlock *insert_bb = nullptr);
+    
+    GetElementPtrInstruction(Operand *dst,Operand *element, Operand *src, const std::vector<Operand *> &indices, BasicBlock *insert_bb = nullptr);
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;

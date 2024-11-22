@@ -51,10 +51,20 @@ void FunctionDef::genCode()
     {
         while (params != nullptr)
         {
-           
+           fprintf(stderr, "params->getId()->getSymbolEntry()->toStr()->getType()->toStr() = %s\n", params->getId()->getSymbolEntry()->getType()->toStr().c_str());
             //new一个新的函数参数操作数
-            Operand *paramOperand = new Operand(new TemporarySymbolEntry(params->getId()->getSymbolEntry()->getType(), SymbolTable::getLabel()));
+            Type *type = params->getId()->getSymbolEntry()->getType();
+            if(type->isIntArray())
+            {
+                type = new PointerType(TypeSystem::intType);
+            }
+            if(type->isFloatArray())
+            {
+                type = new PointerType(TypeSystem::floatType);
+            }
+            Operand *paramOperand = new Operand(new TemporarySymbolEntry(type, SymbolTable::getLabel()));
             fprintf(stderr, "参数operand是 %s\n", paramOperand->toStr().c_str());
+            fprintf(stderr, "在放进去之前的参数操作数的类型是 %s\n", paramOperand->getType()->toStr().c_str());
             func->addParam(paramOperand);//为函数添加参数的操作数！！！
             //此时，function的params中的最后一个元素即是马上要进行genCode的参数
             params->genCode();
@@ -307,6 +317,7 @@ void Id::genCode()
     fprintf(stderr, "进入Id::genCode\n");
     BasicBlock *bb = builder->getInsertBB();                                       // 获取当前基本块
     Operand *addr = dynamic_cast<IdentifierSymbolEntry *>(symbolEntry)->getAddr(); // 获取符号表项的地址
+    dst= new Operand(new TemporarySymbolEntry(symbolEntry->getType(), SymbolTable::getLabel()));
     new LoadInstruction(dst, addr, bb);                                            // 生成load指令
 }
 
@@ -320,8 +331,6 @@ void IfStmt::genCode() //????原来的代码不全？？？
     func = builder->getInsertBB()->getParent();
     then_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
-
-    
 
     cond->genCode();
     backPatch(cond->trueList(), then_bb);
@@ -466,21 +475,25 @@ void DeclStmt::genCode()
             // Operand *src = expr->getOperand();//获取操作数
             if (expr->CanBeCalculatedInt)
             {
+                fprintf(stderr, "全局变量的赋值为常整数\n");
+                fprintf(stderr,"expr->CalculatedInt是%d\n",expr->CalculatedInt);
+                fprintf(stderr,"expr->getSymbolEntry()->getType()是%s\n",expr->getSymbolEntry()->getType()->toStr().c_str());
                 ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedInt); // 此处只有int
-                fprintf(stderr, "获取操作数结束, %s\n", src->toStr().c_str());
+                
+                
+                fprintf(stderr, "获取初始值结束, %s\n", src->toStr().c_str());
                 se->setInitialValue(src->toStr().c_str()); // 设置初始值
                 fprintf(stderr, "设置初始值结束\n");
             }
             else if (expr->CanBeCalculatedFloat)
             {
                 fprintf(stderr, "全局变量的赋值为常数\n");
-                fprintf(stderr, "再次见证奇迹！！！这个地方算错了！！！%f\n", expr->CalculatedFloat);
                 ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedFloat); // 此处只有int
                 fprintf(stderr, "获取操作数结束, %s\n", src->toStr().c_str());
                 se->setInitialValue(src->toStr().c_str()); // 设置初始值
                 fprintf(stderr, "设置初始值结束\n");
             }
-            else
+            else 
             { 
 
                 fprintf(stderr, "LAB3中间代码生成报错:全局变量的赋值不为常数\n");
@@ -490,7 +503,18 @@ void DeclStmt::genCode()
         if(array!=nullptr&&initValList==nullptr)
         {
             std::vector<ExprNode*> initVal;
-            initVal.push_back(new Constant(new ConstantSymbolEntry(0)));
+            fprintf(stderr, "全局数组变量的初始化,,目前的类型是%s\n",se->getType()->toStr().c_str());
+            if(se->getType()->isIntArray())
+            {
+                fprintf(stderr, "全局数组变量的初始化,,目前的类型是int\n");
+                initVal.push_back(new Constant(new ConstantSymbolEntry(0)));
+            }
+            if(se->getType()->isFloatArray())
+            {
+                fprintf(stderr, "全局数组变量的初始化,,目前的类型是float\n");
+                initVal.push_back(new Constant(new ConstantSymbolEntry(TypeSystem::floatType,0.0f)));
+            }
+            //initVal.push_back(new Constant(new ConstantSymbolEntry(0)));
             initVal[0]->typeCheck();
             //initVal.push_back(new ConstantSymbolEntry(new IntType(32),0));
             initValList = new InitValList(initVal);
@@ -499,15 +523,38 @@ void DeclStmt::genCode()
         {
             fprintf(stderr, "具有初始化值列表\n");
             initValList->genCode();
-            int DIM=dynamic_cast<IntArrayType*>(se->getType())->getDim();//获取维度
-            long unsigned int dim1 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+            int DIM=0;
+            long unsigned int dim1=0;
+            if(se->getType()->isIntArray())
+            {
+                DIM=dynamic_cast<IntArrayType*>(se->getType())->getDim();//获取维度
+                dim1 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+
+            }
+            if(se->getType()->isFloatArray())
+            {
+                DIM=dynamic_cast<FloatArrayType*>(se->getType())->getDim();//获取维度
+                dim1 = dynamic_cast<FloatArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+
+            }
             
             fprintf(stderr,"开始设置数组初值\n");
             if(DIM==1)
                 se->setInitialValue(initValList->Dim1ToIR(dim1).c_str()); // 设置初始值
             if(DIM==2)
             {
-            long unsigned int dim2 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(1);//获取第二维
+            long unsigned int dim2=0;
+            if(se->getType()->isIntArray())
+            {
+                dim2 = dynamic_cast<IntArrayType*>(se->getType())->dimSize->at(1);//获取第二维
+
+            }
+            if(se->getType()->isFloatArray())
+            {
+                dim2 = dynamic_cast<FloatArrayType*>(se->getType())->dimSize->at(0);//获取第一维
+
+            }
+
             se->setInitialValue(initValList->Dim2ToIR(dim2,dim1).c_str()); // 设置初始值
 
             }
@@ -516,6 +563,7 @@ void DeclStmt::genCode()
     }
     else if (se->isLocal()) // 局部变量
     {
+
         fprintf(stderr, "进入DeclStmt::genCode中局部变量的部分\n");
         BasicBlock *bb = builder->getInsertBB(); // 获取当前基本块
         Function *func = bb->getParent();        // 获取当前基本块所属的函数（即局部变量所属位置）
@@ -564,9 +612,44 @@ void DeclStmt::genCode()
         BasicBlock *entry = func->getEntry();    // 获取函数的入口基本块
         Instruction *alloca;
         Operand *addr;        // 操作数
+        //SymbolEntry *OKse=se; //用来把数组类型变成指针类型的权宜之计
         SymbolEntry *addr_se; // 符号表项
         Type *type;
+        fprintf(stderr, "在参数定义我们看一看目前的参数\n");
+        fprintf(stderr, "参数是%s\n", se->toStr().c_str());
+        fprintf(stderr, "参数类型是%s\n", se->getType()->toStr().c_str());
+        if(dynamic_cast<IdentifierSymbolEntry*>(se)->getAddr()==nullptr)
+        {
+            fprintf(stderr, "参数的地址是空的\n");
+        }
+        else
+        {
+            fprintf(stderr, "参数的地址不是空的\n");
+            fprintf(stderr, "参数的地址是%s\n", dynamic_cast<IdentifierSymbolEntry*>(se)->getAddr()->toStr().c_str());
+        }
+
+        if(se->getType()->isIntArray())
+        {
+
+           //type = new PointerType(TypeSystem::intType);
+           se->setType(new PointerType(TypeSystem::intType));
+           //OKse=new TemporarySymbolEntry(new PointerType(TypeSystem::intType), SymbolTable::getLabel());
+        }
+        if(se->getType()->isFloatArray())
+        {
+            //type = new PointerType(TypeSystem::floatType);
+            se->setType(new PointerType(TypeSystem::floatType));
+
+            //OKse=new TemporarySymbolEntry(new PointerType(TypeSystem::floatType), SymbolTable::getLabel());
+        }
+        
         type = new PointerType(se->getType());
+        //Type *PtrType = new PointerType(se->getType());
+        fprintf(stderr, "转了一下，在参数定义我们看一看目前的参数\n");
+        fprintf(stderr, "参数是%s\n", se->toStr().c_str());
+        fprintf(stderr, "参数类型是%s\n", se->getType()->toStr().c_str());
+
+
         fprintf(stderr, "指针参数类型是%s\n", type->toStr().c_str());
         fprintf(stderr, "是%s\n", se->getType()->toStr().c_str());
 
@@ -574,12 +657,19 @@ void DeclStmt::genCode()
         addr = new Operand(addr_se);
 
         alloca = new AllocaInstruction(addr, se); // allocate space for local id in function stack.
+        
         entry->insertFront(alloca);
         se->setAddr(addr);
-
         Operand* currentParam = func->getParams().back();//获取当前参数(即vector中的最后一个)
-        new StoreInstruction(addr, currentParam, builder->getInsertBB());
-
+        
+        fprintf(stderr, "currentParam参数的地址是%s\n", currentParam->toStr().c_str());
+        new StoreInstruction( addr,currentParam, builder->getInsertBB());
+        if(array != nullptr)
+        {
+            //fprintf(stderr, "参数是数组,设置\n");
+            //array->setDst(addr);
+            //fprintf(stderr, "参数数组的操作数是%s\n", array->getOperand()->toStr().c_str());
+        }
         fprintf(stderr, "开始检查函数有没有初始化表达式！！！\n");
         if (expr != nullptr)
         {
@@ -606,42 +696,15 @@ void DeclStmt::genCode()
 
 void ReturnStmt::genCode()
 {
-    if (this->getRetValue() == nullptr)//返回值为空
+    if (this->getRetValue() == nullptr)
     {
-            fprintf(stderr, "进入空ReturnStmt\n");
-            Function *func = builder->getInsertBB()->getParent();
-
-            Operand* func_ret=func->getRetValue();
-            fprintf(stderr, "？？？？？？？？？？？？当前的RetValue的类型是 %s\n",func_ret->getSymbolEntry()->getType()->toStr().c_str());
-            if(!func->getSymPtr()->getType()->isFuncVoid())
-            {
-                fprintf(stderr,"lab3的ReturnStmt::genCode()报错：函数没有返回值，但函数不是void\n");
-                exit(EXIT_FAILURE);
-            }
-            BasicBlock *exit = func->getExit();
-            new UncondBrInstruction(exit, builder->getInsertBB());
-            builder->getInsertBB()->addSucc(exit);
-            exit->addPred(builder->getInsertBB());
-            return;
-       
-    }
-    else   //返回值不为空，但是函数返回值类型为void
-    {
+        fprintf(stderr, "进入空ReturnStmt\n");
         Function *func = builder->getInsertBB()->getParent();
-
-        fprintf(stderr, "当前的RetValue的类型是 %d\n",static_cast<FunctionSymbolEntry*>(this->getRetValue()->getSymbolEntry())->getType()->isFuncVoid());
-        fprintf(stderr,"当前所属函数的返回值类型是 %d\n",func->getSymPtr()->getType()->isFunc());
-        if(func->getSymPtr()->getType()->isFuncVoid() && !this->getRetValue()->getSymbolEntry()->getType()->isFuncVoid())
-        {
-            fprintf(stderr,"lab3的ReturnStmt::genCode()报错：函数返回值类型为void，但仍有返回值\n");
-                exit(EXIT_FAILURE);
-        }
-        else if(!func->getSymPtr()->getType()->isFuncVoid() && this->getRetValue()->getSymbolEntry()->getType()->isFuncVoid())
-        {
-            fprintf(stderr,"lab3的ReturnStmt::genCode()报错：函数返回值类型不为void，返回值为void\n");
-            exit(EXIT_FAILURE);
-        }
-   
+        BasicBlock *exit = func->getExit();
+        new UncondBrInstruction(exit, builder->getInsertBB());
+        builder->getInsertBB()->addSucc(exit);
+        exit->addPred(builder->getInsertBB());
+        return;
     }
     this->getRetValue()->genCode();
     Function *func = builder->getInsertBB()->getParent();
@@ -679,13 +742,35 @@ void AssignStmt::genCode()
     fprintf(stderr, "进入AssignStmt::genCode\n");
     BasicBlock *bb = builder->getInsertBB(); // 获取当前基本块
     lval->genCode();                         // 需要加吗？？？？？？？？？
+    fprintf(stderr, "lval递归结束\n");
     expr->genCode();
     fprintf(stderr, "expr递归结束\n");
     IdentifierSymbolEntry *lval_se = dynamic_cast<IdentifierSymbolEntry *>(lval->getSymPtr()); // 获取符号表项
-    Operand *addr = lval_se->getAddr();                                                        // 存储的地方
+    Operand *addr;                                                        // 存储的地方
+    
+    if(dynamic_cast<Array*>(lval)!=nullptr)
+    {
+        fprintf(stderr, "AssignStmt::genCode中数组的部分\n");
+        if(dynamic_cast<Array*>(lval)->element_addr==nullptr)
+        {
+            fprintf(stderr, "element_addr是空的\n");
+        }
+        else
+        {
+            fprintf(stderr, "element_addr不是空的\n");
+            fprintf(stderr, "数组的地址是%s\n", dynamic_cast<Array*>(lval)->element_addr->toStr().c_str());
+        }
+        addr=dynamic_cast<Array*>(lval)->element_addr;
+        fprintf(stderr, "数组的地址是%s\n", addr->toStr().c_str());
+    }
+    else
+    {
+        addr = lval_se->getAddr();
+    }
     Operand *src = expr->getOperand();                                                         // 存储的结果
     fprintf(stderr, "addr是%s\n", addr->getType()->toStr().c_str());
     fprintf(stderr, "src是%s\n", src->getType()->toStr().c_str());
+
     /***
      * We haven't implemented array yet, the lval can only be ID. So we just store the result of the `expr` to the addr of the id.
      * If you want to implement array, you have to caculate the address first and then store the result into it.
@@ -702,6 +787,8 @@ void AssignStmt::genCode()
         src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
         new FpToSiInstruction(src, expr->getOperand(), bb);
     }
+
+
 
     new StoreInstruction(addr, src, bb);
     fprintf(stderr, "AssignStmt::genCode结束\n");
@@ -730,7 +817,15 @@ void FunctionDef::typeCheck()
     if (params != nullptr) // 参数不为空
     {
         fprintf(stderr, "该函数不为空,开始检查params，params是\n");
-        params->typeCheck();
+        DeclStmt *paramsNow = dynamic_cast<DeclStmt *>(this->params); // 获取参数列表
+        while(params != nullptr)
+        {
+            params->typeCheck();
+            params = (DeclStmt *)(params->getNext()); // 遍历参数列表（params是DeclStmt，通过指针在.y文件中连成一个链表）
+
+        }
+        params = paramsNow;
+
     }
     stmt->typeCheck();
 
@@ -806,12 +901,13 @@ void BinaryExpr::typeCheck()
             CalculatedInt = expr1->CalculatedInt != expr2->CalculatedInt;
             break;
         }
-
         CanBeCalculatedFloat = true;
-        CalculatedFloat=CalculatedInt;
+        CalculatedFloat = CalculatedInt;
+    
     }
     else if(expr1->CanBeCalculatedFloat || expr2->CanBeCalculatedFloat)
     {
+        fprintf(stderr,"开始计算有浮点的\n");
         CanBeCalculatedFloat = true;
         switch (op)
         {
@@ -861,6 +957,8 @@ void BinaryExpr::typeCheck()
         CanBeCalculatedInt = true;
         CalculatedInt=CalculatedFloat;
     }
+    
+    
     // Todo
     // 获取 expr1 和 expr2 的类型
     Type *type1 = this->getExpr1()->getSymbolEntry()->getType(); // 要获取类型，首先要获取符号表项，然后获取类型
@@ -1001,7 +1099,6 @@ void UnaryExpr::typeCheck() // 补充说明：单目运算符可以出现在任�
             CalculatedFloat = !expr->CalculatedFloat;
             break;
         }
-
         CanBeCalculatedInt = true;
         CalculatedInt = CalculatedFloat;
     }
@@ -1019,6 +1116,7 @@ void Constant::typeCheck()
     {
         this->CanBeCalculatedInt = true;
         this->CalculatedInt = atoi(symbolEntry->toStr().c_str());
+        this->CalculatedFloat =this->CalculatedInt;
     }
     else if(symbolEntry->getType()->isFloat())
     {
@@ -1038,6 +1136,10 @@ void Id::typeCheck()
     {
         this->CanBeCalculatedInt = true;
         this->CalculatedInt = dynamic_cast<IdentifierSymbolEntry *>(this->getSymbolEntry())->ConstantValue;
+        this->CalculatedFloat =dynamic_cast<IdentifierSymbolEntry *>(this->getSymbolEntry())->ConstantFloatValue;
+
+
+
     }
     //fprintf(stderr,"多少？？%d\n",this->CanBeCalculatedInt);
 
@@ -1047,11 +1149,6 @@ void Id::typeCheck()
 void IfStmt::typeCheck()
 {
     fprintf(stderr, "IfStmt::typeCheck\n");
-    if(cond->getSymbolEntry()->getType()->isFuncVoid())//覆盖只有一个表达式，并且为函数调用且函数返回值为void的情况
-    {
-        fprintf(stderr, "LAB3类型检查报错:if语句条件不能为void\n");
-        exit(EXIT_FAILURE);
-    }
     cond->typeCheck();
     thenStmt->typeCheck();
     // Todo
@@ -1060,11 +1157,6 @@ void IfStmt::typeCheck()
 void IfElseStmt::typeCheck()
 {
     fprintf(stderr, "IfElseStmt::typeCheck\n");
-    if(cond->getSymbolEntry()->getType()->isFuncVoid())
-    {
-        fprintf(stderr, "LAB3类型检查报错:if语句条件不能为void\n");
-        exit(EXIT_FAILURE);
-    }
     cond->typeCheck();
     thenStmt->typeCheck();
     elseStmt->typeCheck();
@@ -1128,7 +1220,13 @@ void DeclStmt::typeCheck()
     if (id != nullptr)
         id->typeCheck();
     if (expr != nullptr)
+    {
         expr->typeCheck();
+    //fprintf(stderr,"expr->CalculatedInt是%d",expr->CalculatedInt);
+    fprintf(stderr,"expr->CanBeCalculatedFloat是%f",expr->CalculatedFloat);
+    }
+    
+
 
     if(initValList!=nullptr)
         initValList->typeCheck();
@@ -1151,31 +1249,18 @@ void DeclStmt::typeCheck()
 
             // id->setSymbolEntry(new ConstantSymbolEntry(TypeSystem::intType,expr->CalculatedInt));
         }
-        else if(expr->CanBeCalculatedFloat)//这样正确吗？？？？？？？
+        else if(expr->CanBeCalculatedFloat)
         {
+            fprintf(stderr, "进入了浮点的常量初始化，这数字是%f\n",expr->CalculatedFloat);
             id->CanBeCalculatedInt = true;
-            if (id->getSymbolEntry() == nullptr)
-            {
-                fprintf(stderr, "LAB3类型检查报错:>>>>>\n");
-                exit(EXIT_FAILURE);
-            }
-
-            dynamic_cast<IdentifierSymbolEntry *>(id->getSymbolEntry())->ConstantValue = expr->CalculatedFloat;
-            id->CalculatedInt = expr->CalculatedFloat;
+            dynamic_cast<IdentifierSymbolEntry *>(id->getSymbolEntry())->ConstantValue =(int) expr->CalculatedFloat;
+            id->CalculatedInt = (int)expr->CanBeCalculatedFloat;
         }
         else
         {
             fprintf(stderr, "LAB3类型检查报错:常量初始化失败\n");
             exit(EXIT_FAILURE);
         }
-    }
-
-    //检查定义语句初始化语句是否为void
-    //fprintf(stderr,"vvvvvvvvvvv %d\n", expr->getSymbolEntry()->getType()->isFuncVoid());
-    if(expr!=nullptr && expr->getSymbolEntry()->getType()->isFuncVoid())//如果存在初始化表达式，并且赋值为void
-    {
-        fprintf(stderr, "LAB3类型检查报错:变量不能被初始化为void\n");
-        exit(EXIT_FAILURE);
     }
 
     // Todo
@@ -1238,11 +1323,16 @@ void Array::typeCheck()
 {
     fprintf(stderr, "Array::typeCheck\n");
     id->typeCheck();
-    arrayIndex->typeCheck();
+    if(arrayIndex!=nullptr)
+    {
+        arrayIndex->typeCheck();
+    }
     fprintf(stderr, "Array::typeCheckOVER\n");
 }
 void ArrayIndex::typeCheck()
 {
+    if(this->isVar)
+        return;
     fprintf(stderr, "ArrayIndex::typeCheck\n");
     for (auto i : index)
     {
@@ -1331,6 +1421,7 @@ void WhileStmt::typeCheck()
 
 void Ast::output()
 {
+    fprintf(stderr, "语法树输出\n");
     fprintf(yyout, "program\n");
     if (root != nullptr)
         root->output(4);
@@ -1428,6 +1519,7 @@ void Id::output(int level)
 
 void FuncCall::output(int level) // 函数调用输出
 {
+    fprintf(stderr, "FuncCall::output\n");
     fprintf(yyout, "%*cFuncCall\tname: %s\n", level, ' ', func->getSymbolEntry()->toStr().c_str()); // 输出函数名
     for (auto arg : args)                                                                           // 遍历参数
     {
@@ -1445,6 +1537,14 @@ void SeqNode::output(int level)
 {
     stmt1->output(level);
     stmt2->output(level);
+}
+
+ExprNode *DeclStmt::getId()
+{
+    if(id!=nullptr)
+        return id;
+    else
+        return array;
 }
 
 void DeclStmt::output(int level)
@@ -1478,6 +1578,7 @@ void IfElseStmt::output(int level)
 void ReturnStmt::output(int level)
 {
     fprintf(yyout, "%*cReturnStmt\n", level, ' ');
+    if(retValue!=nullptr)
     retValue->output(level + 4);
 }
 
@@ -1501,12 +1602,14 @@ void FunctionDef::output(int level)
 
     while (params != nullptr) // 遍历参数列表
     {
+        fprintf(stderr, "进入循环1\n");
         std::string paramName = params->getId()->getSymbolEntry()->toStr();                                         // 通过参数获取参数名(必须先从DeclStmt提取出Id，才能获取其符号表项，进而输出)
         std::string paramType = params->getId()->getSymbolEntry()->getType()->toStr();                              // 通过参数获取参数类型
         int paramScope = dynamic_cast<IdentifierSymbolEntry *>(params->getId()->getSymbolEntry())->getScope();      // 获取参数的作用域
         fprintf(yyout, "%*c%s: %s, scope: %d\n", level + 8, ' ', paramName.c_str(), paramType.c_str(), paramScope); // 输出参数名和参数类型
         params = (DeclStmt *)(params->getNext());
     }
+    fprintf(stderr, "退出循环1\n");
 
     // for (auto param : params) {
     //     std::string paramName = param->getSymbolEntry()->toStr();   // 通过参数获取参数名
@@ -1550,6 +1653,8 @@ void ArrayIndex::output(int level)
 {
     fprintf(yyout, "%*cArrayIndex\n", level, ' ');
     int j = 0;
+    if(this->isVar)
+        return;
     for (auto i : index)
     {
         fprintf(yyout, "%*cIndex", level + 4, ' ');
@@ -1571,65 +1676,202 @@ void ContinueStmt::output(int level)
 void Array::genCode()
 {
     fprintf(stderr,"Array::genCode\n");
-    // if(id!=nullptr)
-    //     id->genCode();
+    fprintf(stderr,"Array的类型是%s\n",this->getSymbolEntry()->getType()->toStr().c_str());
+    fprintf(stderr,"数组的操作数是%p\n",this->getOperand());
+    BasicBlock *bb = builder->getInsertBB();
+    Function *func = bb->getParent();
+    fprintf(stderr,"现在在函数%s中\n",func->getSymPtr()->toStr().c_str());
+
+
     if(arrayIndex!=nullptr)
         arrayIndex->genCode();
 
+    if(!this->getSymbolEntry()->isVariable())
+    {
+        fprintf(stderr,"数组的符号表项不是变量\n");
+    }
 
+        fprintf(stderr,"这个数组是%s\n",this->getSymbolEntry()->toStr().c_str());
+    this->element_addr=dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->getAddr();
+    if(dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->isGlobal()||dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->isLocal())
+    {
+        fprintf(stderr,"数组是全局变量或者局部变量\n");
+    
+
+    fprintf(stderr,"Array::genCode111\n");
+    //Type *ArrayElementType=dynamic_cast<PointerType*>(this->getSymbolEntry()->getType())->getValueType();
     Type *ElementType=nullptr;
     int dimSize = 0;
+    //确定数组的维度和元素类型
+    
     if(this->getSymbolEntry()->getType()->isIntArray())
     {
+        fprintf(stderr,"整数提取\n");
         dimSize = dynamic_cast<IntArrayType*>(this->getSymbolEntry()->getType())->dimSize->size();
         ElementType =TypeSystem::intType;
     }
     if(this->getSymbolEntry()->getType()->isFloatArray())
     {
+        fprintf(stderr,"浮点数提取\n");
         dimSize = dynamic_cast<FloatArrayType*>(this->getSymbolEntry()->getType())->dimSize->size();
         ElementType =TypeSystem::floatType;
     }
-
+    //生成数组的地址
     std::vector<Operand *> IndexOperands;
+    bool onlyname=false;
+
     if(arrayIndex==nullptr)
     {
+        onlyname=true;
         for(int i=0;i<dimSize;i++)
-        IndexOperands.push_back(new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)));
+        {
+            Operand *zero=new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0));
+            IndexOperands.push_back(zero);
+            fprintf(stderr,"索引补零");
+            fprintf(stderr,"IndexOperands加上%s\n",zero->toStr().c_str());
+        }
     }
     else
     {
         for(auto i:arrayIndex->index)
         {
             IndexOperands.push_back(i->getOperand());
+            fprintf(stderr,"IndexOperands加上%s\n",i->getOperand()->toStr().c_str());
         }
 
     }
 
-        Operand *addr = new Operand(new TemporarySymbolEntry(new PointerType(ElementType), SymbolTable::getLabel()));
-        Operand *id = new Operand(this->getSymbolEntry());
-        new GetElementPtrInstruction(addr, id, IndexOperands, builder->getInsertBB());
-        fprintf(stderr,"Array::genCodeOVER\n");
-        //this->dst=addr;
-        if(arrayIndex!=nullptr)
+    fprintf(stderr,"ElementType是%s",ElementType->toStr().c_str());
+    fprintf(stderr,"数组的类型是%s\n",this->getSymbolEntry()->getType()->toStr().c_str());
+    
+        if(this->getOperand()==nullptr)
         {
-            dst =new Operand(new TemporarySymbolEntry(ElementType, SymbolTable::getLabel()));
-            new LoadInstruction(dst, addr, builder->getInsertBB()); //生成load指令
-            dynamic_cast<IdentifierSymbolEntry*>(this->getSymPtr())->setAddr(addr);
+            fprintf(stderr,"数组的操作数是空的\n");
         }
         else
         {
-            this->dst=addr;
+            fprintf(stderr,"数组的操作数是%s\n",this->getOperand()->toStr().c_str());
         }
-}
-void ArrayIndex::genCode()
-{
-        fprintf(stderr,"ArrayIndex::genCode\n");
-    for(auto i:index)
+        fprintf(stderr,"数组的地址是%s\n",dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->getAddr()->toStr().c_str());
+
+
+        Operand *FormalAddr = dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->getAddr();//数组参数在一开始的地址
+        fprintf(stderr,"FormalAddr是%s\n",FormalAddr->toStr().c_str());
+
+        Type *ArrayPtrType = FormalAddr->getType();
+        fprintf(stderr,"ArrayPtrType是%s\n",ArrayPtrType->toStr().c_str());
+        Type *ArrayType = dynamic_cast<PointerType*>(ArrayPtrType)->getValueType();
+        fprintf(stderr,"ArrayType是%s\n",ArrayType->toStr().c_str());
+        //Type *ElementType = dynamic_cast<PointerType*>(ArrayType)->getValueType();
+        fprintf(stderr,"ElementType是%s\n",ElementType->toStr().c_str());
+
+
+        Operand *ArrayBaseOperand = new Operand(new TemporarySymbolEntry(ArrayPtrType, SymbolTable::getLabel()));//加载数组的基地址
+        fprintf(stderr,"ArrayBaseOperand是%s\n",ArrayBaseOperand->toStr().c_str());
+        Operand *ArrayThisOperand = new Operand(new TemporarySymbolEntry(ArrayType, SymbolTable::getLabel()));//算出的数组的地址
+        fprintf(stderr,"ArrayThisOperand是%s\n",ArrayThisOperand->toStr().c_str());
+        
+        Operand *Array2PtrOperand = new Operand(new TemporarySymbolEntry(new PointerType(ElementType), SymbolTable::getLabel()));//算出的数组的地址
+        fprintf(stderr,"Array2PtrOperand%s\n",Array2PtrOperand->toStr().c_str());
+        
+        Operand *ElementOperand = new Operand(new TemporarySymbolEntry(ElementType, SymbolTable::getLabel()));//加载元素的地址
+        fprintf(stderr,"ElementOperand是%s\n",ElementOperand->toStr().c_str());
+        fprintf(stderr,"开始生成寻址代码\n");
+        
+        new GetElementPtrInstruction(Array2PtrOperand, ArrayThisOperand,FormalAddr, IndexOperands, builder->getInsertBB());
+
+        new LoadInstruction(ElementOperand, Array2PtrOperand, builder->getInsertBB());
+        
+        this->dst = ElementOperand;
+        if(onlyname)
+        {
+            this->dst = Array2PtrOperand;
+        }
+        this->element_addr = Array2PtrOperand;
+        fprintf(stderr,"element_addr是%s\n",element_addr->toStr().c_str());
+        //dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->setAddr(ArrayThisOperand);
+        fprintf(stderr,"结束生成寻址代码\n");
+
+    
+    }
+
+    else if(dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->isParam())
     {
-        i->genCode();
+        fprintf(stderr,"数组是参数\n");
+        fprintf(stderr,"数组的类型是%s\n",this->getSymbolEntry()->getType()->toStr().c_str());
+    
+        if(this->getOperand()==nullptr)
+        {
+            fprintf(stderr,"数组的操作数是空的\n");
+        }
+        else
+        {
+            fprintf(stderr,"数组的操作数是%s\n",this->getOperand()->toStr().c_str());
+        }
+        fprintf(stderr,"数组的地址是%s\n",dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->getAddr()->toStr().c_str());
+        
+
+        std::vector<Operand *> IndexOperands;
+        int dimSize = (int)arrayIndex->index.size();
+        if(arrayIndex==nullptr)
+        {
+            for(int i=0;i<dimSize;i++)
+            IndexOperands.push_back(new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)));
+        }
+        else
+        {
+            for(auto i:arrayIndex->index)
+            {
+                //i->genCode();
+                IndexOperands.push_back(i->getOperand());
+            }
+        }
+
+        Operand *FormalAddr = dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->getAddr();//数组参数在一开始的地址
+        fprintf(stderr,"FormalAddr是%s\n",FormalAddr->toStr().c_str());
+
+        Type *ArrayPtrType = FormalAddr->getType();
+        fprintf(stderr,"ArrayPtrType是%s\n",ArrayPtrType->toStr().c_str());
+        Type *ArrayType = dynamic_cast<PointerType*>(ArrayPtrType)->getValueType();
+        fprintf(stderr,"ArrayType是%s\n",ArrayType->toStr().c_str());
+        Type *ElementType = dynamic_cast<PointerType*>(ArrayType)->getValueType();
+
+
+        Operand *ArrayBaseOperand = new Operand(new TemporarySymbolEntry(ArrayType, SymbolTable::getLabel()));//加载数组的基地址
+        Operand *ArrayThisOperand = new Operand(new TemporarySymbolEntry(ArrayType, SymbolTable::getLabel()));//算出的数组的地址
+        Operand *ElementOperand = new Operand(new TemporarySymbolEntry(ElementType, SymbolTable::getLabel()));//加载元素的地址
+
+
+        fprintf(stderr,"开始生成寻址代码\n");
+        new LoadInstruction(ArrayBaseOperand, FormalAddr, builder->getInsertBB());
+        
+
+        new GetElementPtrInstruction(ArrayThisOperand,ElementOperand, ArrayBaseOperand, IndexOperands, builder->getInsertBB());
+        
+        
+        new LoadInstruction(ElementOperand, ArrayThisOperand, builder->getInsertBB());
+        this->dst = ElementOperand;
+        this->element_addr = ArrayThisOperand;
+        fprintf(stderr,"element_addr是%s\n",element_addr->toStr().c_str());
+        //dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->setAddr(ArrayThisOperand);
+        fprintf(stderr,"结束生成寻址代码\n");
     }
 
 }
+
+void ArrayIndex::genCode()
+{
+    if(isVar)
+        return;
+    fprintf(stderr,"ArrayIndex::genCode\n");
+    for(auto i:index)
+    {
+        //i->setDst(new Operand(new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel())));
+        i->genCode();
+    }
+    fprintf(stderr,"ArrayIndex::genCodeOVER\n");
+}
+
 void FuncCall::genCode()//！！！！！！记得做
 {
     fprintf(stderr, "进入FuncCall::genCode\n");
@@ -1646,7 +1888,14 @@ void FuncCall::genCode()//！！！！！！记得做
     for (auto arg : args) {
         
         fprintf(stderr,"arg是%s\n",arg->getSymbolEntry()->toStr().c_str());
-        if(arg->getSymbolEntry()->getType()->isIntArray()||arg->getSymbolEntry()->getType()->isFloatArray())
+        fprintf(stderr,"arg的类型是%s\n",arg->getSymbolEntry()->getType()->toStr().c_str());
+        Type *Element=arg->getSymbolEntry()->getType();
+        if(arg->getSymbolEntry()->getType()->isPtr())
+        {
+            Element=dynamic_cast<PointerType*>(arg->getSymbolEntry()->getType())->getValueType();
+        }
+            fprintf(stderr,"Element是%s\n",Element->toStr().c_str());
+        if(Element->isIntArray()||Element->isFloatArray())
         {
             if(dynamic_cast<Array*>(arg)!=nullptr)
             {}
@@ -1658,7 +1907,22 @@ void FuncCall::genCode()//！！！！！！记得做
             }
         }
         arg->genCode();
-        Operand *argOperand = arg->getOperand(); // 获取实参的操作数
+        Operand *argOperand=nullptr;
+        Type *argType=nullptr;
+        if(arg->getOperand()==nullptr)
+        {
+            fprintf(stderr,"arg的操作数是空的\n");
+            fprintf(stderr,"arg的符号表项是%s\n",arg->getSymbolEntry()->toStr().c_str());
+            argOperand=dynamic_cast<IdentifierSymbolEntry*>(arg->getSymbolEntry())->getAddr();
+        }
+        else
+        {
+            fprintf(stderr,"arg的操作数是%s\n",arg->getOperand()->toStr().c_str());
+            argOperand = arg->getOperand(); // 获取实参的操作数
+            argType=argOperand->getType();
+            if(argType->isPtr())
+                argType=dynamic_cast<PointerType*>(argType)->getValueType();
+        }
         if (argOperand->getType()->isInt() && dynamic_cast<IntType *>(argOperand->getType())->getSize() == 1)
         {
             argOperand = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
@@ -1694,10 +1958,10 @@ void FuncCall::genCode()//！！！！！！记得做
         FunctionSymbolEntry *library_funcSE = dynamic_cast<FunctionSymbolEntry *>(func->getSymbolEntry());
         // 创建返回值操作数
         Operand *retOperand = nullptr; // 初始化返回值操作数
-        fprintf(stderr, "库函数的类型是%d\n", library_funcSE->getType()->isFuncVoid());
-        if (!library_funcSE->getType()->isVoid())//目前恒为1!!!!!!!!!!!!!!但是这个逻辑是正确的，就应该恒为1（生成一个operand存返回值，然后在输出的时候会判断，如果为void，则根本不输出）
+        fprintf(stderr, "库函数的类型是%d\n", library_funcSE->getReturnType()->isVoid());
+        if (!library_funcSE->getType()->isVoid())
         {                                                                                                           // 如果函数返回值不是void
-            retOperand = new Operand(new TemporarySymbolEntry(library_funcSE->getType(), SymbolTable::getLabel()));
+            retOperand = new Operand(new TemporarySymbolEntry(library_funcSE->getType(), SymbolTable::getLabel())); // 为什么是临时符号表项？？？？？？
         }
 
         // 生成函数调用指令
@@ -1765,7 +2029,7 @@ void WhileStmt::genCode()
     backPatch(cond->trueList(), body_bb);
     backPatch(cond->falseList(), end_bb);
     Operand *cond_op = cond->getOperand();
-    if (cond_op->getType()->isInt() && dynamic_cast<IntType *>(cond_op->getType())->getSize() == 32)
+    if ((cond_op->getType()->isInt() && dynamic_cast<IntType *>(cond_op->getType())->getSize() == 32)||(cond_op->getType()->isRetInt32()))
     {
         cond_op = new Operand(new TemporarySymbolEntry(new IntType(1), SymbolTable::getLabel()));
         new CmpInstruction(CmpInstruction::NE, cond_op, cond->getOperand(), new Operand(new ConstantSymbolEntry(0)), cond_bb);
@@ -1857,6 +2121,10 @@ std::string InitValList::Dim1ToIR(int dim1)
     {
         return "zeroinitializer";
     }
+    if(initVal.size()==1&&initVal[0]->CanBeCalculatedFloat&&initVal[0]->CalculatedFloat==0.0f)
+    {
+        return "zeroinitializer";
+    }
 
     std::ostringstream buffer;
     Type* type = initVal[0]->getSymbolEntry()->getType();
@@ -1898,6 +2166,16 @@ std::string InitValList::Dim1ToIR(int dim1)
 
 std::string InitValList::Dim2ToIR(int dim1, int dim2)
 {
+
+    if(initVal.size()==1&&initVal[0]->CanBeCalculatedInt&&initVal[0]->CalculatedInt==0)
+    {
+        return "zeroinitializer";
+    }
+    if(initVal.size()==1&&initVal[0]->CanBeCalculatedFloat&&initVal[0]->CalculatedFloat==0.0f)
+    {
+        return "zeroinitializer";
+    }
+
     std::ostringstream buffer;
     ExprNode* node= initVal[0];
     SymbolEntry *se=node->getSymbolEntry();
