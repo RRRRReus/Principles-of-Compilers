@@ -246,6 +246,9 @@ FuncDef
         $$ = new FunctionDef(se, (DeclStmt*)$5, new CompoundStmt($8));//se,参数列表，函数体(复合语句)
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();//返回上一层符号表
+
+        identifiers = identifiers->getPrev();//返回上一层符号表,即函数名的符号表
+
         delete top;
         delete []$2;
     }
@@ -273,7 +276,12 @@ ArgList
     ;
 
 ArrayDim
-    :LBRACKET Exp RBRACKET{
+    :LBRACKET RBRACKET{
+        ArrayIndex *IndexDim = new ArrayIndex();
+        IndexDim->isVar = true;
+        $$ = IndexDim;
+    }
+    |LBRACKET Exp RBRACKET{
         ArrayIndex *IndexDim = new ArrayIndex();
         IndexDim->index.push_back($2);
         $$ = IndexDim;

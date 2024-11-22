@@ -26,6 +26,7 @@ public:
     bool isIntArray() const {return kind == INTARRAY;};
     bool isFloatArray() const {return kind == FLOATARRAY;};
     bool isLongLong() const {return kind == LONGLONG;};
+    bool isPtr() const {return kind == PTR;};  
     int getKind() const {return kind;};
     
 };
@@ -94,6 +95,7 @@ class PointerType : public Type//指针类型
 private:
     Type *valueType;
 public:
+    Type* getValueType() {return valueType;}
     PointerType(Type* valueType) : Type(Type::PTR) {this->valueType = valueType;};
     std::string toStr();
 };

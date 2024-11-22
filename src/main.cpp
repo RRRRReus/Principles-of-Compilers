@@ -63,5 +63,8 @@ int main(int argc, char *argv[])
         ast.genCode(&unit); //生成中间代码
         unit.output();
     }
+
+    int f=6;
+    fprintf(stderr, "compile success,%d\n",f);
     return 0;
 }

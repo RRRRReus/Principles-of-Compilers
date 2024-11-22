@@ -318,13 +318,33 @@ LoadInstruction::~LoadInstruction()
 
 void LoadInstruction::output() const
 {
+    //fprintf(stderr,"进入LoadInstruction::output函数\n");
     std::string dst = operands[0]->toStr();//目的操作数
     std::string src = operands[1]->toStr();//源操作数
     std::string src_type;
     std::string dst_type;
     dst_type = operands[0]->getType()->toStr();//目的操作数的类型
     src_type = operands[1]->getType()->toStr();
+    
+    Type *Element=dynamic_cast<PointerType*>(operands[1]->getType())->getValueType();
+    if(Element->isIntArray())
+    {
+        Type *newdst=new PointerType(TypeSystem::intType);
+        src_type=newdst->toStr();
+    }
+        if(Element->isFloatArray())
+    {
+        Type *newdst=new PointerType(TypeSystem::floatType);
+        src_type=newdst->toStr();
+
+    }
+
+
+
+
     fprintf(yyout, "  %s = load %s, %s %s, align 4\n", dst.c_str(), dst_type.c_str(), src_type.c_str(), src.c_str());
+    //fprintf(stderr, "  %s = load %s, %s %s, align 4\n", dst.c_str(), dst_type.c_str(), src_type.c_str(), src.c_str());
+
 }
 
 StoreInstruction::StoreInstruction(Operand *dst_addr, Operand *src, BasicBlock *insert_bb) : Instruction(STORE, insert_bb)
@@ -357,6 +377,18 @@ void StoreInstruction::output() const
     // }
     std::string dst_type = operands[0]->getType()->toStr();
     std::string src_type = operands[1]->getType()->toStr();
+    Type *Element=dynamic_cast<PointerType*>(operands[0]->getType())->getValueType();
+    if(Element->isIntArray())
+    {
+        Type *newdst=new PointerType(TypeSystem::intType);
+        dst_type=newdst->toStr();
+    }
+        if(Element->isFloatArray())
+    {
+        Type *newdst=new PointerType(TypeSystem::floatType);
+        dst_type=newdst->toStr();
+
+    }
 
     fprintf(yyout, "  store %s %s, %s %s, align 4\n", src_type.c_str(), src.c_str(), dst_type.c_str(), dst.c_str());
     //把src存给dst，后面为被赋值的
@@ -494,12 +526,15 @@ std::vector<Operand *> ZextInstruction::getUse()
  * @param src 源操作数。
  * @param indices 索引操作数的向量。
  * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ * 
+ *   `dst` = getelementptr inbounds `dst->type`, `src->type` `src`, `indices`
  */
-GetElementPtrInstruction::GetElementPtrInstruction(Operand *dst, Operand *src, const std::vector<Operand *> &indices, BasicBlock *insert_bb)
+GetElementPtrInstruction::GetElementPtrInstruction(Operand *dst,Operand *element, Operand *src, const std::vector<Operand *> &indices, BasicBlock *insert_bb)
     : Instruction(GEP, insert_bb), indices(indices)
 {
     operands.push_back(dst);
     operands.push_back(src);
+    operands.push_back(element);
     operands.insert(operands.end(), indices.begin(), indices.end());
 }
 
@@ -508,13 +543,16 @@ GetElementPtrInstruction::GetElementPtrInstruction(Operand *dst, Operand *src, c
  */
 void GetElementPtrInstruction::output() const
 {
-    fprintf(yyout, "  %s = getelementptr inbounds %s,%s* %s",
+    fprintf(yyout, "  %s = getelementptr inbounds %s,%s %s",
             operands[0]->toStr().c_str(),
-            operands[1]->getType()->toStr().c_str(),
+            operands[2]->getType()->toStr().c_str(),
             operands[1]->getType()->toStr().c_str(),
             operands[1]->toStr().c_str());
-    fprintf(yyout,", i32 0");
-    for (size_t i = 2; i < operands.size(); ++i)
+        if(operands[2]->getSymbolEntry()->getType()->isIntArray())
+        {
+            fprintf(yyout,", i32 0");
+        }
+    for (size_t i = 3; i < operands.size(); ++i)
     {
         fprintf(yyout, ", %s %s",
                 operands[i]->getType()->toStr().c_str(),
