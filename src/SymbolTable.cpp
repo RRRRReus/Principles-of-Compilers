@@ -18,11 +18,13 @@ ConstantSymbolEntry::ConstantSymbolEntry(int value): SymbolEntry(TypeSystem::int
 ConstantSymbolEntry::ConstantSymbolEntry(Type *type, int value) : SymbolEntry(type, SymbolEntry::CONSTANT)
 {
     this->value = value;
+    this->fvalue= value;
 }
 
 ConstantSymbolEntry::ConstantSymbolEntry(Type *type, float fvalue): SymbolEntry(type, SymbolEntry::CONSTANT)
 {
     this->fvalue = fvalue;
+    this->value=fvalue;
 }
 ConstantSymbolEntry::ConstantSymbolEntry(Type *type, long long llvalue): SymbolEntry(type, SymbolEntry::CONSTANT)
 {
@@ -30,11 +32,14 @@ ConstantSymbolEntry::ConstantSymbolEntry(Type *type, long long llvalue): SymbolE
 }
 ConstantSymbolEntry::ConstantSymbolEntry(Type *type,int *pvalue): SymbolEntry(type, SymbolEntry::CONSTANT)
 {
+    fprintf(stderr,"莫非！！");
     this->pvalue = pvalue;
 }
 ConstantSymbolEntry::ConstantSymbolEntry(Type *type,float *pfvalue): SymbolEntry(type, SymbolEntry::CONSTANT)
 {
     this->pfvalue = pfvalue;
+    fprintf(stderr,"莫非！！2");
+
 }
 
 std::string ConstantSymbolEntry::toStr()

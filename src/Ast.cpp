@@ -431,21 +431,27 @@ void DeclStmt::genCode()
             // Operand *src = expr->getOperand();//获取操作数
             if (expr->CanBeCalculatedInt)
             {
+                fprintf(stderr, "全局变量的赋值为常整数\n");
+                fprintf(stderr,"expr->CalculatedInt是%d\n",expr->CalculatedInt);
+                fprintf(stderr,"expr->getSymbolEntry()->getType()是%s\n",expr->getSymbolEntry()->getType()->toStr().c_str());
                 ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedInt); // 此处只有int
-                fprintf(stderr, "获取操作数结束, %s\n", src->toStr().c_str());
+                
+                
+                fprintf(stderr, "获取初始值结束, %s\n", src->toStr().c_str());
                 se->setInitialValue(src->toStr().c_str()); // 设置初始值
                 fprintf(stderr, "设置初始值结束\n");
             }
             else if (expr->CanBeCalculatedFloat)
             {
-                fprintf(stderr, "全局变量的赋值为常数\n");
-                ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedFloat); // 此处只有int
+                // 已实现浮点数！！！！！！！！！！！！！！
+                fprintf(stderr, "全局变量的赋值为常浮点数\n");
+                ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedFloat); 
                 fprintf(stderr, "获取操作数结束, %s\n", src->toStr().c_str());
                 se->setInitialValue(src->toStr().c_str()); // 设置初始值
                 fprintf(stderr, "设置初始值结束\n");
             }
-            else
-            { // 未实现浮点数！！！！！！！！！！！！！！
+            else 
+            { 
 
                 fprintf(stderr, "LAB3中间代码生成报错:全局变量的赋值不为常数\n");
                 exit(1);
@@ -835,6 +841,7 @@ void BinaryExpr::typeCheck()
     }
     else if(expr1->CanBeCalculatedFloat || expr2->CanBeCalculatedFloat)
     {
+        fprintf(stderr,"开始计算有浮点的\n");
         CanBeCalculatedFloat = true;
         switch (op)
         {
@@ -882,6 +889,8 @@ void BinaryExpr::typeCheck()
         }
         CanBeCalculatedInt = true;
         CalculatedInt = CalculatedFloat;
+        fprintf(stderr,"开始计算有浮点的，结果是%d\n",CalculatedInt);
+
     }
     
     
@@ -1043,11 +1052,13 @@ void Constant::typeCheck()
     {
         this->CanBeCalculatedInt = true;
         this->CalculatedInt = atoi(symbolEntry->toStr().c_str());
+        this->CalculatedFloat =this->CalculatedInt;
     }
     else if(symbolEntry->getType()->isFloat())
     {
         this->CanBeCalculatedFloat = true;
         this->CalculatedFloat = atof(symbolEntry->toStr().c_str());
+        this->CalculatedInt =this->CalculatedFloat;
     }
     fprintf(stderr, "Constant::typeCheck\n");
     // Todo
@@ -1060,6 +1071,10 @@ void Id::typeCheck()
     {
         this->CanBeCalculatedInt = true;
         this->CalculatedInt = dynamic_cast<IdentifierSymbolEntry *>(this->getSymbolEntry())->ConstantValue;
+        this->CalculatedFloat =dynamic_cast<IdentifierSymbolEntry *>(this->getSymbolEntry())->ConstantFloatValue;
+
+
+
     }
     // fprintf(stderr,"多少？？%d\n",this->CanBeCalculatedInt);
 
@@ -1140,7 +1155,13 @@ void DeclStmt::typeCheck()
     if (id != nullptr)
         id->typeCheck();
     if (expr != nullptr)
+    {
         expr->typeCheck();
+    //fprintf(stderr,"expr->CalculatedInt是%d",expr->CalculatedInt);
+    fprintf(stderr,"expr->CanBeCalculatedFloat是%f",expr->CalculatedFloat);
+    }
+    
+
 
     if(initValList!=nullptr)
         initValList->typeCheck();
