@@ -105,3 +105,47 @@ PASS: lisp2
 FAIL: rbtree_in_segtree Assemble Error
 FAIL: splay     Assemble Error
 Total: 100      Accept: 62      Fail: 38
+
+
+
+
+
+
+FAIL: 00007_DP  Assemble Error
+FAIL: 006_arr_defn3     Wrong Answer
+FAIL: 007_arr_defn4     Compile Error
+FAIL: 058_short_circuit Wrong Answer
+FAIL: 059_short_circuit2        Wrong Answer
+FAIL: 067_sort_test7    Assemble Error
+FAIL: 068_genealogical_tree     Assemble Error
+FAIL: 071_exchange_array        Wrong Answer
+FAIL: 072_percolation   Wrong Answer
+FAIL: 080_color Assemble Error
+FAIL: 086_full_conn     Compile Error
+FAIL: 089_hidden_var    Compile Error
+FAIL: 092_max_flow      Assemble Error
+FAIL: 094_substr        Wrong Answer
+FAIL: 096_side_effect   Wrong Answer
+FAIL: 097_var_name      Compile Error
+FAIL: 098_chaos_token   Assemble Error
+FAIL: 100_int_literal   Compile Error
+FAIL: 102_short_circuit3        Assemble Error
+FAIL: 105_long_array2   Compile Error
+FAIL: 108_many_params   Assemble Error
+FAIL: 109_many_params2  Compile Error
+FAIL: 10_DFS    Wrong Answer
+FAIL: 117_nested_loops  Assemble Error
+FAIL: 15_graph_coloring Compile Error
+FAIL: 196_float Compile Error
+FAIL: 198_matrix_add    Assemble Error
+FAIL: 199_matrix_sub    Assemble Error
+FAIL: 200_matrix_mul    Assemble Error
+FAIL: 201_matrix_tran   Assemble Error
+FAIL: 30_many_dimensions        Compile Error
+FAIL: 37_dct    Compile Error
+FAIL: 38_light2d        Assemble Error
+FAIL: 39_fp_params      Assemble Error
+FAIL: complex_array4    Assemble Error
+FAIL: derich1   Compile Error
+FAIL: rbtree_in_segtree Assemble Error
+FAIL: splay     Assemble Error
