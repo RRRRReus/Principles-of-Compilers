@@ -1607,9 +1607,9 @@ void Array::genCode()
 
         fprintf(stderr,"这个数组是%s\n",this->getSymbolEntry()->toStr().c_str());
     this->element_addr=dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->getAddr();
-    if(dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->isGlobal())
+    if(dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->isGlobal()||dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->isLocal())
     {
-        fprintf(stderr,"数组是全局变量\n");
+        fprintf(stderr,"数组是全局变量或者局部变量\n");
     
 
     fprintf(stderr,"Array::genCode111\n");
@@ -1706,12 +1706,38 @@ void Array::genCode()
         //dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->setAddr(ArrayThisOperand);
         fprintf(stderr,"结束生成寻址代码\n");
 
+    
     }
-
-
     else if(dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->isLocal())
     {
         fprintf(stderr,"数组是局部变量\n");
+        fprintf(stderr,"数组的类型是%s\n",this->getSymbolEntry()->getType()->toStr().c_str());
+    
+        if(this->getOperand()==nullptr)
+        {
+            fprintf(stderr,"数组的操作数是空的\n");
+        }
+        else
+        {
+            fprintf(stderr,"数组的操作数是%s\n",this->getOperand()->toStr().c_str());
+        }
+        fprintf(stderr,"数组的地址是%s\n",dynamic_cast<IdentifierSymbolEntry*>(this->getSymbolEntry())->getAddr()->toStr().c_str());
+        
+        std::vector<Operand *> IndexOperands;
+        int dimSize = (int)arrayIndex->index.size();
+        if(arrayIndex==nullptr)
+        {
+            for(int i=0;i<dimSize;i++)
+            IndexOperands.push_back(new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)));
+        }
+        else
+        {
+            for(auto i:arrayIndex->index)
+            {
+                i->genCode();
+                IndexOperands.push_back(i->getOperand());
+            }
+        }
 
     }
 
