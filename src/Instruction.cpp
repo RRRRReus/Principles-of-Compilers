@@ -392,19 +392,23 @@ void StoreInstruction::output() const
     // }
     std::string dst_type = operands[0]->getType()->toStr();
     std::string src_type = operands[1]->getType()->toStr();
-    Type *Element=dynamic_cast<PointerType*>(operands[0]->getType())->getValueType();
-    if(Element->isIntArray())
+
+    if(dynamic_cast<PointerType*>(operands[0]->getType())!=nullptr)
     {
-        Type *newdst=new PointerType(TypeSystem::intType);
-        dst_type=newdst->toStr();
-    }
-        if(Element->isFloatArray())
-    {
-        Type *newdst=new PointerType(TypeSystem::floatType);
-        dst_type=newdst->toStr();
+        Type *Element=dynamic_cast<PointerType*>(operands[0]->getType())->getValueType();
+        if(Element->isIntArray())
+        {
+            Type *newdst=new PointerType(TypeSystem::intType);
+            dst_type=newdst->toStr();
+        }
+            if(Element->isFloatArray())
+        {
+            Type *newdst=new PointerType(TypeSystem::floatType);
+            dst_type=newdst->toStr();
+
+        }
 
     }
-
     fprintf(yyout, "  store %s %s, %s %s, align 4\n", src_type.c_str(), src.c_str(), dst_type.c_str(), dst.c_str());
     //把src存给dst，后面为被赋值的
 }
