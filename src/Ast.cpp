@@ -603,13 +603,13 @@ void DeclStmt::genCode()
             fprintf(stderr, "src是%s\n", src->getType()->toStr().c_str());
             fprintf(stderr, "se是%s\n", se->getType()->toStr().c_str());
 
-            if (src->getType()->isFloat() && se->getType()->isInt()) // int=float, int赋值为float的隐式转换，要求省去float小数点后的部分
+            if (src->getType()->isAllFloat() && se->getType()->isAllInt()) // int=float, int赋值为float的隐式转换，要求省去float小数点后的部分
             {
                 fprintf(stderr, "int=float！！！！！！！！！！！！！！！！！\n");
                 src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
                 new FpToSiInstruction(src, expr->getOperand(), bb);
             }
-            else if (src->getType()->isInt() && se->getType()->isFloat()) // float=int, float赋值为int的隐式转换，要求在int后面加上.0
+            else if (src->getType()->isAllInt() && se->getType()->isAllFloat()) // float=int, float赋值为int的隐式转换，要求在int后面加上.0
             {
                 src = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
                 new SiToFpInstruction(src, expr->getOperand(), bb);

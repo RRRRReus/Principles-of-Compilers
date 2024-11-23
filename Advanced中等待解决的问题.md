@@ -4,7 +4,7 @@ PASS: 00004_csememtest3
 PASS: 00007_DP
 PASS: 002_var_defn2
 FAIL: 006_arr_defn3     Wrong Answer
-/bin/bash: line 2: 1004008 Segmentation fault      timeout 60s build/compiler ${file} -o ${IR} -i 2> ${LOG}
+/bin/bash: line 2: 1020702 Segmentation fault      timeout 60s build/compiler ${file} -o ${IR} -i 2> ${LOG}
 FAIL: 007_arr_defn4     Compile Error
 PASS: 011_const_array_defn
 PASS: 035_while_test2
@@ -32,7 +32,7 @@ PASS: 084_expr_eval
 PASS: 085_dijkstra
 FAIL: 086_full_conn     Compile Error
 PASS: 088_hanoi
-/bin/bash: line 2: 1004613 Segmentation fault      timeout 60s build/compiler ${file} -o ${IR} -i 2> ${LOG}
+/bin/bash: line 2: 1021311 Segmentation fault      timeout 60s build/compiler ${file} -o ${IR} -i 2> ${LOG}
 FAIL: 089_hidden_var    Compile Error
 PASS: 090_int_io
 PASS: 091_kmp
@@ -40,17 +40,17 @@ FAIL: 092_max_flow      Assemble Error
 PASS: 093_n_queens
 FAIL: 094_substr        Wrong Answer
 FAIL: 096_side_effect   Wrong Answer
-/bin/bash: line 2: 1004748 Segmentation fault      timeout 60s build/compiler ${file} -o ${IR} -i 2> ${LOG}
+/bin/bash: line 2: 1021457 Segmentation fault      timeout 60s build/compiler ${file} -o ${IR} -i 2> ${LOG}
 FAIL: 097_var_name      Compile Error
 FAIL: 098_chaos_token   Assemble Error
 PASS: 099_skip_spaces
 PASS: 09_BFS
-FAIL: 100_int_literal   Compile Error
+PASS: 100_int_literal
 PASS: 101_scope2
 FAIL: 102_short_circuit3        Assemble Error
 PASS: 103_long_func
 PASS: 104_long_array
-/bin/bash: line 2: 1004926 Segmentation fault      timeout 60s build/compiler ${file} -o ${IR} -i 2> ${LOG}
+/bin/bash: line 2: 1021621 Segmentation fault      timeout 60s build/compiler ${file} -o ${IR} -i 2> ${LOG}
 FAIL: 105_long_array2   Compile Error
 PASS: 1067_remove_duplicate_element
 PASS: 1069_last_word_length
@@ -69,7 +69,7 @@ FAIL: 108_many_params   Assemble Error
 PASS: 1090_insert_order
 PASS: 1091_line_search
 FAIL: 109_many_params2  Compile Error
-/bin/bash: line 2: 1005339 Segmentation fault      timeout 10s ${BIN} < ${IN} > ${RES} 2>> ${LOG}
+/bin/bash: line 2: 1022030 Segmentation fault      timeout 10s ${BIN} < ${IN} > ${RES} 2>> ${LOG}
 FAIL: 10_DFS    Wrong Answer
 PASS: 110_many_params3
 PASS: 111_many_globals
@@ -96,7 +96,7 @@ FAIL: 30_many_dimensions        Compile Error
 PASS: 35_math
 PASS: 36_rotate
 FAIL: 37_dct    Compile Error
-FAIL: 38_light2d        Assemble Error
+PASS: 38_light2d
 FAIL: 39_fp_params      Assemble Error
 FAIL: complex_array4    Assemble Error
 FAIL: derich1   Compile Error
@@ -104,9 +104,7 @@ PASS: lisp1
 PASS: lisp2
 FAIL: rbtree_in_segtree Assemble Error
 FAIL: splay     Assemble Error
-Total: 100      Accept: 67      Fail: 33
-
-
+Total: 100      Accept: 69      Fail: 31
 
 
 
@@ -134,13 +132,8 @@ FAIL: 10_DFS    Wrong Answer
 FAIL: 117_nested_loops  Assemble Error
 FAIL: 15_graph_coloring Compile Error
 FAIL: 196_float Compile Error
-FAIL: 198_matrix_add    Assemble Error
-FAIL: 199_matrix_sub    Assemble Error
-FAIL: 200_matrix_mul    Assemble Error
-FAIL: 201_matrix_tran   Assemble Error
 FAIL: 30_many_dimensions        Compile Error
 FAIL: 37_dct    Compile Error
-FAIL: 38_light2d        Assemble Error
 FAIL: 39_fp_params      Assemble Error
 FAIL: complex_array4    Assemble Error
 FAIL: derich1   Compile Error
