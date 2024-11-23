@@ -23,7 +23,7 @@ public:
     bool isRetInt32();
     bool isRetFloat32();
     bool isAllInt() {return this->isInt() || this->isRetInt32();};//判断一个变量或者是函数是不是整型
-    bool isAllFloat() {return this->isFloat() || this->isRetFloat32();};//判断一个变量或者是函数是不是浮点型
+    bool isAllFloat() {return this->isFloat() || this->isRetFloat32()||this->isFloatArray();};//判断一个变量或者是函数是不是浮点型
     bool isVoid() const {return kind == VOID;};
     bool isFunc() const {return kind == FUNC;};
     bool isFuncVoid();
