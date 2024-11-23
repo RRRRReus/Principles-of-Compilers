@@ -1,20 +1,33 @@
-int main()
-{
-    float a0[3], a1[3], a2[3], b0[3], b1[3], b2[3], c0[6], c1[3], c2[3];
-    int o[3];
-    int i;
-    i=0;
-    while(i<3)
-    {
-        o[3]=13;
-        int gg=o[3];
-        float e=a0[i];
-        a0[i]=i;
-        a1[i]=i;
-        a2[i]=i;
-        b0[i]=i;
-        b1[i]=i;
-        b2[i]=i;
+#include "sysyruntimelibrary/sylib.h"
+const int maxn=1e3+5;
+int n=1e3,m;
+float a[maxn],ff[maxn];
+float DFS(int now,float ans1,float ans2,float ans3,float g[]){
+    ff[now]=ans3+a[now]*(3*ans1+3*ans2+1);
+    g[now]=a[now]*(ans1+1);
+    if(now==n){
+        putfarray(now,g);
+        return ans2;
+    }
+    
+    float f[maxn];
+    int i=0;
+    while(i<n){
+        f[i]=g[i]+ans1+ans2+ans3;
         i=i+1;
     }
+    return DFS(now+1,g[now],a[now]*(ans1+2*ans2+1),ff[now],f);
+}
+
+int main(){
+	getfarray(a);
+    float g[maxn]={};
+    g[0]=a[0];
+    ff[0]=a[0];
+    float ans;
+    ans=DFS(1,a[0],a[0],a[0],g);
+    putfloat(ans);
+    putch(32);
+    putfarray(n,ff);
+    return 0;
 }

@@ -27,6 +27,8 @@ void Unit::output() const
     fprintf(yyout, "declare void @putint(i32)\n");
     fprintf(yyout, "declare void @putch(i32)\n");
     fprintf(yyout, "declare void @putarray(i32, i32*)\n");
+    fprintf(yyout, "declare i32 @getfarray(float*)\n");
+    fprintf(yyout, "declare void @putfarray(i32, float*)\n");
 
     
 
