@@ -478,7 +478,7 @@ void DeclStmt::genCode()
             expr->genCode();
             fprintf(stderr, "expr中间代码生成结束\n");
             // Operand *src = expr->getOperand();//获取操作数
-            if (expr->CanBeCalculatedInt)
+            if (id->getSymbolEntry()->getType()->isInt()) // 如果是常整数
             {
                 fprintf(stderr, "全局变量的赋值为常整数\n");
 
@@ -494,7 +494,7 @@ void DeclStmt::genCode()
                 se->setInitialValue(src->toStr().c_str()); // 设置初始值
                 fprintf(stderr, "设置初始值结束\n");
             }
-            else if (expr->CanBeCalculatedFloat)
+            else if (id->getSymbolEntry()->getType()->isFloat()) // 如果是常浮点数
             {
                 fprintf(stderr, "全局变量的赋值为常浮点数\n");
                 ConstantSymbolEntry *src = new ConstantSymbolEntry(expr->getSymbolEntry()->getType(), expr->CalculatedFloat); // 此处只有int
@@ -510,7 +510,7 @@ void DeclStmt::genCode()
                 exit(1);
             }
         }
-        if(array!=nullptr&&initValList==nullptr)
+        if(array!=nullptr&&initValList==nullptr&&dynamic_cast<IdentifierSymbolEntry *>(array->getSymPtr())->isGlobal())
         {
             std::vector<ExprNode*> initVal;
             fprintf(stderr, "全局数组变量的初始化,,目前的类型是%s\n",se->getType()->toStr().c_str());
@@ -621,6 +621,7 @@ void DeclStmt::genCode()
     
         if(initValList!=nullptr)
         {
+            fprintf(stderr, "局部变量具有初始化值列表\n");
             int DIM=0;
             long unsigned int dim1=0;
             Type *Element=nullptr;
@@ -658,12 +659,12 @@ void DeclStmt::genCode()
                     src=initValList->initVal[i]->getOperand();
                     if(src->getType()->isFloat() && Element->isInt())
                     {
-                        src = new Operand(new TemporarySymbolEntry(new PointerType(new IntType(32)), SymbolTable::getLabel()));
+                        src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
                         new FpToSiInstruction(src, initValList->initVal[i]->getOperand(), bb);
                     }
                     else if(src->getType()->isInt() && Element->isFloat())
                     {
-                        src = new Operand(new TemporarySymbolEntry(new PointerType(new FloatType(32)), SymbolTable::getLabel()));
+                        src = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
                         new SiToFpInstruction(src, initValList->initVal[i]->getOperand(), bb);
                     }
                     new StoreInstruction(first,src,bb);
@@ -672,7 +673,7 @@ void DeclStmt::genCode()
                 else
                 {
                     new GetElementPtrInstruction(first,ElementAddr,baseAddr,ONEindex,bb);
-                    
+                    src=new Operand(new ConstantSymbolEntry(Element,0));
                     new StoreInstruction(first,src,bb);
 
                 }
@@ -1366,7 +1367,7 @@ void DeclStmt::typeCheck()
         else
         {
             fprintf(stderr, "LAB3类型检查报错:常量初始化失败\n");
-            exit(EXIT_FAILURE);
+            //exit(EXIT_FAILURE);
         }
     }
 

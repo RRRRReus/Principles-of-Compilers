@@ -81,6 +81,7 @@ void BinaryInstruction::output() const
     s2 = operands[1]->toStr();
     s3 = operands[2]->toStr();
     type = operands[0]->getType()->toStr();
+    fprintf(stderr, "看这里的type是%s\n",type.c_str());
     switch (opcode)
     {
     case XOR:
@@ -567,7 +568,7 @@ void GetElementPtrInstruction::output() const
             operands[2]->getType()->toStr().c_str(),
             operands[1]->getType()->toStr().c_str(),
             operands[1]->toStr().c_str());
-        if(operands[2]->getSymbolEntry()->getType()->isIntArray())
+        if(operands[2]->getSymbolEntry()->getType()->isIntArray()||operands[2]->getSymbolEntry()->getType()->isFloatArray())
         {
             fprintf(yyout,", i32 0");
         }
