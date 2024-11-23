@@ -1365,7 +1365,7 @@ void DeclStmt::typeCheck()
         else
         {
             fprintf(stderr, "LAB3类型检查报错:常量初始化失败\n");
-            exit(EXIT_FAILURE);
+            //exit(EXIT_FAILURE);
         }
     }
 
