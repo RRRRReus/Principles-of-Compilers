@@ -1,494 +1,540 @@
 SINGLE_COMMENT_START//                   1     0    
-SINGLE_COMMENT       void move(int x, int y) 1     0    
+SINGLE_COMMENT       float global constants 1     0    
 SINGLE_COMMENT_END  
                     1     0    
-SINGLE_COMMENT_START//                   1     0    
-SINGLE_COMMENT       {                   1     0    
-SINGLE_COMMENT_END  
-                    1     0    
-SINGLE_COMMENT_START//                   1     0    
-SINGLE_COMMENT           putint(x); putch(32); putint(y); putch(44); putch(32); 1     0    
-SINGLE_COMMENT_END  
-                    1     0    
-SINGLE_COMMENT_START//                   1     0    
-SINGLE_COMMENT       }                   1     0    
-SINGLE_COMMENT_END  
-                    1     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT       void hanoi(int n, int one, int two, int three) 2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT       {                   2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT           if (n == 1)     2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT               move(one, three); 2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT           else {          2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT               hanoi(n - 1, one, three, two); 2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT               move(one, three); 2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT               hanoi(n - 1, two, one, three); 2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT           }               2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   2     0    
-SINGLE_COMMENT       }                   2     0    
-SINGLE_COMMENT_END  
-                    2     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT       int main()          3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT       {                   3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT           int n = getint(); 3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT           while (n > 0) { 3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT               hanoi(getint(), 1, 2, 3); 3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT               putch(10);  3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT               n = n - 1;  3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT           }               3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT           return 0;       3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT       }                   3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   3     0    
-SINGLE_COMMENT       reference: https://zhuanlan.zhihu.com/p/20085048 3     0    
-SINGLE_COMMENT_END  
-                    3     0    
-SINGLE_COMMENT_START//                   11    0    
-SINGLE_COMMENT       const float e = 2.718281828459045; 11    0    
-SINGLE_COMMENT_END  
-                    11    0    
-SINGLE_COMMENT_START//                   12    0    
-SINGLE_COMMENT       float my_fabs(float x) { 12    0    
-SINGLE_COMMENT_END  
-                    12    0    
-SINGLE_COMMENT_START//                   12    0    
-SINGLE_COMMENT         if (x > 0) return x; 12    0    
-SINGLE_COMMENT_END  
-                    12    0    
-SINGLE_COMMENT_START//                   12    0    
-SINGLE_COMMENT         return -x;        12    0    
-SINGLE_COMMENT_END  
-                    12    0    
-SINGLE_COMMENT_START//                   12    0    
-SINGLE_COMMENT       }                   12    0    
-SINGLE_COMMENT_END  
-                    12    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT       float my_pow(float a, int n) { 13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT         if (n < 0) return 1 / my_pow(a, -n); 13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT         float res = 1.0;  13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT         while (n) {       13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT           if (n % 2) res = res * a; 13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT           a = a * a;      13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT           n = n / 2;      13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT         }                 13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT         return res;       13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   13    0    
-SINGLE_COMMENT       }                   13    0    
-SINGLE_COMMENT_END  
-                    13    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT       float my_sqrt(float x) { 14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT         if (x > 100) return 10.0 * my_sqrt(x / 100); 14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT         float t = x / 8 + 0.5 + 2 * x / (4 + x); 14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT         int c = 10;       14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT         while (c) {       14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT           t = (t + x / t) / 2; 14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT           c = c - 1;      14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT         }                 14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT         return t;         14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   14    0    
-SINGLE_COMMENT       }                   14    0    
-SINGLE_COMMENT_END  
-                    14    0    
-SINGLE_COMMENT_START//                   15    0    
-SINGLE_COMMENT       float F1(float x) { return 1 / x; } 15    0    
-SINGLE_COMMENT_END  
-                    15    0    
-SINGLE_COMMENT_START//                   16    0    
-SINGLE_COMMENT       float F2(float x) { return 1 / my_sqrt(1 - x * x); } 16    0    
-SINGLE_COMMENT_END  
-                    16    0    
-SINGLE_COMMENT_START//                   17    0    
-SINGLE_COMMENT       float simpson(float a, float b, int flag) { 17    0    
-SINGLE_COMMENT_END  
-                    17    0    
-SINGLE_COMMENT_START//                   17    0    
-SINGLE_COMMENT         float c = a + (b - a) / 2; 17    0    
-SINGLE_COMMENT_END  
-                    17    0    
-SINGLE_COMMENT_START//                   17    0    
-SINGLE_COMMENT         if (flag == 1) return (F1(a) + 4 * F1(c) + F1(b)) * (b - a) / 6; 17    0    
-SINGLE_COMMENT_END  
-                    17    0    
-SINGLE_COMMENT_START//                   17    0    
-SINGLE_COMMENT         if (flag == 2) return (F2(a) + 4 * F2(c) + F2(b)) * (b - a) / 6; 17    0    
-SINGLE_COMMENT_END  
-                    17    0    
-SINGLE_COMMENT_START//                   17    0    
-SINGLE_COMMENT         return 0;         17    0    
-SINGLE_COMMENT_END  
-                    17    0    
-SINGLE_COMMENT_START//                   17    0    
-SINGLE_COMMENT       }                   17    0    
-SINGLE_COMMENT_END  
-                    17    0    
-SINGLE_COMMENT_START//                   18    0    
-SINGLE_COMMENT       float asr5(float a, float b, float eps, float A, int flag) { 18    0    
-SINGLE_COMMENT_END  
-                    18    0    
-SINGLE_COMMENT_START//                   18    0    
-SINGLE_COMMENT         float c = a + (b - a) / 2; 18    0    
-SINGLE_COMMENT_END  
-                    18    0    
-SINGLE_COMMENT_START//                   18    0    
-SINGLE_COMMENT         float L = simpson(a, c, flag), R = simpson(c, b, flag); 18    0    
-SINGLE_COMMENT_END  
-                    18    0    
-SINGLE_COMMENT_START//                   18    0    
-SINGLE_COMMENT         if (my_fabs(L + R - A) <= 15 * eps) return L + R + (L + R - A) / 15.0; 18    0    
-SINGLE_COMMENT_END  
-                    18    0    
-SINGLE_COMMENT_START//                   18    0    
-SINGLE_COMMENT         return asr5(a, c, eps / 2, L, flag) + asr5(c, b, eps / 2, R, flag); 18    0    
-SINGLE_COMMENT_END  
-                    18    0    
-SINGLE_COMMENT_START//                   18    0    
-SINGLE_COMMENT       }                   18    0    
-SINGLE_COMMENT_END  
-                    18    0    
-SINGLE_COMMENT_START//                   19    0    
-SINGLE_COMMENT       float asr4(float a, float b, float eps, int flag) { 19    0    
-SINGLE_COMMENT_END  
-                    19    0    
-SINGLE_COMMENT_START//                   19    0    
-SINGLE_COMMENT         return asr5(a, b, eps, simpson(a, b, flag), flag); 19    0    
-SINGLE_COMMENT_END  
-                    19    0    
-SINGLE_COMMENT_START//                   19    0    
-SINGLE_COMMENT       }                   19    0    
-SINGLE_COMMENT_END  
-                    19    0    
-SINGLE_COMMENT_START//                   20    0    
-SINGLE_COMMENT       float eee(float x) { 20    0    
-SINGLE_COMMENT_END  
-                    20    0    
-SINGLE_COMMENT_START//                   20    0    
-SINGLE_COMMENT         if (x > 1e-3) {   20    0    
-SINGLE_COMMENT_END  
-                    20    0    
-SINGLE_COMMENT_START//                   20    0    
-SINGLE_COMMENT           float ee = eee(x / 2); 20    0    
-SINGLE_COMMENT_END  
-                    20    0    
-SINGLE_COMMENT_START//                   20    0    
-SINGLE_COMMENT           return ee * ee; 20    0    
-SINGLE_COMMENT_END  
-                    20    0    
-SINGLE_COMMENT_START//                   20    0    
-SINGLE_COMMENT         }                 20    0    
-SINGLE_COMMENT_END  
-                    20    0    
-SINGLE_COMMENT_START//                   20    0    
-SINGLE_COMMENT         return 1 + x + x * x / 2 + my_pow(x, 3) / 6 + my_pow(x, 4) / 24 + 20    0    
-SINGLE_COMMENT_END  
-                    20    0    
-SINGLE_COMMENT_START//                   20    0    
-SINGLE_COMMENT                my_pow(x, 5) / 120; 20    0    
-SINGLE_COMMENT_END  
-                    20    0    
-SINGLE_COMMENT_START//                   20    0    
-SINGLE_COMMENT       }                   20    0    
-SINGLE_COMMENT_END  
-                    20    0    
-SINGLE_COMMENT_START//                   21    0    
-SINGLE_COMMENT       float my_exp(float x) { 21    0    
-SINGLE_COMMENT_END  
-                    21    0    
-SINGLE_COMMENT_START//                   21    0    
-SINGLE_COMMENT         if (x < 0) return 1 / my_exp(-x); 21    0    
-SINGLE_COMMENT_END  
-                    21    0    
-SINGLE_COMMENT_START//                   21    0    
-SINGLE_COMMENT         int n = x;        21    0    
-SINGLE_COMMENT_END  
-                    21    0    
-SINGLE_COMMENT_START//                   21    0    
-SINGLE_COMMENT         x = x - n;        21    0    
-SINGLE_COMMENT_END  
-                    21    0    
-SINGLE_COMMENT_START//                   21    0    
-SINGLE_COMMENT         float e1 = my_pow(e, n); 21    0    
-SINGLE_COMMENT_END  
-                    21    0    
-SINGLE_COMMENT_START//                   21    0    
-SINGLE_COMMENT         float e2 = eee(x); 21    0    
-SINGLE_COMMENT_END  
-                    21    0    
-SINGLE_COMMENT_START//                   21    0    
-SINGLE_COMMENT         return e1 * e2;   21    0    
-SINGLE_COMMENT_END  
-                    21    0    
-SINGLE_COMMENT_START//                   21    0    
-SINGLE_COMMENT       }                   21    0    
-SINGLE_COMMENT_END  
-                    21    0    
-SINGLE_COMMENT_START//                   22    0    
-SINGLE_COMMENT       float my_ln(float x) { return asr4(1, x, 1e-8, 1); } 22    0    
-SINGLE_COMMENT_END  
-                    22    0    
-SINGLE_COMMENT_START//                   23    0    
-SINGLE_COMMENT       float my_log(float a, float N) { return my_ln(N) / my_ln(a); } 23    0    
-SINGLE_COMMENT_END  
-                    23    0    
-SINGLE_COMMENT_START//                   24    0    
-SINGLE_COMMENT       float my_powf(float a, float x) { return my_exp(x * my_ln(a)); } 24    0    
-SINGLE_COMMENT_END  
-                    24    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT       int main() {        25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT         int num = getint(); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT         while (num) {     25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           float x = getfloat(), y = getfloat(); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putfloat(my_fabs(x)); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putch(32);      25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putfloat(my_pow(x, 2)); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putch(32);      25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putfloat(my_sqrt(x)); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putch(32);      25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putfloat(my_exp(x)); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putch(32);      25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           if (x > 0) {    25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT             putfloat(my_ln(x)); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           } else {        25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT             putch(45);    25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           }               25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putch(32);      25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           if (x > 0 && y > 0) { 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT             putfloat(my_log(x, y)); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           } else {        25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT             putch(45);    25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           }               25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putch(32);      25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           if (x > 0) {    25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT             putfloat(my_powf(x, y)); 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           } else {        25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT             putch(45);    25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           }               25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           putch(10);      25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT           num = num - 1;  25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT         }                 25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT         return 0;         25    0    
-SINGLE_COMMENT_END  
-                    25    0    
-SINGLE_COMMENT_START//                   25    0    
-SINGLE_COMMENT       }                   25    0    
-SINGLE_COMMENT_END  
-                    25    0    
 CONST	const
 FLOAT	float
 ID	RADIUS
 ASSIGN	=
-FLOAT_DECIMAL       5.5                  26    0     5.500000            
+FLOAT_DECIMAL       5.5                  1     0     5.500000            
 COMMA	,
 ID	PI
 ASSIGN	=
-FLOAT_DECIMAL       03.141592653589793   26    0     3.141593            
+FLOAT_DECIMAL       03.141592653589793   1     0     3.141593            
 COMMA	,
 ID	EPS
 ASSIGN	=
-DECIMIAL            1                    26    0     1                   
-ID	e
+FLOAT_DECIMAL       1e-6                 1     0     0.000001            
+SEMICOLON	;
+SINGLE_COMMENT_START//                   3     0    
+SINGLE_COMMENT       hexadecimal float constant 3     0    
+SINGLE_COMMENT_END  
+                    3     0    
+CONST	const
+FLOAT	float
+ID	PI_HEX
+ASSIGN	=
+FLOAT_HEX           0x1.921fb6p+1        3     0     3.141593            
+COMMA	,
+ID	HEX2
+ASSIGN	=
+FLOAT_HEX           0x.AP-3              3     0     0.078125            
+SEMICOLON	;
+SINGLE_COMMENT_START//                   5     0    
+SINGLE_COMMENT       float constant evaluation 5     0    
+SINGLE_COMMENT_END  
+                    5     0    
+CONST	const
+FLOAT	float
+ID	FACT
+ASSIGN	=
+SUB	-
+FLOAT_DECIMAL       .33E+5               5     0     33000.000000        
+COMMA	,
+ID	EVAL1
+ASSIGN	=
+ID	PI
+MUL	*
+ID	RADIUS
+MUL	*
+ID	RADIUS
+COMMA	,
+ID	EVAL2
+ASSIGN	=
+DECIMIAL            2                    5     0     2                   
+MUL	*
+ID	PI_HEX
+MUL	*
+ID	RADIUS
+COMMA	,
+ID	EVAL3
+ASSIGN	=
+ID	PI
+MUL	*
+DECIMIAL            2                    5     0     2                   
+MUL	*
+ID	RADIUS
+SEMICOLON	;
+SINGLE_COMMENT_START//                   7     0    
+SINGLE_COMMENT       float constant implicit conversion 7     0    
+SINGLE_COMMENT_END  
+                    7     0    
+CONST	const
+FLOAT	float
+ID	CONV1
+ASSIGN	=
+DECIMIAL            233                  7     0     233                 
+COMMA	,
+ID	CONV2
+ASSIGN	=
+DECIMIAL            0xfff                7     0     4095                
+SEMICOLON	;
+CONST	const
+INT	int
+ID	MAX
+ASSIGN	=
+FLOAT_DECIMAL       1e9                  8     0     1000000000.000000   
+COMMA	,
+ID	TWO
+ASSIGN	=
+FLOAT_DECIMAL       2.9                  8     0     2.900000            
+COMMA	,
+ID	THREE
+ASSIGN	=
+FLOAT_DECIMAL       3.2                  8     0     3.200000            
+COMMA	,
+ID	FIVE
+ASSIGN	=
+ID	TWO
+ADD	+
+ID	THREE
+SEMICOLON	;
+SINGLE_COMMENT_START//                   10    0    
+SINGLE_COMMENT       float -> float function 10    0    
+SINGLE_COMMENT_END  
+                    10    0    
+FLOAT	float
+ID	float_abs
+LPAREN	(
+FLOAT	float
+ID	x
+RPAREN	)
+LBRACE	{
+IF	if
+LPAREN	(
+ID	x
+LESS	<
+DECIMIAL            0                    11    0     0                   
+RPAREN	)
+RETURN	return
+SUB	-
+ID	x
+SEMICOLON	;
+RETURN	return
+ID	x
+SEMICOLON	;
+RBRACE	}
+SINGLE_COMMENT_START//                   15    0    
+SINGLE_COMMENT       int -> float function & float/int expression 15    0    
+SINGLE_COMMENT_END  
+                    15    0    
+FLOAT	float
+ID	circle_area
+LPAREN	(
+INT	int
+ID	radius
+RPAREN	)
+LBRACE	{
+RETURN	return
+LPAREN	(
+ID	PI
+MUL	*
+ID	radius
+MUL	*
+ID	radius
+ADD	+
+LPAREN	(
+ID	radius
+MUL	*
+ID	radius
+RPAREN	)
+MUL	*
+ID	PI
+RPAREN	)
+DIV	/
+DECIMIAL            2                    16    0     2                   
+SEMICOLON	;
+RBRACE	}
+SINGLE_COMMENT_START//                   19    0    
+SINGLE_COMMENT       float -> float -> int function & float/int expression 19    0    
+SINGLE_COMMENT_END  
+                    19    0    
+INT	int
+ID	float_eq
+LPAREN	(
+FLOAT	float
+ID	a
+COMMA	,
+FLOAT	float
+ID	b
+RPAREN	)
+LBRACE	{
+IF	if
+LPAREN	(
+ID	float_abs
+LPAREN	(
+ID	a
+SUB	-
+ID	b
+RPAREN	)
+LESS	<
+ID	EPS
+RPAREN	)
+LBRACE	{
+RETURN	return
+DECIMIAL            1                    21    0     1                   
+MUL	*
+FLOAT_DECIMAL       2.                   21    0     2.000000            
+DIV	/
+DECIMIAL            2                    21    0     2                   
+SEMICOLON	;
+RBRACE	}
+ELSE	else
+LBRACE	{
+RETURN	return
+DECIMIAL            0                    23    0     0                   
+SEMICOLON	;
+RBRACE	}
+RBRACE	}
+VOID	void
+ID	error
+LPAREN	(
+RPAREN	)
+LBRACE	{
+ID	putch
+LPAREN	(
+DECIMIAL            101                  28    0     101                 
+RPAREN	)
+SEMICOLON	;
+ID	putch
+LPAREN	(
+DECIMIAL            114                  29    0     114                 
+RPAREN	)
+SEMICOLON	;
+ID	putch
+LPAREN	(
+DECIMIAL            114                  30    0     114                 
+RPAREN	)
+SEMICOLON	;
+ID	putch
+LPAREN	(
+DECIMIAL            111                  31    0     111                 
+RPAREN	)
+SEMICOLON	;
+ID	putch
+LPAREN	(
+DECIMIAL            114                  32    0     114                 
+RPAREN	)
+SEMICOLON	;
+ID	putch
+LPAREN	(
+DECIMIAL            10                   33    0     10                  
+RPAREN	)
+SEMICOLON	;
+RBRACE	}
+VOID	void
+ID	ok
+LPAREN	(
+RPAREN	)
+LBRACE	{
+ID	putch
+LPAREN	(
+DECIMIAL            111                  37    0     111                 
+RPAREN	)
+SEMICOLON	;
+ID	putch
+LPAREN	(
+DECIMIAL            107                  38    0     107                 
+RPAREN	)
+SEMICOLON	;
+ID	putch
+LPAREN	(
+DECIMIAL            10                   39    0     10                  
+RPAREN	)
+SEMICOLON	;
+RBRACE	}
+VOID	void
+ID	assert
+LPAREN	(
+INT	int
+ID	cond
+RPAREN	)
+LBRACE	{
+IF	if
+LPAREN	(
+NOT	!
+ID	cond
+RPAREN	)
+LBRACE	{
+ID	error
+LPAREN	(
+RPAREN	)
+SEMICOLON	;
+RBRACE	}
+ELSE	else
+LBRACE	{
+ID	ok
+LPAREN	(
+RPAREN	)
+SEMICOLON	;
+RBRACE	}
+RBRACE	}
+INT	int
+ID	main
+LPAREN	(
+RPAREN	)
+LBRACE	{
+ID	assert
+LPAREN	(
+NOT	!
+ID	float_eq
+LPAREN	(
+ID	HEX2
+COMMA	,
+ID	FACT
+RPAREN	)
+RPAREN	)
+SEMICOLON	;
+ID	assert
+LPAREN	(
+NOT	!
+ID	float_eq
+LPAREN	(
+ID	EVAL1
+COMMA	,
+ID	EVAL2
+RPAREN	)
+RPAREN	)
+SEMICOLON	;
+ID	assert
+LPAREN	(
+ID	float_eq
+LPAREN	(
+ID	EVAL2
+COMMA	,
+ID	EVAL3
+RPAREN	)
+RPAREN	)
+SEMICOLON	;
+ID	assert
+LPAREN	(
+ID	float_eq
+LPAREN	(
+ID	circle_area
+LPAREN	(
+ID	RADIUS
+RPAREN	)
+COMMA	,
+ID	circle_area
+LPAREN	(
+ID	FIVE
+RPAREN	)
+RPAREN	)
+RPAREN	)
+SEMICOLON	;
+ID	assert
+LPAREN	(
+NOT	!
+ID	float_eq
+LPAREN	(
+ID	CONV1
+COMMA	,
+ID	CONV2
+RPAREN	)
+RPAREN	)
+SEMICOLON	;
+SINGLE_COMMENT_START//                   58    0    
+SINGLE_COMMENT       float conditional expressions 58    0    
+SINGLE_COMMENT_END  
+                    58    0    
+IF	if
+LPAREN	(
+FLOAT_DECIMAL       1.5                  58    0     1.500000            
+RPAREN	)
+ID	ok
+LPAREN	(
+RPAREN	)
+SEMICOLON	;
+IF	if
+LPAREN	(
+NOT	!
+NOT	!
+FLOAT_DECIMAL       3.3                  59    0     3.300000            
+RPAREN	)
+ID	ok
+LPAREN	(
+RPAREN	)
+SEMICOLON	;
+IF	if
+LPAREN	(
+FLOAT_DECIMAL       .0                   60    0     0.000000            
+AND	&&
+DECIMIAL            3                    60    0     3                   
+RPAREN	)
+ID	error
+LPAREN	(
+RPAREN	)
+SEMICOLON	;
+IF	if
+LPAREN	(
+DECIMIAL            0                    61    0     0                   
+OR	||
+FLOAT_DECIMAL       0.3                  61    0     0.300000            
+RPAREN	)
+ID	ok
+LPAREN	(
+RPAREN	)
+SEMICOLON	;
+SINGLE_COMMENT_START//                   63    0    
+SINGLE_COMMENT       float array & I/O functions 63    0    
+SINGLE_COMMENT_END  
+                    63    0    
+INT	int
+ID	i
+ASSIGN	=
+DECIMIAL            1                    63    0     1                   
+COMMA	,
+ID	p
+ASSIGN	=
+DECIMIAL            0                    63    0     0                   
+SEMICOLON	;
+FLOAT	float
+ID	arr
+LBRACKET	[
+DECIMIAL            10                   64    0     10                  
+RBRACKET	]
+ASSIGN	=
+LBRACE	{
+FLOAT_DECIMAL       1.                   64    0     1.000000            
+COMMA	,
+DECIMIAL            2                    64    0     2                   
+RBRACE	}
+SEMICOLON	;
+INT	int
+ID	len
+ASSIGN	=
+ID	getfarray
+LPAREN	(
+ID	arr
+RPAREN	)
+SEMICOLON	;
+WHILE	while
+LPAREN	(
+ID	i
+LESS	<
+ID	MAX
+RPAREN	)
+LBRACE	{
+FLOAT	float
+ID	input
+ASSIGN	=
+ID	getfloat
+LPAREN	(
+RPAREN	)
+SEMICOLON	;
+FLOAT	float
+ID	area
+ASSIGN	=
+ID	PI
+MUL	*
+ID	input
+MUL	*
+ID	input
+COMMA	,
+ID	area_trunc
+ASSIGN	=
+ID	circle_area
+LPAREN	(
+ID	input
+RPAREN	)
+SEMICOLON	;
+ID	arr
+LBRACKET	[
+ID	p
+RBRACKET	]
+ASSIGN	=
+ID	arr
+LBRACKET	[
+ID	p
+RBRACKET	]
+ADD	+
+ID	input
+SEMICOLON	;
+ID	putfloat
+LPAREN	(
+ID	area
+RPAREN	)
+SEMICOLON	;
+ID	putch
+LPAREN	(
+DECIMIAL            32                   72    0     32                  
+RPAREN	)
+SEMICOLON	;
+ID	putint
+LPAREN	(
+ID	area_trunc
+RPAREN	)
+SEMICOLON	;
+SINGLE_COMMENT_START//                   73    0    
+SINGLE_COMMENT       f->i implicit conversion 73    0    
+SINGLE_COMMENT_END  
+                    73    0    
+ID	putch
+LPAREN	(
+DECIMIAL            10                   73    0     10                  
+RPAREN	)
+SEMICOLON	;
+ID	i
+ASSIGN	=
+ID	i
+MUL	*
+SUB	-
+SUB	-
+FLOAT_DECIMAL       1e1                  75    0     10.000000           
+SEMICOLON	;
+ID	p
+ASSIGN	=
+ID	p
+ADD	+
+DECIMIAL            1                    76    0     1                   
+SEMICOLON	;
+RBRACE	}
+ID	putfarray
+LPAREN	(
+ID	len
+COMMA	,
+ID	arr
+RPAREN	)
+SEMICOLON	;
+RETURN	return
+DECIMIAL            0                    79    0     0                   
+SEMICOLON	;
+RBRACE	}
+SINGLE_COMMENT_START//                   88    0    
+SINGLE_COMMENT       const float MAX = 1e5+5; 88    0    
+SINGLE_COMMENT_END  
+                    88    0    
+SINGLE_COMMENT_START//                   88    0    
+SINGLE_COMMENT       int main()          88    0    
+SINGLE_COMMENT_END  
+                    88    0    
+SINGLE_COMMENT_START//                   88    0    
+SINGLE_COMMENT       {                   88    0    
+SINGLE_COMMENT_END  
+                    88    0    
+SINGLE_COMMENT_START//                   88    0    
+SINGLE_COMMENT         float a=1.2,b=1.3; 88    0    
+SINGLE_COMMENT_END  
+                    88    0    
+SINGLE_COMMENT_START//                   88    0    
+SINGLE_COMMENT         float c=a+b;      88    0    
+SINGLE_COMMENT_END  
+                    88    0    
+SINGLE_COMMENT_START//                   88    0    
+SINGLE_COMMENT         return 0;         88    0    
+SINGLE_COMMENT_END  
+                    88    0    
+SINGLE_COMMENT_START//                   88    0    
+SINGLE_COMMENT       }                   88    0    
+SINGLE_COMMENT_END  
+                    88    0    

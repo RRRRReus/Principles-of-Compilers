@@ -278,7 +278,7 @@ void BinaryExpr::genCode()
             src1 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel())); // 创建一个临时符号表项
             new ZextInstruction(src1, expr1->getOperand(), bb);
         }
-        if (src2->getType()->isInt() && dynamic_cast<IntType *>(src2->getType())->getSize() == 1)
+        if (src2->getType()->isInt() && dynamic_cast<IntType *>(src2->getType())->getSize() == 1)//将 i1 扩展为 i32
         {
             src2 = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
             new ZextInstruction(src2, expr2->getOperand(), bb);
@@ -453,6 +453,9 @@ void DeclStmt::genCode()
     {
         // //不属于任何函数，虚空变量
         fprintf(stderr, "进入DeclStmt::genCode中全局变量的部分\n");
+        fprintf(stderr,"全局变量的名字是%s\n",se->toStr().c_str());
+        fprintf(stderr, "全局变量的类型是%s\n", se->getType()->toStr().c_str());
+        fprintf(stderr, "全局变量的初始值是%s\n", se->getInitialValue().c_str());
         Operand *addr;
         SymbolEntry *addr_se; // 用于存储新生成的符号表项
         Type *type;
@@ -462,9 +465,8 @@ void DeclStmt::genCode()
         addr_se->setType(type);                          // 设置类型(变量的数据类型)
         GlobalVariable *global = new GlobalVariable(se); // 创建一个新的全局变量
 
-        fprintf(stderr, "全局变量的类型是%s\n", se->getType()->toStr().c_str());
+        
         addr = new Operand(addr_se); // 创建一个目标数
-        fprintf(stderr, "全局变量的地址是%s\n", addr->toStr().c_str());
         se->setAddr(addr); // 设置操作数的地址
 
         Unit *unit = builder->getUnit(); // 获取当前编译单元
@@ -603,13 +605,13 @@ void DeclStmt::genCode()
             fprintf(stderr, "src是%s\n", src->getType()->toStr().c_str());
             fprintf(stderr, "se是%s\n", se->getType()->toStr().c_str());
 
-            if (src->getType()->isFloat() && se->getType()->isInt()) // int=float, int赋值为float的隐式转换，要求省去float小数点后的部分
+            if (src->getType()->isAllFloat() && se->getType()->isAllInt()) // int=float, int赋值为float的隐式转换，要求省去float小数点后的部分
             {
                 fprintf(stderr, "int=float！！！！！！！！！！！！！！！！！\n");
                 src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
                 new FpToSiInstruction(src, expr->getOperand(), bb);
             }
-            else if (src->getType()->isInt() && se->getType()->isFloat()) // float=int, float赋值为int的隐式转换，要求在int后面加上.0
+            else if (src->getType()->isAllInt() && se->getType()->isAllFloat()) // float=int, float赋值为int的隐式转换，要求在int后面加上.0
             {
                 src = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
                 new SiToFpInstruction(src, expr->getOperand(), bb);
@@ -759,13 +761,13 @@ void DeclStmt::genCode()
             fprintf(stderr, "函数实参有初始化表达式\n");
             expr->genCode();
             Operand *src = expr->getOperand();
-            if (src->getType()->isFloat() && se->getType()->isInt()) // int=float, int赋值为float的隐式转换，要求省去float小数点后的部分
+            if (src->getType()->isAllFloat() && se->getType()->isAllInt()) // int=float, int赋值为float的隐式转换，要求省去float小数点后的部分
             {
                 fprintf(stderr, "int=float！！！！！！！！！！！！！！！！！\n");
                 src = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));
                 new FpToSiInstruction(src, expr->getOperand(), bb);
             }
-            else if (src->getType()->isInt() && se->getType()->isFloat()) // float=int, float赋值为int的隐式转换，要求在int后面加上.0
+            else if (src->getType()->isAllInt() && se->getType()->isAllFloat()) // float=int, float赋值为int的隐式转换，要求在int后面加上.0
             {
                 src = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));
                 new SiToFpInstruction(src, expr->getOperand(), bb);
