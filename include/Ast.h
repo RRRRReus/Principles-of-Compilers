@@ -62,7 +62,7 @@ class ExprNode : public Node//表达式节点类
 {
 protected:
     SymbolEntry *symbolEntry;   //符号表项
-    Operand *dst;   // The result of the subtree is stored into dst. //存储子树的结果
+    Operand *dst=nullptr;   // The result of the subtree is stored into dst. //存储子树的结果
 public:
     bool CanBeCalculatedInt = false;//是否可以计算成一个整数
     int CalculatedInt;//如果可以计算成一个整数，那么这个整数是多少
