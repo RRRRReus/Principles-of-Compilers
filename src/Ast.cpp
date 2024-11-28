@@ -2041,13 +2041,13 @@ void FuncCall::genCode()//！！！！！！记得做
         }
         fprintf(stderr, "调用函数！！！实参的类型是%s\n", argOperand->getType()->toStr().c_str());
         fprintf(stderr, "调用函数！！！实参所属的函数是%s\n", argOperand->getSymbolEntry()->toStr().c_str());
-        if (argOperand->getType()->isAllInt() && formsTypes[temp]->isFloat())//如果参数定义为浮点数，但是传入的是整数，需要转换
+        if (argOperand->getType()->isAllInt() && formsTypes[temp]->isAllFloat())//如果参数定义为浮点数，但是传入的是整数，需要转换
         {
                 Operand *temp = new Operand(new TemporarySymbolEntry(new FloatType(32), SymbolTable::getLabel()));//将传入的整数转换为浮点数
                 new SiToFpInstruction(temp, argOperand, bb);
                 argOperand = temp;
         }
-        else if(argOperand->getType()->isAllFloat() && formsTypes[temp]->isInt())//如果参数定义为整数，但是传入的是浮点数，需要转换
+        else if(argOperand->getType()->isAllFloat() && formsTypes[temp]->isAllInt())//如果参数定义为整数，但是传入的是浮点数，需要转换
         {
             Operand *temp = new Operand(new TemporarySymbolEntry(new IntType(32), SymbolTable::getLabel()));//将传入的浮点数转换为整数
             new FpToSiInstruction(temp, argOperand, bb);
