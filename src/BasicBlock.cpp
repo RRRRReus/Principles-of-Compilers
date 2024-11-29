@@ -70,13 +70,42 @@ void BasicBlock::optimize()
     for (auto i = head->getNext(); i != head; i = i->getNext())
     {
         i->optimize();
-        // if(i->isCond())
-        // {
-        //     BasicBlock* true_bb=dynamic_cast<CondBrInstruction*>(i)->getTrueBB();
-        //     succ.push_back(true_bb);
-        // }
+        i->save=true;
+        
+        if(i->isCond())
+        {
+            BasicBlock* true_bb=dynamic_cast<CondBrInstruction*>(i)->getTrueBB();
+            BasicBlock* false_bb=dynamic_cast<CondBrInstruction*>(i)->getFlaseBB();
+            
+            this->addSucc(true_bb);
+            true_bb->addPred(this);
+
+            this->addSucc(false_bb);
+            false_bb->addPred(this);
+            
+            break;
+        }
+        if(i->isUncond())
+        {
+            BasicBlock* uncond_bb=dynamic_cast<UncondBrInstruction*>(i)->getBranchBB();
+            this->addSucc(uncond_bb);
+            uncond_bb->addPred(this);
+            break;
+        }
+
+        //head=optimizeHead;
 
     }
+    
+    Instruction *next;
+    for (auto i = head->getNext(); i != head; i = next)
+    {
+        next=i->getNext();
+
+        if(i->save)
+            insertBefore(i,optimizeHead);
+    }
+    head=optimizeHead;
 }
 // 添加后继
 void BasicBlock::addSucc(BasicBlock *bb)
@@ -108,6 +137,9 @@ BasicBlock::BasicBlock(Function *f)
     parent = f;
     head = new DummyInstruction();
     head->setParent(this);
+    optimizeHead =new DummyInstruction();
+    optimizeHead->setParent(this);
+
 }
 
 BasicBlock::~BasicBlock()

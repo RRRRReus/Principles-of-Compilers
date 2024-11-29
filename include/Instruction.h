@@ -12,6 +12,7 @@ class Instruction
 {
 public:
     Instruction(unsigned instType, BasicBlock *insert_bb = nullptr);
+    bool save=false;
     virtual ~Instruction();
     BasicBlock *getParent();
     bool isUncond() const {return instType == UNCOND;};//是否为无条件分支
@@ -218,6 +219,7 @@ public:
     void setBranch(BasicBlock *);
     BasicBlock *getBranch();
     BasicBlock **patchBranch() {return &branch;};
+    BasicBlock *getBranchBB(){return branch;}
 protected:
     BasicBlock *branch;
 };

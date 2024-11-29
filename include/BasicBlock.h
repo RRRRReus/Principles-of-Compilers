@@ -13,6 +13,7 @@ class BasicBlock
 private:
     std::vector<BasicBlock *> pred, succ;//前驱和后继
     Instruction *head;//指向第一条指令
+    Instruction *optimizeHead;//优化后的链表头
     Function *parent;//指向所属函数
     int no;//基本块编号
 

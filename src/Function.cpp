@@ -55,6 +55,11 @@ void Function::optimize()
     {
         bb->cleanPred();
         bb->cleanSucc();
+        if(!(bb->rbegin()->isCond()||bb->rbegin()->isUncond()||bb==exit)||bb->empty())
+        {
+            new UncondBrInstruction(exit, bb);//插入无条件跳转指令
+        }
+
     }
 
     for (auto &bb : block_list)
