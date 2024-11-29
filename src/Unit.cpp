@@ -41,6 +41,15 @@ void Unit::output() const
     fprintf(yyout, "declare float @getfloat()\n");
 
 }
+void Unit::optimize() const
+{
+    fprintf(stderr, "编译单元优化\n");
+    for (auto global : global_list)
+        global->optimize();
+
+    for (auto &func : func_list)
+        func->optimize();
+}
 
 Unit::~Unit()
 {

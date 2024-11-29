@@ -200,7 +200,7 @@ void CmpInstruction::output() const
 
 UncondBrInstruction::UncondBrInstruction(BasicBlock *to, BasicBlock *insert_bb) : Instruction(UNCOND, insert_bb)
 {
-    fprintf(stderr,"UncondBrInstruction::UncondBrInstruction\n");
+    //fprintf(stderr,"UncondBrInstruction::UncondBrInstruction\n");
     branch = to;
 }
 
@@ -225,7 +225,7 @@ CondBrInstruction::CondBrInstruction(BasicBlock*true_branch, BasicBlock*false_br
     this->false_branch = false_branch;
     cond->addUse(this);
     operands.push_back(cond);
-    fprintf(stderr,"CondBrInstruction::CondBrInstruction\n");
+    //fprintf(stderr,"CondBrInstruction::CondBrInstruction\n");
 }
 
 CondBrInstruction::~CondBrInstruction()

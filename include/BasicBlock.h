@@ -27,6 +27,7 @@ public:
     void remove(Instruction *);
     bool empty() const { return head->getNext() == head;}
     void output() const;
+    void optimize() const;
     bool succEmpty() const { return succ.empty(); };
     bool predEmpty() const { return pred.empty(); };
     void addSucc(BasicBlock *);//添加后继

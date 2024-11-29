@@ -13,6 +13,7 @@ private:
 public:
     GlobalVariable(SymbolEntry *se) : se(se) {}
     void output() const;
+    void optimize() const;
 };
 
 #endif

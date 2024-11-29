@@ -25,6 +25,7 @@ public:
     virtual Operand *getDef() { return nullptr; }//获取定义 
     virtual std::vector<Operand *> getUse() { return {}; }
     virtual void output() const = 0;
+    void optimize(){};
 protected:
     unsigned instType;//指令类型
     unsigned opcode;//操作码

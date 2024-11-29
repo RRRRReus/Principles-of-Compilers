@@ -64,7 +64,13 @@ void BasicBlock::output() const
     }
         
 }
-//添加后继
+void BasicBlock::optimize() const
+{
+    fprintf(stderr, "基本块%d优化\n", no);
+    for (auto i = head->getNext(); i != head; i = i->getNext())
+        i->optimize();
+}
+// 添加后继
 void BasicBlock::addSucc(BasicBlock *bb)
 {
     succ.push_back(bb);

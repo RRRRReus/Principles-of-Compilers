@@ -35,3 +35,8 @@ void GlobalVariable::output() const
 
     
 }
+
+void GlobalVariable::optimize() const
+{
+    fprintf(stderr, "全局变量%s优化\n", se->toStr().c_str());
+}

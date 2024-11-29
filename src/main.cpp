@@ -61,6 +61,7 @@ int main(int argc, char *argv[])
     if(dump_type == IR)
     {
         ast.genCode(&unit); //生成中间代码
+        unit.optimize();    //优化
         unit.output();
     }
 

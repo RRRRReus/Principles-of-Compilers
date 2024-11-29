@@ -48,7 +48,13 @@ void Function::remove(BasicBlock *bb)
 {
     block_list.erase(std::find(block_list.begin(), block_list.end(), bb));
 }
+void Function::optimize() const
+{
+    fprintf(stderr, "函数%s优化\n", sym_ptr->toStr().c_str());
 
+    for (auto &bb : block_list)
+        bb->optimize();
+}
 void Function::output() const
 {
     if(this->block_list.size() == 2)
