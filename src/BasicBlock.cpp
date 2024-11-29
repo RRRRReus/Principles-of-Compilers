@@ -71,7 +71,25 @@ void BasicBlock::optimize()
     {
         i->optimize();
         i->save=true;
-        
+        if(i->isAlloca())
+        {
+            // fprintf(stderr,"基本块%d中的指令是alloca\n",no);
+            // fprintf(stderr,"基本块%d中的指令的def的用户数是%d\n",no,dynamic_cast<AllocaInstruction*>(i)->getDef()->usersNum());
+            if(dynamic_cast<AllocaInstruction*>(i)->getDef()->usersNum()==0)
+            {
+                i->save=false;
+            }
+        }
+        if(i->isStore())
+        {
+            // fprintf(stderr,"基本块%d中的指令是alloca\n",no);
+            // fprintf(stderr,"基本块%d中的指令的def的用户数是%d\n",no,dynamic_cast<AllocaInstruction*>(i)->getDef()->usersNum());
+            if(dynamic_cast<StoreInstruction*>(i)->getDef()->usersNum()==0)
+            {
+                i->save=false;
+            }
+        }
+
         if(i->isCond())
         {
             BasicBlock* true_bb=dynamic_cast<CondBrInstruction*>(i)->getTrueBB();

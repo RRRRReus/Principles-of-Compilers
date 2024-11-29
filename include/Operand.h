@@ -22,6 +22,7 @@ public:
     void setDef(Instruction *inst) {def = inst;};//设置定义操作数
     void addUse(Instruction *inst) { uses.push_back(inst);};
     void removeUse(Instruction *inst);
+    void cleanUse() {uses.clear();};
     int usersNum() const {return uses.size();};//返回使用此操作数的指令数量
     Instruction *getDef() { return def; };//获取定义操作数
     std::vector<Instruction *> &getUse() { return uses; };

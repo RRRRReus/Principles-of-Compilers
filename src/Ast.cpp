@@ -617,6 +617,8 @@ void DeclStmt::genCode()
                 new SiToFpInstruction(src, expr->getOperand(), bb);
             }
             new StoreInstruction(addr, src, builder->getInsertBB());
+            
+            addr->cleanUse();
         }
     
         if(initValList!=nullptr)

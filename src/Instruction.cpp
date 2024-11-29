@@ -556,6 +556,9 @@ GetElementPtrInstruction::GetElementPtrInstruction(Operand *dst,Operand *element
     operands.push_back(src);
     operands.push_back(element);
     operands.insert(operands.end(), indices.begin(), indices.end());
+    dst->addUse(this);
+    src->addUse(this);
+    
 }
 
 /**

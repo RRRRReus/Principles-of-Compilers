@@ -17,6 +17,12 @@ public:
     BasicBlock *getParent();
     bool isUncond() const {return instType == UNCOND;};//是否为无条件分支
     bool isCond() const {return instType == COND;};//是否为条件分支
+    bool isAlloca() const {return instType == ALLOCA;};//是否为分配指令
+    bool isBinary() const {return instType == BINARY;};//是否为二元指令
+    bool isLoad() const {return instType == LOAD;};//是否为加载指令
+    bool isStore() const {return instType == STORE;};//是否为存储指令
+    bool isCmp() const {return instType == CMP;};//是否为比较指令
+    bool isRet() const {return instType == RET;};//是否为返回指令
     int getInstType() const {return instType;};//获取指令类型
     void setParent(BasicBlock *);
     void setNext(Instruction *);
@@ -59,6 +65,7 @@ class DummyInstruction : public Instruction
 {
 public:
     DummyInstruction() : Instruction(-1, nullptr) {};
+    DummyInstruction(BasicBlock *insert_bb) : Instruction(-1, insert_bb) {};
     void output() const {};
 };
 
@@ -138,6 +145,7 @@ public:
     StoreInstruction(Operand *dst_addr, Operand *src, BasicBlock *insert_bb = nullptr);
     ~StoreInstruction();
     void output() const;
+    Operand *getDef() { return operands[0]; }
     std::vector<Operand *> getUse() { return {operands[0], operands[1]}; }
 };
 

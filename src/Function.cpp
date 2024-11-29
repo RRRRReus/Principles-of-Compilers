@@ -64,6 +64,37 @@ void Function::optimize()
 
     for (auto &bb : block_list)
         bb->optimize();
+
+
+    if((exit->getNumOfPred()==1)&&(!dynamic_cast<FunctionType*>(sym_ptr->getType())->getRetType()->isVoid()))
+    {
+        fprintf(stderr,"单一出口鱼贯合并优化");
+        BasicBlock *bb=*(exit->pred_begin());
+        fprintf(stderr,"qqq这个基本块是%d\n",bb->getNo());
+        bb->removeSucc(exit);
+        exit->removePred(bb);
+        Instruction *inst=bb->rbegin();
+        Instruction *inst2=inst->getPrev();
+
+        Operand *op=dynamic_cast<StoreInstruction*>(inst2)->getUse()[1];
+        if(bb!=entry)
+            bb->remove(inst2);
+        bb->remove(inst);
+        new RetInstruction(op, bb);
+
+        for(auto &i:return_val->getUse())
+        {
+            if(i->getParent()==entry)
+            {
+                entry->remove(i);
+            }
+        }
+
+        entry->remove(return_val->getDef());
+        
+
+    }
+
 }
 void Function::output() const
 {
@@ -95,7 +126,7 @@ void Function::output() const
         q.pop_front();//删除队列的第一个元素
 
 
-        if(!(bb->rbegin()->isCond()||bb->rbegin()->isUncond()||bb==exit))
+        if(!(bb->rbegin()->isCond()||bb->rbegin()->isUncond()||bb==exit||bb->rbegin()->isRet()))
         {
             new UncondBrInstruction(exit, bb);//插入无条件跳转指令
             bb->addSucc(exit);//将出口基本块加入基本块的后继
