@@ -39,7 +39,7 @@ public:
     BasicBlock *getEntry() { return entry; };
     void remove(BasicBlock *bb);
     void output() const;
-    void optimize() const;
+    void optimize();
     std::vector<BasicBlock *> &getBlockList(){return block_list;};
     iterator begin() { return block_list.begin(); };
     iterator end() { return block_list.end(); };

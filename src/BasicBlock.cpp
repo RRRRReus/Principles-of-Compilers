@@ -64,11 +64,19 @@ void BasicBlock::output() const
     }
         
 }
-void BasicBlock::optimize() const
+void BasicBlock::optimize()
 {
     fprintf(stderr, "基本块%d优化\n", no);
     for (auto i = head->getNext(); i != head; i = i->getNext())
+    {
         i->optimize();
+        // if(i->isCond())
+        // {
+        //     BasicBlock* true_bb=dynamic_cast<CondBrInstruction*>(i)->getTrueBB();
+        //     succ.push_back(true_bb);
+        // }
+
+    }
 }
 // 添加后继
 void BasicBlock::addSucc(BasicBlock *bb)

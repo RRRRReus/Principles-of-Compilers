@@ -23,7 +23,7 @@ public:
     void insertGlobal(GlobalVariable *);//新增全局变量内容，插入全局变量
     void removeGlobal(GlobalVariable *);
     void output() const;//输出函数，输出到.ll文件中
-    void optimize() const;//优化函数
+    void optimize();//优化函数
     iterator begin() { return func_list.begin(); };
     iterator end() { return func_list.end(); };
     reverse_iterator rbegin() { return func_list.rbegin(); };

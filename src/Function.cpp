@@ -48,21 +48,26 @@ void Function::remove(BasicBlock *bb)
 {
     block_list.erase(std::find(block_list.begin(), block_list.end(), bb));
 }
-void Function::optimize() const
+void Function::optimize()
 {
     fprintf(stderr, "函数%s优化\n", sym_ptr->toStr().c_str());
+    for (auto &bb : block_list)
+    {
+        bb->cleanPred();
+        bb->cleanSucc();
+    }
 
     for (auto &bb : block_list)
         bb->optimize();
 }
 void Function::output() const
 {
-    if(this->block_list.size() == 2)
-    {
-        new UncondBrInstruction(exit, entry);//插入无条件跳转指令
-        entry->addSucc(exit);//将出口基本块加入基本块的后继
-        exit->addPred(entry);//将基本块加入出口基本块的前驱
-    }
+    // if(this->block_list.size() == 2)
+    // {
+    //     new UncondBrInstruction(exit, entry);//插入无条件跳转指令
+    //     entry->addSucc(exit);//将出口基本块加入基本块的后继
+    //     exit->addPred(entry);//将基本块加入出口基本块的前驱
+    // }
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type *retType = funcType->getRetType();
     fprintf(yyout, "define %s %s(", retType->toStr().c_str(), sym_ptr->toStr().c_str());

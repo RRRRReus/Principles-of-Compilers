@@ -252,6 +252,8 @@ public:
     BasicBlock **patchBranchTrue() {return &true_branch;};
     BasicBlock **patchBranchFalse() {return &false_branch;};
     std::vector<Operand *> getUse() { return {operands[0]}; }
+    BasicBlock *getTrueBB(){return true_branch;}
+    BasicBlock *getFlaseBB(){return false_branch;}
 protected:
     BasicBlock* true_branch;
     BasicBlock* false_branch;
