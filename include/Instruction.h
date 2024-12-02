@@ -12,7 +12,7 @@ class Instruction
 {
 public:
     Instruction(unsigned instType, BasicBlock *insert_bb = nullptr);
-    bool save=false;
+    bool save=false;//是否需要保存
     virtual ~Instruction();
     BasicBlock *getParent();
     bool isUncond() const {return instType == UNCOND;};//是否为无条件分支
@@ -31,6 +31,10 @@ public:
     Instruction *getPrev();
     virtual Operand *getDef() { return nullptr; }//获取定义 
     virtual std::vector<Operand *> getUse() { return {}; }
+    //virtual void setUse(Operand *op, int index) {}//设置指令中使用的操作数，即指令的输入
+    int getAllOperandsNum() { return operands.size(); }//获取操作数数量
+    Operand *getOperand(int index) { return operands[index]; }//获取操作数
+    void setOperand(Operand *op, int index) { operands[index] = op; }//设置所有操作数
     virtual void output() const = 0;
     void optimize(){};
 protected:
@@ -103,7 +107,7 @@ private:
  * 该类负责处理从内存中加载数据的操作。
  * 它继承自基类 Instruction。
  */
-class LoadInstruction : public Instruction
+class LoadInstruction : public Instruction//将内存指针operandp[1]指向的值赋给operand[0]寄存器
 {
 public:
 /**
@@ -119,7 +123,9 @@ public:
     ~LoadInstruction();
     void output() const;
     Operand *getDef() { return operands[0]; }
-    std::vector<Operand *> getUse() { return {operands[1]}; }
+    void setDef(Operand *def) { operands[0] = def; }//又乱加访问器方法
+    std::vector<Operand *> getUse() { return {operands[1]}; }//获取指令中使用的操作数，即指令的输入
+    //void setUse(Operand *op, int index) {operands[index + 1] = op;}//设置指令中使用的操作数，即指令的输入
 };
 
 /**
@@ -147,6 +153,9 @@ public:
     void output() const;
     Operand *getDef() { return operands[0]; }
     std::vector<Operand *> getUse() { return {operands[0], operands[1]}; }
+    void setDef(Operand *op) { operands[0] = op; } // 将current指向op
+    //void setUse(Operand *op, int index) {operands[index]=op;}//设置指令中使用的操作数，即指令的输入
+    
 };
 
 /**
@@ -175,6 +184,7 @@ public:
     enum {SUB, ADD,MUL,DIV,MOD, AND, OR,XOR};
     Operand *getDef() { return operands[0]; }//获取结果操作数
     std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }//获取源操作数
+    
 };
 /**
  * @class CmpInstruction
@@ -202,6 +212,7 @@ public:
     enum {E, NE, L, GE, G, LE};
     Operand *getDef() { return operands[0]; }
     std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }
+    
 };
 
 // unconditional branch
@@ -323,6 +334,7 @@ public:
     void output() const;
     Operand *getDef() { return operands.empty() ? nullptr : operands[0]; }//获取返回值操作数
     std::vector<Operand *> getUse() { return std::vector<Operand *>(operands.begin() + 1, operands.end()); }//获取所有实参操作数
+    
 
 private:
     IdentifierSymbolEntry *funcSE=nullptr;
@@ -342,6 +354,7 @@ public:
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
+    
 };
 class GetElementPtrInstruction : public Instruction
 {
@@ -351,6 +364,7 @@ public:
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
+    
 
 private:
     std::vector<Operand *> indices;
@@ -369,6 +383,7 @@ public:
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
+    
 };
 
 /**
@@ -386,6 +401,8 @@ public:
     void output() const override;
     Operand *getDef() override {return operands[0];}
     std::vector<Operand *> getUse() override {return {operands[1]};}
+    
+
 };
 
 /**
@@ -403,6 +420,7 @@ public:
     void output() const override;
     Operand *getDef() override {return operands[0];}
     std::vector<Operand *> getUse() override {return {operands[1]};}
+    
 };
 
 

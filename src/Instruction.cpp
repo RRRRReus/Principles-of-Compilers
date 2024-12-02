@@ -355,13 +355,11 @@ void LoadInstruction::output() const
 
     }
 
-
-
-
     fprintf(yyout, "  %s = load %s, %s %s, align 4\n", dst.c_str(), dst_type.c_str(), src_type.c_str(), src.c_str());
     //fprintf(stderr, "  %s = load %s, %s %s, align 4\n", dst.c_str(), dst_type.c_str(), src_type.c_str(), src.c_str());
 
 }
+
 
 StoreInstruction::StoreInstruction(Operand *dst_addr, Operand *src, BasicBlock *insert_bb) : Instruction(STORE, insert_bb)
 {
@@ -382,15 +380,7 @@ void StoreInstruction::output() const
     fprintf(stderr, "进入StoreInstruction::output函数\n");
     std::string dst = operands[0]->toStr();
     std::string src = operands[1]->toStr();
-    // bool isFloat = src.find('.') != std::string::npos;//这个判断方法对吗？？？？
-    // if (isFloat) {
-    //     double value = std::stod(src);//将字符串转换为double
-    //     uint64_t ieee754;
-    //     std::memcpy(&ieee754, &value, sizeof(value));//将double转换为uint64_t
-    //     std::stringstream ss;
-    //     ss << std::hex << ieee754;
-    //     src = ss.str();
-    // }
+
     std::string dst_type = operands[0]->getType()->toStr();
     std::string src_type = operands[1]->getType()->toStr();
 

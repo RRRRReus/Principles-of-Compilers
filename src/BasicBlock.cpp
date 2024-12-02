@@ -67,31 +67,119 @@ void BasicBlock::output() const
 void BasicBlock::optimize()
 {
     fprintf(stderr, "基本块%d优化\n", no);
-    for (auto i = head->getNext(); i != head; i = i->getNext())
+
+    Operand *val=nullptr;//用于samebb中，若alloca指令的use和def都在同一个基本块中
+    Operand *allocaDef=nullptr;//用于alloca指令的优化
+
+    for (auto i = head->getNext(); i != head; i = i->getNext())//遍历基本块中的指令
     {
+        fprintf(stderr,"进入循环\n");
         i->optimize();
         i->save=true;
+
         if(i->isAlloca())
         {
-            // fprintf(stderr,"基本块%d中的指令是alloca\n",no);
-            // fprintf(stderr,"基本块%d中的指令的def的用户数是%d\n",no,dynamic_cast<AllocaInstruction*>(i)->getDef()->usersNum());
-            if(dynamic_cast<AllocaInstruction*>(i)->getDef()->usersNum()==0)
+            fprintf(stderr,"遇到了alloca指令\n");
+            if(dynamic_cast<AllocaInstruction*>(i)->getDef()->usersNum()==0)//如果alloca的def的用户数为0，则将save置为false
             {
                 i->save=false;
             }
+            else
+            {
+                fprintf(stderr,"当前指令的def的用户数不为0，且存在同块操作数\n");
+                // 检查 alloca 的 use 和 def 是否都在同一基本块内
+                bool allUsesInSameBB = true;//假设use和def都在同一个基本块中
+                fprintf(stderr,"当前alloca指令的作用对象是%s\n",dynamic_cast<AllocaInstruction*>(i)->getDef()->toStr().c_str());
+                Operand *allocaDef_current = dynamic_cast<AllocaInstruction*>(i)->getDef();//获取alloca的def
+
+                for(auto use : allocaDef_current->getUse())//遍历def的use
+                {
+                    //比较两个基本块的编号是否相等，这么比较应该正确吧
+                    if(use->getParent()->getNo()!=this->getNo())//如果use的父基本块不是当前基本块
+                    {
+                        allUsesInSameBB=false;
+                        break;
+                    }
+                }
+
+                if(allUsesInSameBB)//如果use和def都在同一个基本块中
+                {
+                    i->save=false;
+                    // 初始化 val 为 undef
+                    allocaDef = allocaDef_current;//确定这个指针就是我们要找的同块操作数
+                    fprintf(stderr,"找到了在同一个基本块的操作数%s\n",allocaDef->toStr().c_str());
+                    val = new Operand(new TemporarySymbolEntry(allocaDef->getType(), SymbolTable::getLabel()));
+                    fprintf(stderr,"val是%s\n",val->toStr().c_str());
+                    val->setUndef();//设置为未定义操作数 
+                    //val = allocaDef;//将val设置为def //？？？？？？
+                    //val->setUndef();
+                }
+
+            }
         }
+
         if(i->isStore())
         {
             // fprintf(stderr,"基本块%d中的指令是alloca\n",no);
             // fprintf(stderr,"基本块%d中的指令的def的用户数是%d\n",no,dynamic_cast<AllocaInstruction*>(i)->getDef()->usersNum());
+            fprintf(stderr,"遇到了store指令\n");
+            fprintf(stderr,"当前store指令的def是%s\n",dynamic_cast<StoreInstruction*>(i)->getDef()->toStr().c_str());
+            fprintf(stderr,"当前store指令的src是%s\n",dynamic_cast<StoreInstruction*>(i)->getUse()[1]->toStr().c_str());
+            fprintf(stderr,"当前allocaDef是%s\n",allocaDef->toStr().c_str());
             if(dynamic_cast<StoreInstruction*>(i)->getDef()->usersNum()==0)
             {
+                i->save=false;
+            }
+            else if(val!=nullptr && dynamic_cast<StoreInstruction*>(i)->getDef()==allocaDef)//store指令要给同块操作数赋值
+            {
+                fprintf(stderr,"store指令要给同块操作数赋值\n");
+                //若是store指令在给同块操作数赋值，则将要赋的值直接给val,并将save置为false
+                fprintf(stderr,"找到了store指令取出没用操作数%s\n",dynamic_cast<StoreInstruction*>(i)->getDef()->toStr().c_str());
+                fprintf(stderr,"当前store指令的def是%s\n",dynamic_cast<StoreInstruction*>(i)->getDef()->toStr().c_str());
+                fprintf(stderr,"当前store指令的src是%s\n",dynamic_cast<StoreInstruction*>(i)->getUse()[1]->toStr().c_str());
+                // 将 store 指令要写入的值 设为 val，并删除 store 指令
+                Operand *src=dynamic_cast<StoreInstruction*>(i)->getUse()[1];//获取store指令的src
+                //dynamic_cast<StoreInstruction*>(i)->setOperand(src,val);
+                val = src;//直接这么赋值对吗？？？
+                fprintf(stderr,"val被赋值为src后是什么 %s\n",val->toStr().c_str());
+
+                i->save=false;
+            }
+            else if(val!=nullptr && dynamic_cast<StoreInstruction*>(i)->getUse()[1]==allocaDef)//store指令要用同块操作数给其他操作数赋值
+            {
+                fprintf(stderr,"store指令要用同块操作数给其他操作数赋值\n");
+                //若是store指令在给同块操作数赋值，则将要赋的值直接给val,并将save置为false
+                fprintf(stderr,"找到了store指令取出没用操作数%s\n",dynamic_cast<StoreInstruction*>(i)->getDef()->toStr().c_str());
+                fprintf(stderr,"当前store指令的def是%s\n",dynamic_cast<StoreInstruction*>(i)->getDef()->toStr().c_str());
+                fprintf(stderr,"当前store指令的src是%s\n",dynamic_cast<StoreInstruction*>(i)->getUse()[1]->toStr().c_str());
+                // store 指令要将 val 写入它要赋值的其他操作数，并删除 store 指令
+                dynamic_cast<StoreInstruction*>(i)->setDef(val);//获取store指令的def
+                fprintf(stderr,"val被赋值为src后是什么 %s\n",val->toStr().c_str());
+
+                i->save=false;
+            }
+        }
+
+        if(i->isLoad())
+        {
+            //若遇见load指令，发现load的operand[1]指向的内存地址是一个同块操作数，则需要将load之后存放的值改为val，即将operand[0]改为val
+            fprintf(stderr,"遇见了load指令\n");
+            Operand *loadSrc=dynamic_cast<LoadInstruction*>(i)->getUse()[0];//获取load指令的def
+            fprintf(stderr,"当前load指令的目标数是%s\n",loadSrc->toStr().c_str());
+            //fprintf(stderr,"load指令getDef之后的结果是%s\n",dynamic_cast<LoadInstruction*>(i)->getDef()->toStr().c_str());
+            if(val != nullptr && loadSrc == allocaDef)//如果val不为空且load的def等于alloca的def
+            {
+                //如果该load指令是要去取之前找到的val，那么将load的def替换为val
+                //dynamic_cast<LoadInstruction*>(i)->setDef(val);
+                dynamic_cast<LoadInstruction*>(i)->getDef()->replaceAllUsesWith(val);//将所有用到此load的def的操作数替换为val
+                fprintf(stderr,"load指令的def被替换为val:%s\n",dynamic_cast<LoadInstruction*>(i)->getDef()->toStr().c_str());
                 i->save=false;
             }
         }
 
         if(i->isCond())
         {
+            fprintf(stderr,"遇到了条件跳转指令\n");
             BasicBlock* true_bb=dynamic_cast<CondBrInstruction*>(i)->getTrueBB();
             BasicBlock* false_bb=dynamic_cast<CondBrInstruction*>(i)->getFlaseBB();
             
@@ -103,8 +191,10 @@ void BasicBlock::optimize()
             
             break;
         }
+
         if(i->isUncond())
         {
+            fprintf(stderr,"遇到了无条件跳转指令\n");
             BasicBlock* uncond_bb=dynamic_cast<UncondBrInstruction*>(i)->getBranchBB();
             this->addSucc(uncond_bb);
             uncond_bb->addPred(this);
@@ -112,18 +202,20 @@ void BasicBlock::optimize()
         }
 
         //head=optimizeHead;
-
     }
+
+    fprintf(stderr,"基本块%d指令循环遍历结束\n",no);
     
     Instruction *next;
     for (auto i = head->getNext(); i != head; i = next)
     {
         next=i->getNext();
 
-        if(i->save)
+        if(i->save)//如果save为true，则将指令插入到优化后的链表中
             insertBefore(i,optimizeHead);
     }
     head=optimizeHead;
+    fprintf(stderr,"基本块%d优化结束\n",no);
 }
 // 添加后继
 void BasicBlock::addSucc(BasicBlock *bb)
