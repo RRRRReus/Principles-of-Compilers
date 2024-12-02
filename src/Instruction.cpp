@@ -700,3 +700,64 @@ void SiToFpInstruction::output() const
             operands[1]->toStr().c_str(),
             operands[0]->getType()->toStr().c_str());
 }
+/**
+ * @brief 构造一个新的 PhiInstruction 对象。
+ * @param dst 目标操作数。
+ * @param incoming 输入边的操作数和基本块对的向量。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ */
+PhiInstruction::PhiInstruction(Operand *dst, const std::vector<std::pair<Operand *, BasicBlock *>> &incoming, BasicBlock *insert_bb)
+    : Instruction(PHI, insert_bb), incoming(incoming)
+{
+    operands.push_back(dst);
+    dst->setDef(this);
+    for (const auto &pair : incoming)
+    {
+        operands.push_back(pair.first);
+        pair.first->addUse(this);
+    }
+}
+
+/**
+ * @brief 输出指令的字符串表示。
+ */
+void PhiInstruction::output() const
+{
+    std::string dst = operands[0]->toStr();
+    std::string type = operands[0]->getType()->toStr();
+    fprintf(yyout, "  %s = phi %s ", dst.c_str(), type.c_str());
+    for (size_t i = 0; i < incoming.size(); ++i)
+    {
+        if (i > 0)
+        {
+            fprintf(yyout, ", ");
+        }
+        std::string value = incoming[i].first->toStr();
+        int label = incoming[i].second->getNo();
+        fprintf(yyout, "[ %s, %%B%d ]", value.c_str(), label);
+    }
+    fprintf(yyout, "\n");
+}
+
+/**
+ * @brief 获取定义操作数。
+ * @return 定义操作数。
+ */
+Operand *PhiInstruction::getDef()
+{
+    return operands[0];
+}
+
+/**
+ * @brief 获取使用操作数。
+ * @return 使用操作数的向量。
+ */
+std::vector<Operand *> PhiInstruction::getUse()
+{
+    std::vector<Operand *> uses;
+    for (size_t i = 1; i < operands.size(); ++i)
+    {
+        uses.push_back(operands[i]);
+    }
+    return uses;
+}

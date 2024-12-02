@@ -54,6 +54,7 @@ protected:
             ,BITCAST//增加类型转换指令
             ,FPTOI // 增加浮点数到整数的转换指令
             ,SITOF // 增加整数到浮点数的转换指令
+            ,PHI //增加phi指令
 
 
     };
@@ -403,6 +404,24 @@ public:
     void output() const override;
     Operand *getDef() override {return operands[0];}
     std::vector<Operand *> getUse() override {return {operands[1]};}
+};
+/**
+ * @class PhiInstruction
+ * @brief 表示编译器中间表示中的phi指令。
+ *
+ * 该类负责处理phi操作。
+ * 它继承自基类 Instruction。
+ */
+class PhiInstruction : public Instruction
+{
+public:
+    PhiInstruction(Operand *dst, const std::vector<std::pair<Operand *, BasicBlock *>> &incoming, BasicBlock *insert_bb = nullptr);
+    void output() const override;
+    Operand *getDef() override;
+    std::vector<Operand *> getUse() override;
+
+private:
+    std::vector<std::pair<Operand *, BasicBlock *>> incoming;
 };
 
 
