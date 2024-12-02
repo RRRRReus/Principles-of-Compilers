@@ -1,12 +1,6 @@
-int b=2;
-int main()
-{
-  int a;
-  int aa;
-  a = 1;
-  aa=100;
-
-  b = a;
-
-  return aa;
+int b=0;
+int main(){
+    int a[2][5]={1,2};
+    b=a[0][0];
+    return 0;
 }

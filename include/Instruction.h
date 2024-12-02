@@ -96,6 +96,7 @@ public:
     ~AllocaInstruction();
     void output() const;
     Operand *getDef() { return operands[0]; }
+    SymbolEntry *getSymbolEntry() { return se; }//用于在优化时获取符号表项，用于直接获取alloca对象的类型
 private:
     SymbolEntry *se;
 };

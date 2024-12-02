@@ -548,6 +548,10 @@ GetElementPtrInstruction::GetElementPtrInstruction(Operand *dst,Operand *element
     operands.insert(operands.end(), indices.begin(), indices.end());
     dst->addUse(this);
     src->addUse(this);
+    for(auto index:indices)
+    {
+        index->addUse(this);
+    }
     
 }
 
