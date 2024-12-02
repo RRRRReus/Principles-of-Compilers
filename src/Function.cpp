@@ -177,6 +177,13 @@ void Function::printDominanceTree(FILE* out) {
             
         }
         fprintf(stderr,"\n");
+        fprintf(stderr,"bb->getNo()是 %d，他的支配边界有 ",bb->getNo());
+        for (auto& predBB : bb->DomFrontier) {
+            fprintf(stderr,"%d ",predBB->getNo());
+            
+        }
+        fprintf(stderr,"\n");
+
     }
 
 }
@@ -266,11 +273,27 @@ void Function::buildDominanceTree() {
     }
     //计算支配树的后继节点
     for (auto& bb : block_list) {
-        BasicBlock* parent = bb->DOMpred.empty() ? nullptr : bb->DOMpred[1];
-        if (parent != nullptr) {
-            parent->DOMsucc.push_back(bb);
+        for (auto& predBB : bb->DOMpred) {
+            predBB->DOMsucc.push_back(bb);
         }
+        // BasicBlock* parent = bb->DOMpred.empty() ? nullptr : bb->DOMpred[1];
+        // if (parent != nullptr) {
+        //     parent->DOMsucc.push_back(bb);
+        // }
     }
+        for (auto& bb : block_list) {
+            for(auto &i:bb->DOMsucc)
+            {
+                for(auto &j:i->getSucc())
+                {
+                    if(j==bb||std::find(j->DOMpred.begin(),j->DOMpred.end(),bb)==j->DOMpred.end())
+                    {
+                        bb->DomFrontier.push_back(j);
+                    }
+                }
+            }
+    }
+
 
 
 }

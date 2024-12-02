@@ -20,7 +20,7 @@ private:
 
 public:
     std::vector<BasicBlock *> DOMpred, DOMsucc;//支配树的前驱和后继
-
+    std::vector<BasicBlock *> DomFrontier;//支配边界
     BasicBlock *while_cond;//如果该基本块是while循环的循环体，则while_cond指向循环条件
     BasicBlock *while_end;//如果该基本块是while循环的循环体，则while_end指向循环结束
     BasicBlock(Function *);
@@ -58,7 +58,7 @@ public:
     void setDOMpred(const std::vector<BasicBlock*>& predBlocks) { DOMpred = predBlocks; }
     void setDOMsucc(const std::vector<BasicBlock*>& succBlocks) { DOMsucc = succBlocks; }
 
-    // 获取支配树的前驱和后继
+    // 获取的前驱和后继
     std::vector<BasicBlock*>& getPred() { return pred; }
     std::vector<BasicBlock*>& getSucc() { return succ; }
     
