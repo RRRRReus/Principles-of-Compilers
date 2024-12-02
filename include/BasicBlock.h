@@ -12,12 +12,15 @@ class BasicBlock
 
 private:
     std::vector<BasicBlock *> pred, succ;//前驱和后继
+
     Instruction *head;//指向第一条指令
     Instruction *optimizeHead;//优化后的链表头
     Function *parent;//指向所属函数
     int no;//基本块编号
 
 public:
+    std::vector<BasicBlock *> DOMpred, DOMsucc;//支配树的前驱和后继
+
     BasicBlock *while_cond;//如果该基本块是while循环的循环体，则while_cond指向循环条件
     BasicBlock *while_end;//如果该基本块是while循环的循环体，则while_end指向循环结束
     BasicBlock(Function *);
@@ -49,6 +52,16 @@ public:
     bb_iterator pred_end() { return pred.end(); };
     int getNumOfPred() const { return pred.size(); };
     int getNumOfSucc() const { return succ.size(); };
+
+
+        // 设置支配树的前驱和后继
+    void setDOMpred(const std::vector<BasicBlock*>& predBlocks) { DOMpred = predBlocks; }
+    void setDOMsucc(const std::vector<BasicBlock*>& succBlocks) { DOMsucc = succBlocks; }
+
+    // 获取支配树的前驱和后继
+    std::vector<BasicBlock*>& getPred() { return pred; }
+    std::vector<BasicBlock*>& getSucc() { return succ; }
+    
 };
 
 #endif

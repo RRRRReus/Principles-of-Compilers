@@ -2,6 +2,8 @@
 #include "Unit.h"
 #include "Type.h"
 #include <list>
+#include <set>
+#include <unordered_set>
 
 extern FILE* yyout;
 
@@ -95,6 +97,10 @@ void Function::optimize()
 
     }
 
+
+    buildDominanceTree();
+    printDominanceTree(stderr);
+    //fprintf(stderr, "函数%s优化完成\n", sym_ptr->toStr().c_str());
 }
 void Function::output() const
 {
@@ -149,4 +155,122 @@ void Function::output() const
         }
     }
     fprintf(yyout, "}\n");
+}
+// 输出支配树的递归函数
+
+// 输出支配树
+void Function::printDominanceTree(FILE* out) {
+        for (auto& bb : block_list) {
+        fprintf(stderr,"bb->getNo()是 %d，他的前驱有 ",bb->getNo());
+        for (auto& predBB : bb->DOMpred) {
+            fprintf(stderr,"%d ",predBB->getNo());
+            
+        }
+        fprintf(stderr,"\n");
+    }
+
+        // 计算支配树的后继节点
+    for (auto& bb : block_list) {
+        fprintf(stderr,"bb->getNo()是 %d，他的后继有 ",bb->getNo());
+        for (auto& predBB : bb->DOMsucc) {
+            fprintf(stderr,"%d ",predBB->getNo());
+            
+        }
+        fprintf(stderr,"\n");
+    }
+
+}
+
+// 构建支配树的算法
+void Function::buildDominanceTree() {
+    if (block_list.empty()) {
+        return;
+    }
+
+    // 初始化支配树根节点为入口基本块
+    DomTreeRoot = entry;
+
+    // 使用一个集合来计算每个基本块的支配集合
+    for (auto& bb : block_list) {
+        // 初始化每个基本块的支配前驱为空
+        bb->setDOMpred({});
+    }
+
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (auto& bb : block_list) {
+            fprintf(stderr,"bb->getNo() = %d\n",bb->getNo());
+            std::vector<BasicBlock*> newDOMpred;
+            if (bb == entry) {
+                // 入口基本块的支配前驱是它自己
+                newDOMpred.push_back(bb);
+            } else {
+                // 对于每个基本块，计算其支配集合
+                bool first = true;
+                for (auto& predBB : bb->getPred()) {
+                    if (first) {
+                        for (auto& domPred : predBB->DOMpred) {
+                                newDOMpred.push_back(domPred);
+                        }
+                        first = false;
+                    } else {
+                        // 取前驱的交集
+                        std::vector<BasicBlock*> intersection;
+                        for (auto& domPred : predBB->DOMpred) {
+                            if (std::find(newDOMpred.begin(), newDOMpred.end(), domPred) != newDOMpred.end()) {
+                                intersection.push_back(domPred);
+                            }
+                        }
+                        newDOMpred = intersection;
+                        
+                    }
+                
+
+                    // fprintf(stderr,"predBB->getNo() = %d\n",predBB->getNo());
+                    // fprintf(stderr,"predBB->DOMpred.size() = %ld\n",predBB->DOMpred.size());
+                    // fprintf(stderr,"newDOMpred.size() = %ld\n",newDOMpred.size());
+                }
+                if(std::find(newDOMpred.begin(), newDOMpred.end(), bb) == newDOMpred.end())
+                    newDOMpred.push_back(bb);
+                if(std::find(newDOMpred.begin(), newDOMpred.end(), entry) == newDOMpred.end())
+                    newDOMpred.push_back(entry);
+
+
+            }
+
+            // 检查是否需要更新支配前驱集合
+            if (newDOMpred != bb->DOMpred) {
+                fprintf(stderr,"!!!bb->getNo() = %d\n",bb->getNo());
+                bb->setDOMpred(newDOMpred);
+                changed = true;
+            }
+        }
+    }
+    //支配树的前驱排序
+    for(auto &bb:block_list)
+    {
+        int len=int(bb->DOMpred.size());
+        for(int i=0;i<len;i++)
+        {
+            for(int j=i+1;j<len;j++)
+            {
+                if(std::find(bb->DOMpred[i]->DOMpred.begin(),bb->DOMpred[i]->DOMpred.end(),bb->DOMpred[j])==bb->DOMpred[i]->DOMpred.end())
+                {
+                    BasicBlock *temp=bb->DOMpred[i];
+                    bb->DOMpred[i]=bb->DOMpred[j];
+                    bb->DOMpred[j]=temp;
+                }
+            }
+        }
+    }
+    //计算支配树的后继节点
+    for (auto& bb : block_list) {
+        BasicBlock* parent = bb->DOMpred.empty() ? nullptr : bb->DOMpred[1];
+        if (parent != nullptr) {
+            parent->DOMsucc.push_back(bb);
+        }
+    }
+
+
 }
