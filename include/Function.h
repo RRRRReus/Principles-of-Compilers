@@ -8,7 +8,7 @@
 #include <iostream>
 #include "BasicBlock.h"
 #include "SymbolTable.h"
-
+#include <unordered_map>
 class Unit;
 
 class Function

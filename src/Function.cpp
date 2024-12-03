@@ -4,7 +4,7 @@
 #include <list>
 #include <set>
 #include <unordered_set>
-
+#include <queue>
 extern FILE* yyout;
 
 Function::Function(Unit *u, SymbolEntry *s)
@@ -273,27 +273,56 @@ void Function::buildDominanceTree() {
     }
     //计算支配树的后继节点
     for (auto& bb : block_list) {
-        for (auto& predBB : bb->DOMpred) {
-            predBB->DOMsucc.push_back(bb);
-        }
-        // BasicBlock* parent = bb->DOMpred.empty() ? nullptr : bb->DOMpred[1];
-        // if (parent != nullptr) {
-        //     parent->DOMsucc.push_back(bb);
+        // for (auto& predBB : bb->DOMpred) {
+        //     predBB->DOMsucc.push_back(bb);
         // }
+        BasicBlock* parent = bb->DOMpred.empty() ? nullptr : bb->DOMpred[1];
+        if (parent != nullptr) {
+            parent->DOMsucc.push_back(bb);
+        }
     }
+
+    // 计算支配边界
         for (auto& bb : block_list) {
-            for(auto &i:bb->DOMsucc)
-            {
-                for(auto &j:i->getSucc())
-                {
-                    if(j==bb||std::find(j->DOMpred.begin(),j->DOMpred.end(),bb)==j->DOMpred.end())
-                    {
-                        bb->DomFrontier.push_back(j);
+
+
+                std::queue<BasicBlock*> q;  // 用队列进行层序遍历
+                q.push(bb);  // 将根节点加入队列
+
+                while (!q.empty()) {
+                    int level_size = q.size();  // 当前层的节点数
+
+
+                    // 遍历当前层的所有节点
+                    for (int i = 0; i < level_size; ++i) {
+                        BasicBlock* node = q.front();
+                        q.pop();
+                        for(auto &j:node->getSucc())
+                        {
+                            if(j==bb||std::find(j->DOMpred.begin(),j->DOMpred.end(),bb)==j->DOMpred.end())
+                            {
+                                bb->DomFrontier.push_back(j);
+                            }
+                        }
+                      
+                        // 将当前节点的所有子节点加入队列
+                        for (auto& child : node->DOMsucc) {
+                            q.push(child);
+                        }
                     }
-                }
+
+                    
+
+
+
+
+
+
+
+
             }
-    }
 
 
 
+}
 }
