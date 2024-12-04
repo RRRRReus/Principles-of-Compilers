@@ -53,6 +53,7 @@ public:
 
     void buildDominanceTree();
     void printDominanceTree(FILE* out = stderr); // 输出支配树
+    void PHIoptimize();
 };
 
 #endif

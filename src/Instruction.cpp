@@ -369,6 +369,7 @@ StoreInstruction::StoreInstruction(Operand *dst_addr, Operand *src, BasicBlock *
     operands.push_back(src);
     dst_addr->addUse(this);
     src->addUse(this);
+    dst_addr->storeInsts.push_back(this);
 }
 
 StoreInstruction::~StoreInstruction()
@@ -443,7 +444,9 @@ CallInstruction::CallInstruction(Operand *dst, FunctionSymbolEntry *library_func
 }
 
 
-CallInstruction::~CallInstruction() {}
+CallInstruction::~CallInstruction() {
+
+}
 
 void CallInstruction::output() const
 {
@@ -716,6 +719,13 @@ PhiInstruction::PhiInstruction(Operand *dst, const std::vector<std::pair<Operand
         operands.push_back(pair.first);
         pair.first->addUse(this);
     }
+}
+
+PhiInstruction::PhiInstruction(Operand *dst, BasicBlock *insert_bb): Instruction(PHI, insert_bb)
+{
+    operands.push_back(dst);
+    dst->setDef(this);
+    
 }
 
 /**

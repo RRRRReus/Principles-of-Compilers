@@ -100,6 +100,7 @@ void Function::optimize()
 
     buildDominanceTree();
     printDominanceTree(stderr);
+    PHIoptimize();
     //fprintf(stderr, "函数%s优化完成\n", sym_ptr->toStr().c_str());
 }
 void Function::output() const
@@ -186,6 +187,57 @@ void Function::printDominanceTree(FILE* out) {
 
     }
 
+}
+
+void Function::PHIoptimize()
+{
+    std::vector<Operand *> allocaOperands;
+    std::set<BasicBlock *> Worklist;
+    for (auto i = entry->getHead()->getNext(); i != entry->getHead(); i = i->getNext())
+    {
+        if(i->isAlloca())
+        {
+            allocaOperands.push_back(dynamic_cast<AllocaInstruction*>(i)->getDef());
+        }
+        else
+        {
+            break;
+        }
+    }
+    std::unordered_map<Operand *,BasicBlock *> PHIinserted;
+
+    for (auto &allocaOperand : allocaOperands)
+    {
+        Worklist.clear();
+        for(Instruction *i:allocaOperand->getUse())
+        {
+                Worklist.insert(i->getParent());
+        }
+        for(BasicBlock *bb:Worklist)
+        {
+            fprintf(stderr,"操作数%s的使用者是基本块%d\n",allocaOperand->toStr().c_str(),bb->getNo());  
+        }
+        while(1)
+        {
+            if(Worklist.empty())
+            {
+                break;
+            }
+            BasicBlock *bb=*(Worklist.begin());
+            Worklist.erase(Worklist.begin());
+            for(auto &df:bb->DomFrontier)
+            {
+                if(PHIinserted.find(allocaOperand)==PHIinserted.end())
+                {
+                    PHIinserted[allocaOperand]=df;
+                    fprintf(stderr,"基本块%d插入操作数%s的phi指令\n",df->getNo(),allocaOperand->toStr().c_str());
+                    df->insertFront(new PhiInstruction(allocaOperand)) ;
+                    Worklist.insert(df);
+                }
+            }
+        }
+        
+    }
 }
 
 // 构建支配树的算法

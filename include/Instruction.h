@@ -416,12 +416,14 @@ class PhiInstruction : public Instruction
 {
 public:
     PhiInstruction(Operand *dst, const std::vector<std::pair<Operand *, BasicBlock *>> &incoming, BasicBlock *insert_bb = nullptr);
+    PhiInstruction(Operand *dst, BasicBlock *insert_bb = nullptr);
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
+    std::vector<std::pair<Operand *, BasicBlock *>> incoming;
 
 private:
-    std::vector<std::pair<Operand *, BasicBlock *>> incoming;
+    
 };
 
 

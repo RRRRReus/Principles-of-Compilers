@@ -53,7 +53,7 @@ public:
     int getNumOfPred() const { return pred.size(); };
     int getNumOfSucc() const { return succ.size(); };
 
-
+    Instruction *getHead() { return head; }
         // 设置支配树的前驱和后继
     void setDOMpred(const std::vector<BasicBlock*>& predBlocks) { DOMpred = predBlocks; }
     void setDOMsucc(const std::vector<BasicBlock*>& succBlocks) { DOMsucc = succBlocks; }
