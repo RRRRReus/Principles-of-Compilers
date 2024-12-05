@@ -37,6 +37,7 @@ public:
     void setOperand(Operand *op, int index) { operands[index] = op; }//设置所有操作数
     virtual void output() const = 0;
     void optimize(){};
+    virtual bool hasSideEffects() const { return false; } // 默认没有副作用（死代码消除时使用）
 protected:
     unsigned instType;//指令类型
     unsigned opcode;//操作码
@@ -155,7 +156,7 @@ public:
     Operand *getDef() { return operands[0]; }
     std::vector<Operand *> getUse() { return {operands[0], operands[1]}; }
     void setDef(Operand *op) { operands[0] = op; } // 将current指向op
-    //void setUse(Operand *op, int index) {operands[index]=op;}//设置指令中使用的操作数，即指令的输入
+    bool hasSideEffects() const override { return true; } // Store 指令有副作用
     
 };
 
@@ -240,6 +241,8 @@ public:
     BasicBlock *getBranch();
     BasicBlock **patchBranch() {return &branch;};
     BasicBlock *getBranchBB(){return branch;}
+    bool hasSideEffects() const override { return true; } // Uncond 指令有副作用
+    
 protected:
     BasicBlock *branch;
 };
@@ -276,6 +279,7 @@ public:
     std::vector<Operand *> getUse() { return {operands[0]}; }
     BasicBlock *getTrueBB(){return true_branch;}
     BasicBlock *getFlaseBB(){return false_branch;}
+    bool hasSideEffects() const override { return true; } // Cond 指令有副作用
 protected:
     BasicBlock* true_branch;
     BasicBlock* false_branch;
@@ -307,6 +311,7 @@ public:
             return {};
     }
     void output() const;
+    bool hasSideEffects() const override { return true; } // Ret 指令有副作用
 };
 
 
@@ -335,7 +340,7 @@ public:
     void output() const;
     Operand *getDef() { return operands.empty() ? nullptr : operands[0]; }//获取返回值操作数
     std::vector<Operand *> getUse() { return std::vector<Operand *>(operands.begin() + 1, operands.end()); }//获取所有实参操作数
-    
+    bool hasSideEffects() const override { return true; } // Call 指令有副作用
 
 private:
     IdentifierSymbolEntry *funcSE=nullptr;

@@ -48,6 +48,8 @@ public:
     SymbolEntry *getSymPtr() { return sym_ptr; };
     void addParam(Operand *param) { params.push_back(param); };
     std::vector<Operand *> &getParams() { return params; };
+
+    void deadCodeElimination(); //死代码消除优化
 };
 
 #endif

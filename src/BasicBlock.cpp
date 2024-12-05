@@ -79,6 +79,12 @@ void BasicBlock::optimize()
         i->optimize();
         i->save=true;
 
+        // if (i->getDef() && i->getDef()->usersNum() == 0)//有操作数且从来没有指令用过这个操作数
+        // {
+        //     i->save = false;
+        //     continue;
+        // }
+
         if(i->isAlloca())
         {
             fprintf(stderr,"遇到了alloca指令\n");

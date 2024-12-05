@@ -1,7 +1,10 @@
 #include "Function.h"
 #include "Unit.h"
 #include "Type.h"
+#include "Instruction.h"
 #include <list>
+#include <unordered_map>
+#include <unordered_set>
 
 extern FILE* yyout;
 
@@ -94,6 +97,61 @@ void Function::optimize()
         
 
     }
+
+    deadCodeElimination();//执行死代码消除优化
+
+}
+void Function::deadCodeElimination()
+{
+    // std::unordered_map<Operand*, Instruction*> defMap;//存储所有操作数的定义指令
+    // std::unordered_map<Operand*, std::unordered_set<Instruction*>> useMap;//来记录所有 <变量,使用它的所有指令>
+    // std::unordered_set<Operand*> workList; //存储所有需要处理的操作数
+    // std::unordered_set<Operand*> functionParams(params.begin(), params.end());  //当前函数的参数？？？而不是调用函数的参数？？？
+
+    // // 初始化 defMap 和 useMap
+    // for (BasicBlock* bb : block_list)//遍历所有基本块
+    // {
+    //     for (Instruction* inst = bb->begin(); inst != bb->end(); inst = inst->getNext())//遍历当前块中的所有指令
+    //     {
+    //         Operand* def = inst->getDef();//获取当前指令的def
+    //         if (def!=nullptr)//如果def不为空
+    //         {
+    //             defMap[def] = inst;
+    //             workList.insert(def);   //将def加入到workList中？？？？？？
+    //         }
+    //         for (Operand* use : inst->getUse()) //遍历当前指令的所有use
+    //         {
+    //             if(use!=nullptr)
+    //             {
+    //                 useMap[use].insert(inst);//将use和inst加入到useMap中
+    //             }
+                
+    //         }
+    //     }
+    // }
+
+    // // 处理工作列表
+    // while (!workList.empty())
+    // {
+    //     Operand* v = *workList.begin();//获取workList的第一个operand
+    //     workList.erase(workList.begin());//删除workList的第一个元素
+
+    //     if (useMap[v].empty() && defMap[v] && !defMap[v]->hasSideEffects() && functionParams.find(v) == functionParams.end())
+    //     {
+    //         Instruction* defInst = defMap[v];
+    //         defInst->remove();
+    //         defMap.erase(v);
+
+    //         for (Operand* use : defInst->getUse())
+    //         {
+    //             useMap[use].erase(defInst);
+    //             if (useMap[use].empty())
+    //             {
+    //                 workList.insert(use);
+    //             }
+    //         }
+    //     }
+    // }
 
 }
 void Function::output() const
