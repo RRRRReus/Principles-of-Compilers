@@ -79,11 +79,6 @@ void BasicBlock::optimize()
         i->optimize();
         i->save=true;
 
-        // if (i->getDef() && i->getDef()->usersNum() == 0)//有操作数且从来没有指令用过这个操作数
-        // {
-        //     i->save = false;
-        //     continue;
-        // }
 
         if(i->isAlloca())
         {
@@ -243,6 +238,43 @@ void BasicBlock::addPred(BasicBlock *bb)
 void BasicBlock::removePred(BasicBlock *bb)
 {
     pred.erase(std::find(pred.begin(), pred.end(), bb));
+}
+
+void BasicBlock::refresh()
+{
+    optimizeHead=new DummyInstruction();
+  //int k=0;
+  fprintf(stderr,"基本块%d的刷新开始\n",no);
+  Instruction *next;
+  //fprintf(stderr,"head是%d\n",head->getInstType());
+  for (auto i = head->getNext(); i != head; i = next)
+  {
+
+    //fprintf(stderr,"基本块%d的指令类型是%d\n",no,i->getInstType());
+    //std::cin>>k;
+    next=i->getNext();
+
+    if(i->save)
+    {
+      insertBefore(i,optimizeHead);
+      //fprintf(stderr,"指令是保存的\n");
+    }
+    else
+    {
+      //fprintf(stderr,"指令是不保存的\n");
+    }
+    // if(i->isUncond()||i->isCond()||i->isRet())
+    //   {
+    //     fprintf(stderr,"基本块%d的指令是无条件分支\n",no);
+    //     fprintf(stderr,"这条指令的next是%d\n",i->getNext()->getInstType());
+    //     fprintf(stderr,"next是%d\n",next->getInstType());
+    //     break;
+    //   }
+
+  }
+  fprintf(stderr,"基本块%d的刷新结束\n",no);
+  head=optimizeHead;
+    
 }
 
 BasicBlock::BasicBlock(Function *f)

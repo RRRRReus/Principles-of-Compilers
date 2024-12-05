@@ -83,7 +83,9 @@ void Function::optimize()
         if(bb!=entry)
             bb->remove(inst2);
         bb->remove(inst);
-        new RetInstruction(op, bb);
+        //new RetInstruction(op, bb);
+        RetInstruction*rel= new RetInstruction(op, bb);
+        rel->save=true;
 
         for(auto &i:return_val->getUse())
         {
@@ -99,61 +101,89 @@ void Function::optimize()
     }
 
     deadCodeElimination();//执行死代码消除优化
+    //aggressiveDeadCodeElimination();
 
 }
 void Function::deadCodeElimination()
 {
-    // std::unordered_map<Operand*, Instruction*> defMap;//存储所有操作数的定义指令
-    // std::unordered_map<Operand*, std::unordered_set<Instruction*>> useMap;//来记录所有 <变量,使用它的所有指令>
-    // std::unordered_set<Operand*> workList; //存储所有需要处理的操作数
-    // std::unordered_set<Operand*> functionParams(params.begin(), params.end());  //当前函数的参数？？？而不是调用函数的参数？？？
+    fprintf(stderr, "开始执行函数%s死代码消除\n", sym_ptr->toStr().c_str());
+    std::unordered_map<Operand*, Instruction*> defMap;//存储所有操作数的定义指令
+    std::unordered_map<Operand*, std::unordered_set<Instruction*>> useMap;//来记录所有 <变量,使用它的所有指令>
+    std::unordered_set<Operand*> workList; //存储所有需要处理的操作数
+    std::unordered_set<Operand*> functionParams(params.begin(), params.end());  //当前函数的参数？？？而不是调用函数的参数？？？
 
-    // // 初始化 defMap 和 useMap
-    // for (BasicBlock* bb : block_list)//遍历所有基本块
-    // {
-    //     for (Instruction* inst = bb->begin(); inst != bb->end(); inst = inst->getNext())//遍历当前块中的所有指令
-    //     {
-    //         Operand* def = inst->getDef();//获取当前指令的def
-    //         if (def!=nullptr)//如果def不为空
-    //         {
-    //             defMap[def] = inst;
-    //             workList.insert(def);   //将def加入到workList中？？？？？？
-    //         }
-    //         for (Operand* use : inst->getUse()) //遍历当前指令的所有use
-    //         {
-    //             if(use!=nullptr)
-    //             {
-    //                 useMap[use].insert(inst);//将use和inst加入到useMap中
-    //             }
-                
-    //         }
-    //     }
-    // }
+    // 初始化 defMap 和 useMap
+    for (BasicBlock* bb : block_list)//遍历所有基本块
+    {
+        for (Instruction* inst = bb->begin(); inst != bb->end(); inst = inst->getNext())//遍历当前块中的所有指令
+        {
+            Operand* def = inst->getDef();//获取当前指令的def
+            if (def!=nullptr)//如果def不为空
+            {
+                defMap[def] = inst;
+                workList.insert(def);   
+                std::vector<Instruction*> useInst = def->getUse();//获取所有use了当前操作数的指令
+                useMap[def] = std::unordered_set<Instruction*>(useInst.begin(), useInst.end());//将useMap中的useInst加入到useMap中
+            }
 
-    // // 处理工作列表
-    // while (!workList.empty())
-    // {
-    //     Operand* v = *workList.begin();//获取workList的第一个operand
-    //     workList.erase(workList.begin());//删除workList的第一个元素
+        }
+    }
 
-    //     if (useMap[v].empty() && defMap[v] && !defMap[v]->hasSideEffects() && functionParams.find(v) == functionParams.end())
-    //     {
-    //         Instruction* defInst = defMap[v];
-    //         defInst->remove();
-    //         defMap.erase(v);
+    // 处理工作列表
+    while (!workList.empty())
+    {
+        Operand* v = *workList.begin();//获取workList的第一个operand
+        workList.erase(workList.begin());//删除workList的第一个元素,迭代
 
-    //         for (Operand* use : defInst->getUse())
-    //         {
-    //             useMap[use].erase(defInst);
-    //             if (useMap[use].empty())
-    //             {
-    //                 workList.insert(use);
-    //             }
-    //         }
-    //     }
-    // }
+        fprintf(stderr, "当前处理的操作数是%s\n", v->toStr().c_str());
+        fprintf(stderr, "当前操作数的use数量:%ld\n", useMap[v].size());
 
+        if(useMap[v].empty())//如果v的使用列表为空
+        {
+            fprintf(stderr,"当前v是%s\n",v->toStr().c_str());
+            Instruction* defInst = nullptr;//v若为常数，则无定义语句
+
+            if(defMap[v]!=nullptr){
+                defInst = defMap[v];//获取v的定义指令
+            }
+    
+            if(defInst!=nullptr && !defInst->hasSideEffects())//如果def没有副作用
+            {
+
+                defInst->save = false;//将def的save设置为false
+                //defInst->output();
+
+                fprintf(stderr, "删除指令的def是%s\n", defInst->getDef()->toStr().c_str());
+                fprintf(stderr, "删除指令的类型为%d\n", defInst->getInstType());
+                for(Operand* u : defInst->getUse())//遍历defInst的所有use   //u此时是v的定义语句的其中一个use
+                {
+                    useMap[u].erase(defInst);//将def从useMap中的u的use中删除
+                    //将变量u加入到workList中
+                    if(functionParams.find(u) == functionParams.end())//函数的入参并不在我们的考量范围内（我们总不能消掉它们的def吧）
+                    {
+                        workList.insert(u);//维持def-use链，之前worklist里只有def，当前def删掉后，当前指令的use加入worklist
+                    }
+                }
+            }
+
+        }
+    }
+
+    for(auto &bb:block_list)
+    {
+        bb->refresh();
+    }
+
+    fprintf(stderr, "函数%s死代码消除结束\n", sym_ptr->toStr().c_str());
 }
+
+void Function::aggressiveDeadCodeElimination()
+{
+    fprintf(stderr, "开始执行函数%s激进死代码消除\n", sym_ptr->toStr().c_str());
+    
+    
+}
+
 void Function::output() const
 {
     // if(this->block_list.size() == 2)
@@ -208,3 +238,5 @@ void Function::output() const
     }
     fprintf(yyout, "}\n");
 }
+
+

@@ -49,6 +49,7 @@ public:
     bb_iterator pred_end() { return pred.end(); };
     int getNumOfPred() const { return pred.size(); };
     int getNumOfSucc() const { return succ.size(); };
+    void refresh();//刷新指令是否被保留
 };
 
 #endif

@@ -21,10 +21,44 @@
 //     return 0;
 // }
 
+// int min(int a, int b) {
+//     if (a < b) {
+//         return a;
+//     } else {
+//         return b;
+//     }
+// }
+// int main() {
+//     int x = 42;      // 变量 x 被赋值，但从未使用
+//     int y = 100;     // 变量 y 被赋值并被使用
+//     int a = x;
+//     int z = a;   // 计算 z 的值，但 z 的结果未被使用
+//     //z = min(x, y);   // 计算 min(x, y) 的值，但结果未被使用
+//     return z;        // 返回 y 的值
+// }
+
+
 int main() {
-    int x = 42;      // 变量 x 被赋值，但从未使用
-    int y = 100;     // 变量 y 被赋值并被使用
-    int z = x + y;   // 计算 z 的值，但 z 的结果未被使用
-    return y;        // 返回 y 的值
+
+    int a=0;
+    int b=1;
+    int c;
+    c=a+b;
+    return 0;
 }
 
+// #include "sysyruntimelibrary/sylib.h"
+// int main() {
+//     int n = 10;
+//     int sum = 0;
+//     int i=0;
+//     while(i<n)
+//     {
+//         int temp=i*2;
+//         sum=sum+i;
+//         i=i+1;
+//     }
+
+//     putint(sum);
+//     return 0;
+// }

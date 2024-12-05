@@ -50,6 +50,7 @@ public:
     std::vector<Operand *> &getParams() { return params; };
 
     void deadCodeElimination(); //死代码消除优化
+    void aggressiveDeadCodeElimination();
 };
 
 #endif

@@ -156,7 +156,13 @@ public:
     Operand *getDef() { return operands[0]; }
     std::vector<Operand *> getUse() { return {operands[0], operands[1]}; }
     void setDef(Operand *op) { operands[0] = op; } // 将current指向op
-    bool hasSideEffects() const override { return true; } // Store 指令有副作用
+    bool hasSideEffects() const override { 
+        //如果store指令的目标是全局变量
+        if(dynamic_cast<IdentifierSymbolEntry*>(operands[0]->getSymbolEntry())->isGlobal())
+            return true;
+        else
+        return false; 
+    } // Store 指令有副作用
     
 };
 
@@ -280,6 +286,7 @@ public:
     BasicBlock *getTrueBB(){return true_branch;}
     BasicBlock *getFlaseBB(){return false_branch;}
     bool hasSideEffects() const override { return true; } // Cond 指令有副作用
+
 protected:
     BasicBlock* true_branch;
     BasicBlock* false_branch;

@@ -308,3 +308,64 @@ void deadCodeElimination(std::vector<IRBaseInst*>& instructions, const std::unor
 遍历所有基本块中的所有指令，如果指令不是活跃的，那么在定义-使用链中删除该指令的定义和使用，并删除该指令；如果指令是活跃的，则跳过该指令。
 
 
+## 激进的死代码消除（Aggressive Dead Code Elimination）
+### 算法思想
+它的思想和传统的死代码消除最不一样的地方就在于：它对于死代码的定义不同。
+
+它的定义相当于是递归的：初始，我们定义所有调用函数，函数返回，对存储器的操作为有效代码。之后，我们标记一下语句为有效的：
+
++ 对其他有效语句的use进行定值的语句
++ 其他有效语句控制依赖于的语句（至于这个是什么，我们待会儿说）
+
+之后，我们迭代得到所有语句，并把剩下的都删除。那么接下来，我们首先展开控制依赖部分的内容，幸运的是，这一部分和支配树很像。
+
+### 控制依赖
+我们希望回答的问题是，控制流图上的两个节点
+x,y中，x能否直接控制节点y的执行？
+
+那么什么是控制执行呢？应该就是节点x有一个后继u能直接到达程序的exitBlock而不经过y。而它同时也有一个后继v使得v到exitBlock的每一条路径都经过y。
+
+那么我们很容易就能得到控制依赖的等价定义。我们考虑CFG对应的反图，则在这张图上，x∈domFrontier(y)。因为x的前驱v被y直接支配，而它又能由u到达，因而x在y的支配边界上。
+
+### 算法实现
+我们需要维护的信息如下：
+1. HashSet<IRBaseInst> live：所有有活跃指令的基本块
+2. HashSet<BasicBlock> liveBlock：所有有活跃指令的基本块
+3. HashSet<entity> liveUse：所有活跃指令的use
+4. HashSet<IRBaseInst> workList：用于迭代的工作表
+5. HashSet<IRRegister, IRBaseInst> defMap：所有变量的def语句
+首先，我们需要建出控制依赖图，这部分参考之前支配树构建的那期。
+
+接下来，我们首先扫描该函数的所有基本块，将所有def收集到defMap中，同时把所有的store（代表修改全局变量，可能会在其他程序中用到）、所有的call、所有的ret加入workList。
+
+然后，我们进行迭代。代码如下：
+```java
+while (!workList.isEmpty()) {
+    IRBaseInst inst = workList.iterator().next();
+    workList.remove(inst);
+    live.add(inst);
+    liveBlock.add(inst.parentBlock);
+    liveUse.addAll(inst.uses());
+    if (inst instanceof IRPhi irPhi) { // 对于一条phi指令，它的每一个前驱都应当被标注为活跃的
+        for (var block : irPhi.blockMap) {
+            if (block.terminal != null && !live.contains(block.terminal)) {
+                workList.add(block.terminal);
+                liveBlock.add(block);
+            }
+        }
+    }
+    for (var cdg_pred : inst.parentBlock.cdg_pred) { // 加入该块的所有控制依赖前驱
+        if (cdg_pred.terminal != null && !live.contains(cdg_pred.terminal)) {
+            workList.add(cdg_pred.terminal); // 注意已经加过的不用加了
+        }
+    }
+    for (var use : inst.uses()) { // 对于其每个use的变量，将其def加入workList
+        if (!(use instanceof IRRegister) || use instanceof IRGlobalVar) continue;
+        IRBaseInst def = defMap.get(use);
+        if (def != null && !live.contains(def)) {
+            workList.add(def);
+        }
+    }
+}
+```
+最后我们遍历所有指令，消去不活跃的phi指令和普通指令。
