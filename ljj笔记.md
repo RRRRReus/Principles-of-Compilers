@@ -369,3 +369,97 @@ while (!workList.isEmpty()) {
 }
 ```
 最后我们遍历所有指令，消去不活跃的phi指令和普通指令。
+
+### gpt详细解释
+
+激进的死代码消除（Aggressive Dead Code Elimination, ADCE）是一种高级的优化技术，用于删除程序中不会影响程序结果的代码。与传统的死代码消除不同，ADCE 通过递归地定义和标记有效代码来识别死代码。以下是对该算法的详细讲解。
+
+#### 算法思想
+
+ADCE 的核心思想是递归地定义和标记有效代码。初始状态下，所有调用函数、函数返回和对存储器的操作都被认为是有效代码。然后，通过以下规则递归地标记其他有效代码：
+
+1. **对其他有效语句的 `use` 进行定值的语句**。
+2. **其他有效语句控制依赖于的语句**。
+
+#### 控制依赖
+
+控制依赖用于确定控制流图（CFG）中的两个节点 `x` 和 `y` 之间的控制关系。具体来说，节点 `x` 是否直接控制节点 `y` 的执行。控制依赖的等价定义是：在 CFG 的反图中，`x` 属于 `y` 的支配边界（domFrontier）。
+
+#### 算法实现
+
+##### 维护的信息
+
+1. **`live`**：所有有活跃指令的基本块。
+2. **`liveBlock`**：所有有活跃指令的基本块。
+3. **`liveUse`**：所有活跃指令的 `use`。
+4. **`workList`**：用于迭代的工作表。
+5. **`defMap`**：所有变量的 `def` 语句。
+
+##### 步骤
+
+1. **构建控制依赖图**：
+    - 参考支配树构建的方法，构建控制依赖图。
+
+2. **初始化 `defMap` 和 `workList`**：
+    - 扫描函数的所有基本块，将所有 `def` 收集到 `defMap` 中。
+    - 将所有 `store`（代表修改全局变量，可能会在其他程序中用到）、所有 `call`、所有 `ret` 加入 `workList`。
+
+3. **迭代处理 `workList`**：
+    - 迭代处理 `workList` 中的指令，标记活跃指令和基本块，并将相关的 `def` 和控制依赖前驱加入 `workList`。
+
+4. **删除不活跃的指令**：
+    - 遍历所有指令，删除不活跃的 `phi` 指令和普通指令。
+
+#### 代码实现
+
+以下是算法的代码实现：
+
+```java
+while (!workList.isEmpty()) {
+    IRBaseInst inst = workList.iterator().next(); // 获取工作表中的下一个指令
+    workList.remove(inst); // 从工作表中移除该指令
+    live.add(inst); // 将该指令标记为活跃
+    liveBlock.add(inst.parentBlock); // 将该指令所在的基本块标记为活跃
+    liveUse.addAll(inst.uses()); // 将该指令的所有 use 标记为活跃
+
+    if (inst instanceof IRPhi irPhi) { // 对于一条 phi 指令
+        for (var block : irPhi.blockMap) { // 遍历 phi 指令的所有前驱块
+            if (block.terminal != null && !live.contains(block.terminal)) {
+                workList.add(block.terminal); // 将前驱块的终结指令加入工作表
+                liveBlock.add(block); // 将前驱块标记为活跃
+            }
+        }
+    }
+
+    for (var cdg_pred : inst.parentBlock.cdg_pred) { // 遍历该块的所有控制依赖前驱
+        if (cdg_pred.terminal != null && !live.contains(cdg_pred.terminal)) {
+            workList.add(cdg_pred.terminal); // 将控制依赖前驱的终结指令加入工作表
+        }
+    }
+
+    for (var use : inst.uses()) { // 遍历该指令的所有 use
+        if (!(use instanceof IRRegister) || use instanceof IRGlobalVar) continue;
+        IRBaseInst def = defMap.get(use); // 获取 use 的定义指令
+        if (def != null && !live.contains(def)) {
+            workList.add(def); // 将定义指令加入工作表
+        }
+    }
+}
+```
+
+#### 详细解释
+
+1. **初始化**：
+    - 扫描函数的所有基本块，将所有 `def` 收集到 `defMap` 中。
+    - 将所有 `store`、`call` 和 `ret` 指令加入 `workList`。
+
+2. **迭代处理 `workList`**：
+    - 从 `workList` 中取出一个指令 `inst`。
+    - 将 `inst` 标记为活跃，并将其所在的基本块标记为活跃。
+    - 将 `inst` 的所有 `use` 标记为活跃。
+    - 对于 `phi` 指令，将其所有前驱块的终结指令加入 `workList`。
+    - 将 `inst` 所在块的所有控制依赖前驱的终结指令加入 `workList`。
+    - 对于 `inst` 的每个 `use`，将其定义指令加入 `workList`。
+
+3. **删除不活跃的指令**：
+    - 遍历所有指令，删除不活跃的 `phi` 指令和普通指令。
