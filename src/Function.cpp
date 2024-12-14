@@ -179,9 +179,88 @@ void Function::deadCodeElimination()
 
 void Function::aggressiveDeadCodeElimination()
 {
-    fprintf(stderr, "开始执行函数%s激进死代码消除\n", sym_ptr->toStr().c_str());
-    
-    
+    // fprintf(stderr, "开始执行函数%s激进死代码消除\n", sym_ptr->toStr().c_str());
+    // std::unordered_set<Instruction*> live;  //存储所有活跃的指令
+    // std::unordered_set<BasicBlock*> liveBlock;  //存储所有活跃的基本块
+    // std::unordered_set<Operand*> liveUse;   //存储所有活跃的use
+    // std::unordered_set<Instruction*> workList;  //存储所有需要处理的指令
+    // std::unordered_map<Operand*, Instruction*> defMap;  //存储所有操作数的定义指令
+
+    // // 初始化 defMap 和 workList
+    // for (BasicBlock* bb : block_list) {
+    //     for (Instruction* inst = bb->begin(); inst != bb->end(); inst = inst->getNext()) 
+    //     {
+    //         Operand* def = inst->getDef();//获取当前指令的def
+    //         if (def) 
+    //         {
+    //             defMap[def] = inst;
+    //         }
+    //         if (inst->hasSideEffects()) 
+    //         {
+    //             workList.insert(inst);//将有副作用的指令加入到workList中
+    //         }
+    //     }
+    // }
+
+    // // 处理工作列表
+    // while (!workList.empty()) 
+    // {
+    //     Instruction* inst = *workList.begin();
+    //     workList.erase(workList.begin());
+    //     live.insert(inst);
+    //     liveBlock.insert(inst->getParent());
+    //     for (Operand* use : inst->getUse()) {
+    //         liveUse.insert(use);
+    //     }
+
+    //     // 对于 phi 指令，标记其前驱块的终结指令为活跃
+    //     if (auto* phiInst = dynamic_cast<PhiInstruction*>(inst)) {
+    //         for (auto& [block, operand] : phiInst->getBlockMap()) {
+    //             if (block->getTerminal() && live.find(block->getTerminal()) == live.end()) {
+    //                 workList.insert(block->getTerminal());
+    //                 liveBlock.insert(block);
+    //             }
+    //         }
+    //     }
+
+    //     // 加入该块的所有控制依赖前驱
+    //     for (BasicBlock* cdg_pred : inst->getParent()->getControlDependencePredecessors()) {
+    //         if (cdg_pred->getTerminal() && live.find(cdg_pred->getTerminal()) == live.end()) {
+    //             workList.insert(cdg_pred->getTerminal());
+    //         }
+    //     }
+
+    //     // 对于每个 use 的变量，将其 def 加入 workList
+    //     for (Operand* use : inst->getUse()) {
+    //         if (auto* reg = dynamic_cast<IRRegister*>(use)) {
+    //             Instruction* def = defMap[use];
+    //             if (def && live.find(def) == live.end()) {
+    //                 workList.insert(def);
+    //             }
+    //         }
+    //     }
+    // }
+
+
+    // // 遍历所有指令，删除不活跃的指令
+    // for (BasicBlock* bb : block_list) {
+    //     for (Instruction* inst = bb->getFirstInstruction(); inst != nullptr; ) {
+    //         Instruction* nextInst = inst->getNext();
+    //         if (live.find(inst) == live.end()) {
+    //             Operand* def = inst->getDef();
+    //             if (def) {
+    //                 defMap.erase(def);
+    //             }
+    //             for (Operand* use : inst->getUse()) {
+    //                 liveUse.erase(use);
+    //             }
+    //             inst->remove();
+    //         }
+    //         inst = nextInst;
+    //     }
+    // }
+
+
 }
 
 void Function::output() const
