@@ -735,6 +735,10 @@ void PhiInstruction::output() const
 {
     std::string dst = operands[0]->toStr();
     std::string type = operands[0]->getType()->toStr();
+    if(operands[0]->getType()->isPtr())
+    {
+        type=dynamic_cast<PointerType*>(operands[0]->getType())->getValueType()->toStr();
+    }
     fprintf(yyout, "  %s = phi %s ", dst.c_str(), type.c_str());
     for (size_t i = 0; i < incoming.size(); ++i)
     {

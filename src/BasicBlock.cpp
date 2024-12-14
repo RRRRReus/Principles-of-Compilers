@@ -58,7 +58,7 @@ void BasicBlock::output() const
     fprintf(stderr,"head->getNext()是否等于head:%d\n",head->getNext()==head);
     for (auto i = head->getNext(); i != head; i = i->getNext()){
         //fprintf(stderr,"进来了吗\n");
-        //fprintf(stderr,"i的指令类型是%s\n",i->getDef()->toStr().c_str());
+        //fprintf(stderr,"i的指令类型是%d\n",i->getInstType());
         //注意注意！！！getDef()是获取操作数不是类型！！操作数可能为空！！类型是instype
         i->output();
     }
@@ -124,6 +124,35 @@ void BasicBlock::optimize()
             insertBefore(i,optimizeHead);
     }
     head=optimizeHead;
+    //refresh();
+
+}
+void BasicBlock::refresh()
+{
+    optimizeHead=new DummyInstruction();
+    optimizeHead->setParent(this);
+    //int k=0;
+    fprintf(stderr,"基本块%d的刷新开始\n",no);
+    Instruction *next;
+    //fprintf(stderr,"head是%d\n",head->getInstType());
+    for (auto i = head->getNext(); i != head; i = next)
+    {
+
+        //fprintf(stderr,"基本块%d的指令类型是%d\n",no,i->getInstType());
+        //std::cin>>k;
+        next=i->getNext();
+            
+        if(i->save)
+        {
+            insertBefore(i,optimizeHead);
+            //fprintf(stderr,"指令是保存的\n");
+        }
+
+    }
+    fprintf(stderr,"基本块%d的刷新结束\n",no);
+    head=optimizeHead;
+
+
 }
 // 添加后继
 void BasicBlock::addSucc(BasicBlock *bb)

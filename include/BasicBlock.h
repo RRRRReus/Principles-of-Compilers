@@ -19,6 +19,7 @@ private:
     int no;//基本块编号
 
 public:
+    bool reachable=false;//是否可达
     std::vector<BasicBlock *> DOMpred, DOMsucc;//支配树的前驱和后继
     std::vector<BasicBlock *> DomFrontier;//支配边界
     BasicBlock *while_cond;//如果该基本块是while循环的循环体，则while_cond指向循环条件
@@ -32,6 +33,7 @@ public:
     bool empty() const { return head->getNext() == head;}
     void output() const;
     void optimize();
+    void refresh();
     bool succEmpty() const { return succ.empty(); };
     bool predEmpty() const { return pred.empty(); };
     void addSucc(BasicBlock *);//添加后继

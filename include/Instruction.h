@@ -23,6 +23,13 @@ public:
     bool isStore() const {return instType == STORE;};//是否为存储指令
     bool isCmp() const {return instType == CMP;};//是否为比较指令
     bool isRet() const {return instType == RET;};//是否为返回指令
+    bool isCall() const {return instType == CALL;};//是否为函数调用指令
+    bool isZext() const {return instType == ZEXT;};//是否为零扩展指令
+    bool isGep() const {return instType == GEP;};//是否为数组访问指令
+    bool isBitcast() const {return instType == BITCAST;};//是否为类型转换指令
+    bool isFptoi() const {return instType == FPTOI;};//是否为浮点数到整数的转换指令
+    bool isSitof() const {return instType == SITOF;};//是否为整数到浮点数的转换指令
+    bool isPhi() const {return instType == PHI;};//是否为phi指令
     int getInstType() const {return instType;};//获取指令类型
     void setParent(BasicBlock *);
     void setNext(Instruction *);

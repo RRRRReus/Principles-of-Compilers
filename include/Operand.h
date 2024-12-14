@@ -6,7 +6,7 @@
 
 class Instruction;
 class Function;
-
+class BasicBlock;
 
 // class Operand - The operand of an instruction.   //指令的操作数。
 class Operand
@@ -18,6 +18,10 @@ private:
     std::vector<Instruction *> uses; // Intructions that use this operand. 使用此操作数的指令。
     SymbolEntry *se;                 // The symbol entry of this operand. 此操作数的符号表项。
 public:
+    int counter=0;
+    std::vector<SymbolEntry*> NameStack;
+    SymbolEntry *last_val = nullptr;
+    std::vector<Instruction *> phiInsts;
     std::vector<Instruction *> storeInsts;
     Operand(SymbolEntry*se) :se(se){def = nullptr;};
     void setDef(Instruction *inst) {def = inst;};//设置定义操作数
@@ -33,6 +37,11 @@ public:
     use_iterator use_end() {return uses.end();};
     Type* getType() {return se->getType();};
     std::string toStr() const;//返回字符串
+    void reName(Operand *newName);//重命名
+    void reNameInBB(Operand *newName, BasicBlock *bb);//在基本块中重命名
+    SymbolEntry* newName();
+    void refreshName();
+    void renameSymbolEntry(SymbolEntry *newSE) {se = newSE;};
 };
 
 #endif

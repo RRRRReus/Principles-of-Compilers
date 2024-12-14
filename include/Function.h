@@ -29,13 +29,17 @@ private:
     std::vector<Operand *> params; // 参数列表
 
 public:
+    bool isallocaOperand(Operand *op);
+    void renameBlocks(BasicBlock* bb);
+    void removeUnreachableBlocks();
+    std::vector<Operand *> allocaOperands;
     BasicBlock *getExit() { return exit; };
     Operand *getRetValue() { return return_val; };
     std::vector<BasicBlock *> while_cond;//在这个函数中while循环条件栈
     std::vector<BasicBlock *> while_end;//在这个函数中while循环结束栈
     Function(Unit *, SymbolEntry *);
     ~Function();
-    void insertBlock(BasicBlock *bb) { block_list.push_back(bb); };
+    void insertBlock(BasicBlock *bb);
     //获取入口基本块
     BasicBlock *getEntry() { return entry; };
     void remove(BasicBlock *bb);
