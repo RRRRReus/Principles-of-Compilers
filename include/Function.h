@@ -53,11 +53,11 @@ public:
     SymbolEntry *getSymPtr() { return sym_ptr; };
     void addParam(Operand *param) { params.push_back(param); };
     std::vector<Operand *> &getParams() { return params; };
-
-
     void buildDominanceTree();
     void printDominanceTree(FILE* out = stderr); // 输出支配树
     void PHIoptimize();
+    void deadCodeElimination(); //死代码消除优化
+    void aggressiveDeadCodeElimination();
 };
 
 #endif

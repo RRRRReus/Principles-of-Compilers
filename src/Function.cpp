@@ -1,6 +1,7 @@
 #include "Function.h"
 #include "Unit.h"
 #include "Type.h"
+#include "Instruction.h"
 #include <list>
 #include <set>
 #include <unordered_set>
@@ -9,6 +10,8 @@
 #include <algorithm>
 #include <iostream>
 #include <stack>
+#include <unordered_map>
+#include <unordered_set>
 
 extern FILE* yyout;
 
@@ -41,7 +44,7 @@ void Function::renameBlocks(BasicBlock *bb)
             else if(i->isStore()&&isallocaOperand(i->getDef()))
             {
                 fprintf(stderr,"store改变基本块%d的操作数%s的值为%s\n",bb->getNo(),i->getDef()->toStr().c_str(),dynamic_cast<StoreInstruction*>(i)->getUse()[1]->getSymbolEntry()->toStr().c_str());
-                i->getDef()->last_val=dynamic_cast<StoreInstruction*>(i)->getUse()[1]->getSymbolEntry();
+                i->getDef()->last_val=dynamic_cast<StoreInstruction*>(i)->getUse()[1];
                 //i->getDef()->NameStack.push_back(this_val);
                 
                 i->save=false;
@@ -54,7 +57,8 @@ void Function::renameBlocks(BasicBlock *bb)
                 {
                     fprintf(stderr,"load!!基本块%d的操作数%s重命名为%s\n",bb->getNo(),i->getDef()->toStr().c_str(),i->getUse()[0]->last_val->toStr().c_str());
                     //fprintf(stderr,"load!!基本块%d的操作数%s重命名为%s\n",bb->getNo(),i->getDef()->toStr().c_str(),i->getDef()->last_val->toStr().c_str());
-                    i->getDef()->renameSymbolEntry(i->getUse()[0]->last_val);
+                    //i->getDef()->renameSymbolEntry(i->getUse()[0]->last_val);
+                    i->getDef()->replaceAllUsesWith(i->getUse()[0]->last_val);
                 }
 
                 i->save=false;
@@ -68,7 +72,7 @@ void Function::renameBlocks(BasicBlock *bb)
                         if(phi==i)
                         {
                             fprintf(stderr,"phi改变基本块%d的操作数%s的值为%s\n",bb->getNo(),i->getDef()->toStr().c_str(),i->getDef()->getSymbolEntry()->toStr().c_str());
-                            op->last_val=i->getDef()->getSymbolEntry();
+                            op->last_val=i->getDef();
                             break;
                         }
                     }
@@ -89,11 +93,16 @@ void Function::renameBlocks(BasicBlock *bb)
                             {
                                 if(op->last_val!=nullptr)
                                 {
-                                dynamic_cast<PhiInstruction*>(j)->incoming.push_back(std::make_pair(new Operand(op->last_val),bb));
+                                //dynamic_cast<PhiInstruction*>(j)->incoming.push_back(std::make_pair(new Operand(op->last_val),bb));
+                                
+                                dynamic_cast<PhiInstruction*>(j)->addIncoming(op->last_val,bb);
                                 fprintf(stderr,"加列表！基本块%d的phi指令插入基本块%d的操作数%s\n",i->getNo(),bb->getNo(),op->last_val->toStr().c_str());
                                 }
                                 else{
-                                dynamic_cast<PhiInstruction*>(j)->incoming.push_back(std::make_pair(new Operand(new ConstantSymbolEntry(op->getSymbolEntry()->getType(),0)),bb));
+                                //dynamic_cast<PhiInstruction*>(j)->incoming.push_back(std::make_pair(new Operand(new ConstantSymbolEntry(op->getSymbolEntry()->getType(),0)),bb));
+                                dynamic_cast<PhiInstruction*>(j)->addIncoming(new Operand(new ConstantSymbolEntry(op->getSymbolEntry()->getType(),0)),bb);
+
+                                    
                                     fprintf(stderr,"一种危险的操作，强行赋值0\n");
                                 }
 
@@ -292,8 +301,10 @@ void Function::optimize()
         if(bb!=entry)
             bb->remove(inst2);
         bb->remove(inst);
+        //new RetInstruction(op, bb);
         RetInstruction*rel= new RetInstruction(op, bb);
         rel->save=true;
+
         for(auto &i:return_val->getUse())
         {
             if(i->getParent()==entry)
@@ -349,7 +360,90 @@ for (auto i = entry->getHead()->getNext(); i != entry->getHead(); i = i->getNext
         }
     }
     //fprintf(stderr, "函数%s优化完成\n", sym_ptr->toStr().c_str());
+    deadCodeElimination();//执行死代码消除优化
+    //aggressiveDeadCodeElimination();
+
 }
+void Function::deadCodeElimination()
+{
+    fprintf(stderr, "开始执行函数%s死代码消除\n", sym_ptr->toStr().c_str());
+    std::unordered_map<Operand*, Instruction*> defMap;//存储所有操作数的定义指令
+    std::unordered_map<Operand*, std::unordered_set<Instruction*>> useMap;//来记录所有 <变量,使用它的所有指令>
+    std::unordered_set<Operand*> workList; //存储所有需要处理的操作数
+    std::unordered_set<Operand*> functionParams(params.begin(), params.end());  //当前函数的参数？？？而不是调用函数的参数？？？
+
+    // 初始化 defMap 和 useMap
+    for (BasicBlock* bb : block_list)//遍历所有基本块
+    {
+        for (Instruction* inst = bb->begin(); inst != bb->end(); inst = inst->getNext())//遍历当前块中的所有指令
+        {
+            Operand* def = inst->getDef();//获取当前指令的def
+            if (def!=nullptr)//如果def不为空
+            {
+                defMap[def] = inst;
+                workList.insert(def);   
+                std::vector<Instruction*> useInst = def->getUse();//获取所有use了当前操作数的指令
+                useMap[def] = std::unordered_set<Instruction*>(useInst.begin(), useInst.end());//将useMap中的useInst加入到useMap中
+            }
+
+        }
+    }
+
+    // 处理工作列表
+    while (!workList.empty())
+    {
+        Operand* v = *workList.begin();//获取workList的第一个operand
+        workList.erase(workList.begin());//删除workList的第一个元素,迭代
+
+        fprintf(stderr, "当前处理的操作数是%s\n", v->toStr().c_str());
+        fprintf(stderr, "当前操作数的use数量:%ld\n", useMap[v].size());
+
+        if(useMap[v].empty())//如果v的使用列表为空
+        {
+            fprintf(stderr,"当前v是%s\n",v->toStr().c_str());
+            Instruction* defInst = nullptr;//v若为常数，则无定义语句
+
+            if(defMap[v]!=nullptr){
+                defInst = defMap[v];//获取v的定义指令
+            }
+    
+            if(defInst!=nullptr && !defInst->hasSideEffects())//如果def没有副作用
+            {
+
+                defInst->save = false;//将def的save设置为false
+                //defInst->output();
+
+                fprintf(stderr, "删除指令的def是%s\n", defInst->getDef()->toStr().c_str());
+                fprintf(stderr, "删除指令的类型为%d\n", defInst->getInstType());
+                for(Operand* u : defInst->getUse())//遍历defInst的所有use   //u此时是v的定义语句的其中一个use
+                {
+                    useMap[u].erase(defInst);//将def从useMap中的u的use中删除
+                    //将变量u加入到workList中
+                    if(functionParams.find(u) == functionParams.end())//函数的入参并不在我们的考量范围内（我们总不能消掉它们的def吧）
+                    {
+                        workList.insert(u);//维持def-use链，之前worklist里只有def，当前def删掉后，当前指令的use加入worklist
+                    }
+                }
+            }
+
+        }
+    }
+
+    for(auto &bb:block_list)
+    {
+        bb->refresh();
+    }
+
+    fprintf(stderr, "函数%s死代码消除结束\n", sym_ptr->toStr().c_str());
+}
+
+void Function::aggressiveDeadCodeElimination()
+{
+    fprintf(stderr, "开始执行函数%s激进死代码消除\n", sym_ptr->toStr().c_str());
+    
+    
+}
+
 void Function::output() const
 {
     // if(this->block_list.size() == 2)
