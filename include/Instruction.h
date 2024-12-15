@@ -200,6 +200,8 @@ public:
     enum {SUB, ADD,MUL,DIV,MOD, AND, OR,XOR};
     Operand *getDef() { return operands[0]; }//获取结果操作数
     std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }//获取源操作数
+    bool canBeCalculated();//是否可以计算
+    Operand *CalculatedResult();//计算结果
     
 };
 /**
@@ -228,6 +230,9 @@ public:
     enum {E, NE, L, GE, G, LE};
     Operand *getDef() { return operands[0]; }
     std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }
+    bool canBeCalculated();//是否可以计算
+    Operand *CalculatedResult();//计算结果
+
     
 };
 
@@ -375,6 +380,9 @@ public:
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
+    bool canBeCalculated();//是否可以计算
+    Operand *CalculatedResult();//计算结果
+
     
 };
 class GetElementPtrInstruction : public Instruction
@@ -456,6 +464,7 @@ public:
     PhiInstruction(Operand *dst, const std::vector<std::pair<Operand *, BasicBlock *>> &incoming, BasicBlock *insert_bb = nullptr);
     PhiInstruction(Operand *dst, BasicBlock *insert_bb = nullptr);
     void addIncoming(Operand *op, BasicBlock *bb);
+    void removeIncoming(BasicBlock *bb);
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;

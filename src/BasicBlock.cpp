@@ -239,8 +239,25 @@ void BasicBlock::addPred(BasicBlock *bb)
 void BasicBlock::removePred(BasicBlock *bb)
 {
     pred.erase(std::find(pred.begin(), pred.end(), bb));
-}
+    fprintf(stderr,"开始处理phi前驱清理\n");
+    Instruction *next;
+  //fprintf(stderr,"head是%d\n",head->getInstType());
+  for (auto i = head->getNext(); i != head; i = next)
+  {
+    if(i->isPhi())
+    {
+        fprintf(stderr,"遇到了phi指令\n");
+        PhiInstruction *phiInst = dynamic_cast<PhiInstruction*>(i);
+        fprintf(stderr,"删之前phi指令的incoming数目是%ld\n",phiInst->incoming.size());
 
+        phiInst->removeIncoming(bb);
+        fprintf(stderr,"删之后phi指令的incoming数目是%ld\n",phiInst->incoming.size());
+
+    }
+    next=i->getNext();
+
+  }
+}
 void BasicBlock::refresh()
 {
     optimizeHead=new DummyInstruction();

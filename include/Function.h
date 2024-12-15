@@ -58,6 +58,8 @@ public:
     void PHIoptimize();
     void deadCodeElimination(); //死代码消除优化
     void aggressiveDeadCodeElimination();
+    void sccp();
+    void deleteSingalPHI();
 };
 
 #endif

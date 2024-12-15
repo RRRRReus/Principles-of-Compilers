@@ -17,6 +17,7 @@ void Operand::replaceAllUsesWith(Operand *newOperand)
     for (auto use : uses) //遍历所有使用此操作数的指令
     {
         fprintf(stderr,"当前使用的指令是不是store指令 %d\n",use->isStore());
+        fprintf(stderr,"当前使用的指令是不是phi指令 %d\n",use->isPhi());
         for (int i = 0; i < use->getAllOperandsNum(); i++)
         {
             fprintf(stderr,"当前使用的操作数是 %s\n",use->getOperand(i)->toStr().c_str());

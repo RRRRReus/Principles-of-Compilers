@@ -129,6 +129,119 @@ void BinaryInstruction::output() const
     fprintf(yyout, "  %s = %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
 }
 
+bool BinaryInstruction::canBeCalculated()
+{
+    
+    if(operands[1]->getSymbolEntry()->isConstant() && operands[2]->getSymbolEntry()->isConstant())
+    {
+        fprintf(stderr,"oooop是%d\n",opcode);
+
+        ConstantSymbolEntry *val1 = dynamic_cast<ConstantSymbolEntry *>(operands[1]->getSymbolEntry());
+        ConstantSymbolEntry *val2 = dynamic_cast<ConstantSymbolEntry *>(operands[2]->getSymbolEntry());
+        if(val1->getType()->isLongLong()||val2->getType()->isLongLong())
+        {
+            fprintf(stderr,"LONGLONG超限\n");
+            return false;
+        }
+        if(val1->getType()->isInt())
+        {
+
+            int v1 = (val1)->getValue();
+            int v2 = (val2)->getValue();
+            fprintf(stderr,"op是%d\n",opcode);
+            fprintf(stderr,"v1是%d\n",v1);
+            fprintf(stderr,"v2是%d\n",v2);
+
+            if(v1==-2147483648||v2==-2147483648)
+            {
+                fprintf(stderr,"运算超限\n");
+                return false;
+            }
+            if(v1==2147483647||v2==2147483647)
+            {
+                fprintf(stderr,"运算超限\n");
+                return false;
+            }
+
+        }
+
+        return true;
+    }
+    return false;
+}
+
+Operand *BinaryInstruction::CalculatedResult()
+{
+    if(canBeCalculated())
+    {
+        ConstantSymbolEntry *val1 = dynamic_cast<ConstantSymbolEntry *>(operands[1]->getSymbolEntry());
+        ConstantSymbolEntry *val2 = dynamic_cast<ConstantSymbolEntry *>(operands[2]->getSymbolEntry());
+        ConstantSymbolEntry *result = new ConstantSymbolEntry(operands[0]->getType(), 0);
+        if(val1->getType()->isInt())
+        {
+            int v1 = (val1)->getValue();
+            int v2 = (val2)->getValue();
+            int res = 0;
+            switch (opcode)
+            {
+            case ADD:
+                res = v1 + v2;
+                break;
+            case SUB:
+                res = v1 - v2;
+                break;
+            case MUL:
+                res = v1 * v2;
+                break;
+            case DIV:
+                res = v1 / v2;
+                break;
+            case MOD:
+                res = v1 % v2;
+                break;
+            case AND:
+                res = v1 & v2;
+                break;
+            case OR:
+                res = v1 | v2;
+                break;
+            case XOR:
+                res = v1 ^ v2;
+                break;
+            default:
+                break;
+            }
+            result->setIntValue(res);
+        }
+        else if(val1->getType()->isFloat())
+        {
+            float v1 = (val1)->getFloatValue();
+            float v2 = (val2)->getFloatValue();
+            float res = 0.0f;
+            switch (opcode)
+            {
+            case ADD:
+                res = v1 + v2;
+                break;
+            case SUB:
+                res = v1 - v2;
+                break;
+            case MUL:
+                res = v1 * v2;
+                break;
+            case DIV:
+                res = v1 / v2;
+                break;
+            default:
+                break;
+            }
+            result->setFloatValue(res);
+        }
+            return new Operand(result);
+        }
+    return nullptr;
+}
+
 CmpInstruction::CmpInstruction(unsigned opcode, Operand *dst, Operand *src1, Operand *src2, BasicBlock *insert_bb): Instruction(CMP, insert_bb){
     this->opcode = opcode;
     operands.push_back(dst);
@@ -196,6 +309,85 @@ void CmpInstruction::output() const
         fprintf(yyout, "  %s = fcmp %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
     else
     fprintf(yyout, "  %s = icmp %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+}
+
+bool CmpInstruction::canBeCalculated()
+{
+    if(operands[1]->getSymbolEntry()->isConstant() && operands[2]->getSymbolEntry()->isConstant())
+        return true;
+    return false;
+}
+
+Operand *CmpInstruction::CalculatedResult()
+{
+    if(canBeCalculated())
+    {
+        ConstantSymbolEntry *val1 = dynamic_cast<ConstantSymbolEntry *>(operands[1]->getSymbolEntry());
+        ConstantSymbolEntry *val2 = dynamic_cast<ConstantSymbolEntry *>(operands[2]->getSymbolEntry());
+        ConstantSymbolEntry *result = new ConstantSymbolEntry(operands[0]->getType(), 0);
+        if(val1->getType()->isInt())
+        {
+            int v1 = (val1)->getValue();
+            int v2 = (val2)->getValue();
+            int res = 0;
+            switch (opcode)
+            {
+            case E:
+                res = v1 == v2;
+                break;
+            case NE:
+                res = v1 != v2;
+                break;
+            case L:
+                res = v1 < v2;
+                break;
+            case LE:
+                res = v1 <= v2;
+                break;
+            case G:
+                res = v1 > v2;
+                break;
+            case GE:
+                res = v1 >= v2;
+                break;
+            default:
+                break;
+            }
+            result->setIntValue(res);
+        }
+        else if(val1->getType()->isFloat())
+        {
+            float v1 = (val1)->getFloatValue();
+            float v2 = (val2)->getFloatValue();
+            int res = 0;
+            switch (opcode)
+            {
+            case E:
+                res = v1 == v2;
+                break;
+            case NE:
+                res = v1 != v2;
+                break;
+            case L:
+                res = v1 < v2;
+                break;
+            case LE:
+                res = v1 <= v2;
+                break;
+            case G:
+                res = v1 > v2;
+                break;
+            case GE:
+                res = v1 >= v2;
+                break;
+            default:
+                break;
+            }
+            result->setIntValue(res);
+        }
+        return new Operand(result);
+    }
+    return nullptr;
 }
 
 UncondBrInstruction::UncondBrInstruction(BasicBlock *to, BasicBlock *insert_bb) : Instruction(UNCOND, insert_bb)
@@ -533,6 +725,37 @@ std::vector<Operand *> ZextInstruction::getUse()
     return {operands[1]};
 }
 
+bool ZextInstruction::canBeCalculated()
+{
+    if(operands[1]->getSymbolEntry()->isConstant())
+        return true;
+    return false;
+}
+
+Operand *ZextInstruction::CalculatedResult()
+{
+    if(canBeCalculated())
+    {
+        ConstantSymbolEntry *result = new ConstantSymbolEntry(operands[0]->getType(), 0);
+
+        ConstantSymbolEntry *val=dynamic_cast<ConstantSymbolEntry*>(operands[1]->getSymbolEntry());
+        if(val->getValue()==1)
+        {
+            result->setIntValue(1);
+        }
+        else
+        {
+            result->setIntValue(0);
+        }
+        return new Operand(result);
+
+
+    }
+
+
+    return nullptr;
+}
+
 /**
  * @brief 构造一个新的 GetElementPtrInstruction 对象。
  * @param dst 目标操作数。
@@ -725,7 +948,22 @@ PhiInstruction::PhiInstruction(Operand *dst, BasicBlock *insert_bb): Instruction
 void PhiInstruction::addIncoming(Operand *op, BasicBlock *bb)
 {
     incoming.push_back(std::make_pair(op, bb));
+    operands.push_back(op);
     op->addUse(this);
+}
+
+void PhiInstruction::removeIncoming(BasicBlock *bb)
+{
+    for (size_t i = 1; i < operands.size(); ++i)
+    {
+        if (incoming[i - 1].second == bb)
+        {
+            operands.erase(operands.begin() + i);
+            incoming.erase(incoming.begin() + i - 1);
+            //incoming[i - 1].first->removeUse(this);
+            break;
+        }
+    }
 }
 
 /**
@@ -740,15 +978,13 @@ void PhiInstruction::output() const
         type=dynamic_cast<PointerType*>(operands[0]->getType())->getValueType()->toStr();
     }
     fprintf(yyout, "  %s = phi %s ", dst.c_str(), type.c_str());
-    for (size_t i = 0; i < incoming.size(); ++i)
+    for(size_t i = 1; i < operands.size(); ++i)
     {
-        if (i > 0)
-        {
-            fprintf(yyout, ", ");
-        }
-        std::string value = incoming[i].first->toStr();
-        int label = incoming[i].second->getNo();
-        fprintf(yyout, "[ %s, %%B%d ]", value.c_str(), label);
+            fprintf(yyout, "[ ");
+            fprintf(yyout, "%s, %%B%d", operands[i]->toStr().c_str(),incoming[i-1].second->getNo());
+            fprintf(yyout, " ] ");
+        if(i<operands.size()-1)
+            fprintf(yyout, ",");
     }
     fprintf(yyout, "\n");
 }
