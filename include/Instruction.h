@@ -30,6 +30,8 @@ public:
     bool isFptoi() const {return instType == FPTOI;};//是否为浮点数到整数的转换指令
     bool isSitof() const {return instType == SITOF;};//是否为整数到浮点数的转换指令
     bool isPhi() const {return instType == PHI;};//是否为phi指令
+    bool haveSameOperator(Instruction *inst);//是否有相同的运算符
+    bool canBeSwapped();//是否可以交换
     int getInstType() const {return instType;};//获取指令类型
     void setParent(BasicBlock *);
     void setNext(Instruction *);

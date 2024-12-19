@@ -362,7 +362,7 @@ for (auto i = entry->getHead()->getNext(); i != entry->getHead(); i = i->getNext
     sccp();
     //fprintf(stderr, "函数%s优化完成\n", sym_ptr->toStr().c_str());
     deadCodeElimination();//执行死代码消除优化
-    //aggressiveDeadCodeElimination();
+    aggressiveDeadCodeElimination();
 
 }
 void Function::deadCodeElimination()

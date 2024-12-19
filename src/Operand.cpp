@@ -12,6 +12,7 @@ std::string Operand::toStr() const
 
 void Operand::replaceAllUsesWith(Operand *newOperand)
 {
+    fprintf(stderr,"开始替换操作数\n");
     fprintf(stderr,"当前替换的操作数为%s\n",this->toStr().c_str());
     fprintf(stderr,"新操作数为%s\n",newOperand->toStr().c_str());
     for (auto use : uses) //遍历所有使用此操作数的指令

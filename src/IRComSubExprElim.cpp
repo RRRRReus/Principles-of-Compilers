@@ -24,9 +24,18 @@ bool IRComSubExprElim::skip(Instruction *inst)
 
 bool IRComSubExprElim::localCSE(Function *func)
 {
-    bool result = true;
+    fprintf(stderr, "局部公共子表达式消除\n");
+
+
+
+    Expr e1 = Expr(func->getEntry()->begin());
+
+    Expr e2 = Expr(func->getEntry()->begin());
+    
+    fprintf(stderr, "是不是相同的表达式%d\n", e1 == e2);
+    bool result = true;//？？应该迭代？？
     std::vector<Expr> exprs;
-    for (auto block = func->begin(); block != func->end(); block++)
+    for (auto block = func->begin(); block != func->end(); block++)//???应该支配树
     {
         exprs.clear();
         for (auto inst = (*block)->begin(); inst != (*block)->end(); inst = inst->getNext())
@@ -36,8 +45,15 @@ bool IRComSubExprElim::localCSE(Function *func)
             auto preInstIt = std::find(exprs.begin(), exprs.end(), Expr(inst));
             if (preInstIt != exprs.end())
             {
-                // TODO: 把对当前指令的def的use改成对于preInst的def的use，并删除当前指令。
 
+
+                fprintf(stderr, "inst %d 是公共子表达式\n", inst->getInstType());
+                fprintf(stderr, "删掉inst->getDef() %s\n", inst->getDef()->toStr().c_str());
+                fprintf(stderr, "她她她换成preInstIt->inst->getDef() %s\n", preInstIt->inst->getDef()->toStr().c_str());
+                // TODO: 把对当前指令的def的use改成对于preInst的def的use，并删除当前指令。
+                inst->getDef()->replaceAllUsesWith(preInstIt->inst->getDef());
+                inst->save=false;
+                result = false;
             }
             else
                 exprs.emplace_back(inst);
@@ -47,13 +63,18 @@ bool IRComSubExprElim::localCSE(Function *func)
              * a = b + c
              * b = d + f
              */
+            
         }
+        (*block)->refresh();
     }
+
+    //result = true;
     return result;
 }
 
 bool IRComSubExprElim::globalCSE(Function *func)
 {
+    fprintf(stderr, "全局公共子表达式消除\n");
     exprVec.clear();
     ins2Expr.clear();
     genBB.clear();
@@ -67,7 +88,14 @@ bool IRComSubExprElim::globalCSE(Function *func)
     result = removeGlobalCSE(func);
     return result;
 }
-
+/**
+ * 计算gen kill in out
+ * 1. 计算gen
+ * 2. 计算kill
+ * 3. 计算in out
+ * 4. 全局公共子表达式消除
+ * 
+ */
 void IRComSubExprElim::calGenKill(Function *func)
 {
     // 计算gen
@@ -162,14 +190,75 @@ void IRComSubExprElim::calInOut(Function *func)
     }
 }
 
-bool IRComSubExprElim::removeGlobalCSE(Function *func)
-{
-    // TODO: 根据计算出的gen kill in out进行全局公共子表达式消除
-    return true;
+bool IRComSubExprElim::removeGlobalCSE(Function *func) {
+    fprintf(stderr, "全局公共子表达式消除\n");
+
+    bool changed = true;  // 标记是否发生了优化
+    
+    // 遍历函数中的每个基本块
+    for (auto block = func->begin(); block != func->end(); ++block) {
+        // 遍历基本块中的每个指令
+        for (auto inst = (*block)->begin(); inst != (*block)->end(); inst = inst->getNext()) {
+            if (skip(inst)) {
+                continue;
+            }
+
+            Expr expr(inst);  // 当前指令表示的表达式
+            auto it = find(exprVec.begin(), exprVec.end(), expr);
+
+            // 如果找到了一个相同的表达式，说明这个表达式已经计算过
+            if (it != exprVec.end()) {
+                int exprID = it - exprVec.begin();  // 找到的表达式的ID
+                int existingExprID = ins2Expr[inst];  // 当前指令对应的表达式ID
+
+                // 如果表达式ID不一致，说明是一个全新的表达式
+                if (existingExprID != exprID) {
+                    fprintf(stderr, "发现公共子表达式: %s, 替换指令: %s\n", expr.inst->getDef()->toStr().c_str(), inst->getDef()->toStr().c_str());
+
+                    // 替换当前指令的定义为已存在的表达式的定义
+                    inst->getDef()->replaceAllUsesWith(exprVec[exprID].inst->getDef());
+                    inst->save = false;  // 删除当前指令
+                    changed = true;
+                }
+            } else {
+                // 如果表达式未出现过，加入exprVec并更新相关信息
+                exprVec.push_back(expr);
+                ins2Expr[inst] = exprVec.size() - 1;  // 更新该指令对应的表达式ID
+                genBB[*block].insert(ins2Expr[inst]);  // 更新gen集合
+            }
+        }
+
+        // 更新基本块
+        (*block)->refresh();
+    }
+
+    // 全局消除过程中，检查是否可以使用跨基本块的信息
+    for (auto block = func->begin(); block != func->end(); ++block) {
+        std::set<int> currentIn = inBB[*block];  // 当前基本块的in集合
+        std::set<int> currentOut = outBB[*block];  // 当前基本块的out集合
+
+        // 对于每个基本块，检查它的出边
+        for (auto succ = (*block)->succ_begin(); succ != (*block)->succ_end(); ++succ) {
+            // 对于每个后继基本块，更新当前基本块的out集合
+            std::set<int> tempOut;
+            std::set_union(currentOut.begin(), currentOut.end(),
+                           outBB[*succ].begin(), outBB[*succ].end(),
+                           std::inserter(tempOut, tempOut.begin()));
+
+            // 如果当前基本块的out集合与先前的out集合不一样，标记发生变化
+            if (tempOut != outBB[*block]) {
+                outBB[*block] = tempOut;
+                changed = false;
+            }
+        }
+    }
+    changed = true;
+    return changed;  // 返回是否发生了变化
 }
 
 void IRComSubExprElim::pass()
 {
+    fprintf(stderr, "全局公共子表达式消除pass\n");
     for (auto func = unit->begin(); func != unit->end(); func++)
     {
         while (!localCSE(*func) || !globalCSE(*func))

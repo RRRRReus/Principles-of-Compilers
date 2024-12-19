@@ -1,5 +1,6 @@
 #include "Unit.h"
 #include <iostream>
+#include "IRComSubExprElim.h"
 extern FILE* yyout;
 
 void Unit::insertFunc(Function *f)
@@ -43,12 +44,17 @@ void Unit::output() const
 }
 void Unit::optimize()
 {
+
     fprintf(stderr, "编译单元优化\n");
     for (auto global : global_list)
         global->optimize();
 
     for (auto &func : func_list)
         func->optimize();
+
+
+    IRComSubExprElim ircomsubexreli(this);
+    ircomsubexreli.pass();
 }
 
 Unit::~Unit()

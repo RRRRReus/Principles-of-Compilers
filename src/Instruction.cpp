@@ -29,6 +29,58 @@ BasicBlock *Instruction::getParent()
     return parent;
 }
 
+bool Instruction::haveSameOperator(Instruction *inst)
+{
+    //fprintf(stderr,"看是不是相同的操作符\n");
+    if(this->instType!=inst->instType)
+        return false;
+    //fprintf(stderr,"看是不是相同的二元操作符\n");
+    if(this->instType == BINARY&&inst->instType == BINARY)
+    {
+        if(dynamic_cast<BinaryInstruction*>(this)->opcode == dynamic_cast<BinaryInstruction*>(inst)->opcode)
+        {
+            //fprintf(stderr,"sizaizh>jhfladkjhgflaanrfggjk;lnnds;jsfhg\n");
+            return true;
+        }
+            
+        else
+        {
+            return false;       
+        }
+            
+    }
+    //fprintf(stderr,"看是不是相同的比较符\n");
+    if(this->instType == CMP&&inst->instType == CMP)
+    {
+        if(dynamic_cast<CmpInstruction*>(this)->opcode == dynamic_cast<CmpInstruction*>(inst)->opcode)
+            return true;
+        else
+            return false;
+    }
+
+    return false;
+}
+
+bool Instruction::canBeSwapped()
+{
+    if(this->instType == BINARY)
+    {
+        if(dynamic_cast<BinaryInstruction*>(this)->opcode == BinaryInstruction::ADD || dynamic_cast<BinaryInstruction*>(this)->opcode == BinaryInstruction::MUL)
+            return true;
+        else
+            return false;
+    }
+    if(this->instType == CMP)
+    {
+        if(dynamic_cast<CmpInstruction*>(this)->opcode == CmpInstruction::E || dynamic_cast<CmpInstruction*>(this)->opcode == CmpInstruction::NE)
+            return true;
+        else
+            return false;
+    }
+    return false;
+    
+}
+
 void Instruction::setParent(BasicBlock *bb)
 {
     parent = bb;
