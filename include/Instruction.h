@@ -253,7 +253,7 @@ public:
     void output() const;
     void setBranch(BasicBlock *);
     BasicBlock *getBranch();
-    BasicBlock **patchBranch() {return &branch;};
+    BasicBlock **patchBranch() {return &branch;};//返回branch的地址
     BasicBlock *getBranchBB(){return branch;}
     bool hasSideEffects() const override { return true; } // Uncond 指令有副作用
     
@@ -456,10 +456,11 @@ public:
     PhiInstruction(Operand *dst, const std::vector<std::pair<Operand *, BasicBlock *>> &incoming, BasicBlock *insert_bb = nullptr);
     PhiInstruction(Operand *dst, BasicBlock *insert_bb = nullptr);
     void addIncoming(Operand *op, BasicBlock *bb);
+    void removeIncoming(BasicBlock *bb);
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
-    std::vector<std::pair<Operand *, BasicBlock *>> incoming;
+    std::vector<std::pair<Operand *, BasicBlock *>> incoming;//phi指令的入口
 
 private:
     

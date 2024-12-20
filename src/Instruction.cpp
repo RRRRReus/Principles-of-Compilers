@@ -549,7 +549,7 @@ GetElementPtrInstruction::GetElementPtrInstruction(Operand *dst,Operand *element
     operands.push_back(src);
     operands.push_back(element);
     operands.insert(operands.end(), indices.begin(), indices.end());
-    dst->addUse(this);
+    dst->setDef(this);
     src->addUse(this);
     for(auto index:indices)
     {
@@ -725,7 +725,23 @@ PhiInstruction::PhiInstruction(Operand *dst, BasicBlock *insert_bb): Instruction
 void PhiInstruction::addIncoming(Operand *op, BasicBlock *bb)
 {
     incoming.push_back(std::make_pair(op, bb));
+    operands.push_back(op);
     op->addUse(this);
+}
+
+void PhiInstruction::removeIncoming(BasicBlock *bb)
+{
+    for (size_t i = 1; i < operands.size(); ++i)
+    {
+        if (incoming[i - 1].second == bb)
+        {
+            operands.erase(operands.begin() + i);
+            incoming.erase(incoming.begin() + i - 1);
+            //incoming[i - 1].first->removeUse(this);
+            break;
+        }
+    }
+
 }
 
 /**
@@ -768,10 +784,14 @@ Operand *PhiInstruction::getDef()
  */
 std::vector<Operand *> PhiInstruction::getUse()
 {
+    fprintf(stderr,"PhiInstruction::getUse\n");
+    fprintf(stderr,"operands.size()是%ld\n",operands.size());
     std::vector<Operand *> uses;
     for (size_t i = 1; i < operands.size(); ++i)
     {
         uses.push_back(operands[i]);
+        fprintf(stderr,"use:%s\n",operands[i]->toStr().c_str());
     }
+
     return uses;
 }

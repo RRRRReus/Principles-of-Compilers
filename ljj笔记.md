@@ -309,6 +309,7 @@ void deadCodeElimination(std::vector<IRBaseInst*>& instructions, const std::unor
 
 
 ## 激进的死代码消除（Aggressive Dead Code Elimination）
+
 ### 算法思想
 它的思想和传统的死代码消除最不一样的地方就在于：它对于死代码的定义不同。
 
@@ -329,7 +330,7 @@ x,y中，x能否直接控制节点y的执行？
 
 ### 算法实现
 我们需要维护的信息如下：
-1. HashSet<IRBaseInst> live：所有有活跃指令的基本块
+1. HashSet<IRBaseInst> live：所有活跃指令
 2. HashSet<BasicBlock> liveBlock：所有有活跃指令的基本块
 3. HashSet<entity> liveUse：所有活跃指令的use
 4. HashSet<IRBaseInst> workList：用于迭代的工作表
@@ -370,6 +371,8 @@ while (!workList.isEmpty()) {
 ```
 最后我们遍历所有指令，消去不活跃的phi指令和普通指令。
 
+这里有一个细节，就是jump/branch这样的terminal的处理。如果一个块的terminal被标记为不活跃的，那么这个块应该跳到哪里呢？自然，它应当跳到它的后继中第一个活跃的块上。我们要在反支配树上寻找（反支配树就是我们根据CFG的反图建出的支配树）。
+
 ### gpt详细解释
 
 激进的死代码消除（Aggressive Dead Code Elimination, ADCE）是一种高级的优化技术，用于删除程序中不会影响程序结果的代码。与传统的死代码消除不同，ADCE 通过递归地定义和标记有效代码来识别死代码。以下是对该算法的详细讲解。
@@ -389,7 +392,7 @@ ADCE 的核心思想是递归地定义和标记有效代码。初始状态下，
 
 ##### 维护的信息
 
-1. **`live`**：所有有活跃指令的基本块。
+1. **`live`**：所有有活跃指令。
 2. **`liveBlock`**：所有有活跃指令的基本块。
 3. **`liveUse`**：所有活跃指令的 `use`。
 4. **`workList`**：用于迭代的工作表。
@@ -463,3 +466,8 @@ while (!workList.isEmpty()) {
 
 3. **删除不活跃的指令**：
     - 遍历所有指令，删除不活跃的 `phi` 指令和普通指令。
+
+
+
+
+ #include "sysyruntimelibrary/sylib.h"

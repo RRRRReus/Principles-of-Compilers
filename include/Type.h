@@ -31,6 +31,7 @@ public:
     bool isConstFloat() const {return kind == FLOAT && isConst;};
     bool isIntArray() const {return kind == INTARRAY;};
     bool isFloatArray() const {return kind == FLOATARRAY;};
+    bool isAllArray() {return this->isIntArray() || this->isFloatArray();};//判断一个变量或者是函数是不是数组
     bool isLongLong() const {return kind == LONGLONG;};
     bool isPtr() const {return kind == PTR;};  
     int getKind() const {return kind;};

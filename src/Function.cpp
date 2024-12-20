@@ -312,7 +312,10 @@ void Function::optimize()
                 entry->remove(i);
             }
         }
+       
 
+        block_list.erase(std::find(block_list.begin(), block_list.end(), exit));
+        exit=bb;
         entry->remove(return_val->getDef());
         
 
@@ -356,12 +359,16 @@ for (auto i = entry->getHead()->getNext(); i != entry->getHead(); i = i->getNext
         if(block_list.size()>0)
         {
             PHIoptimize();
-
         }
+        
     }
     //fprintf(stderr, "函数%s优化完成\n", sym_ptr->toStr().c_str());
     deadCodeElimination();//执行死代码消除优化
-    //aggressiveDeadCodeElimination();
+    if(block_list.size()<1000)
+    {
+        aggressiveDeadCodeElimination();
+    }
+    
 
 }
 void Function::deadCodeElimination()
@@ -381,7 +388,7 @@ void Function::deadCodeElimination()
             if (def!=nullptr)//如果def不为空
             {
                 defMap[def] = inst;
-                workList.insert(def);   
+                workList.insert(def);
                 std::vector<Instruction*> useInst = def->getUse();//获取所有use了当前操作数的指令
                 useMap[def] = std::unordered_set<Instruction*>(useInst.begin(), useInst.end());//将useMap中的useInst加入到useMap中
             }
@@ -425,8 +432,8 @@ void Function::deadCodeElimination()
                     }
                 }
             }
-
         }
+
     }
 
     for(auto &bb:block_list)
@@ -439,88 +446,378 @@ void Function::deadCodeElimination()
 
 void Function::aggressiveDeadCodeElimination()
 {
-    // fprintf(stderr, "开始执行函数%s激进死代码消除\n", sym_ptr->toStr().c_str());
-    // std::unordered_set<Instruction*> live;  //存储所有活跃的指令
-    // std::unordered_set<BasicBlock*> liveBlock;  //存储所有活跃的基本块
-    // std::unordered_set<Operand*> liveUse;   //存储所有活跃的use
-    // std::unordered_set<Instruction*> workList;  //存储所有需要处理的指令
-    // std::unordered_map<Operand*, Instruction*> defMap;  //存储所有操作数的定义指令
 
-    // // 初始化 defMap 和 workList
-    // for (BasicBlock* bb : block_list) {
-    //     for (Instruction* inst = bb->begin(); inst != bb->end(); inst = inst->getNext()) 
-    //     {
-    //         Operand* def = inst->getDef();//获取当前指令的def
-    //         if (def) 
-    //         {
-    //             defMap[def] = inst;
-    //         }
-    //         if (inst->hasSideEffects()) 
-    //         {
-    //             workList.insert(inst);//将有副作用的指令加入到workList中
-    //         }
-    //     }
-    // }
+    fprintf(stderr, "开始执行函数%s激进死代码消除\n", sym_ptr->toStr().c_str());
+    std::unordered_set<Instruction*> live;  //存储所有活跃的指令
+    std::unordered_set<BasicBlock*> liveBlock;  //存储所有活跃的基本块
+    std::unordered_set<Operand*> liveUse;   //存储所有活跃的use
+    std::unordered_set<Instruction*> workList;  //存储所有需要处理的指令
+    std::unordered_map<Operand*, Instruction*> defMap;  //存储所有操作数的定义指令
+    std::unordered_set<Operand*> functionParams(params.begin(), params.end());
+    
 
-    // // 处理工作列表
-    // while (!workList.empty()) 
-    // {
-    //     Instruction* inst = *workList.begin();
-    //     workList.erase(workList.begin());
-    //     live.insert(inst);
-    //     liveBlock.insert(inst->getParent());
-    //     for (Operand* use : inst->getUse()) {
-    //         liveUse.insert(use);
-    //     }
+    // 初始化 defMap 和 workList
+    for (BasicBlock* bb : block_list) {
+        for (Instruction* inst = bb->begin(); inst != bb->end(); inst = inst->getNext()) 
+        {
+            fprintf(stderr, "当前基本块为%d\n", bb->getNo());
+            fprintf(stderr, "当前基本块的全部指令%d\n", inst->getInstType());
+            Operand* def = inst->getDef();//获取当前指令的def
+            if (def!=nullptr&&!inst->isStore()) 
+            {
+                defMap[def] = inst;
+            }
+            if (inst->isCall() || inst->isRet() || inst->isStore()) //有副作用的指令，即store全局变量的指令、Ret指令、Call指令
+            {
+                if(inst->isStore())//store指令需要判断一下是不是全局的
+                {
+                //     fprintf(stderr, "这句话可能输出！！！\n");
+                //     fprintf(stderr, "inst->getDef()->getSymbolEntry()->toStr() = %s\n", inst->getDef()->getSymbolEntry()->toStr().c_str());
+                //     fprintf(stderr, "inst->getDef()->getSymbolEntry()->toStr() = %s\n", inst->getDef()->getSymbolEntry()->toStr().c_str());
+                //     fprintf(stderr, "inst->getDef()->getSymbolEntry()->isVariable() = %d\n", inst->getDef()->getSymbolEntry()->isVariable());
+                    
+                    
+                    
 
-    //     // 对于 phi 指令，标记其前驱块的终结指令为活跃
-    //     if (auto* phiInst = dynamic_cast<PhiInstruction*>(inst)) {
-    //         for (auto& [block, operand] : phiInst->getBlockMap()) {
-    //             if (block->getTerminal() && live.find(block->getTerminal()) == live.end()) {
-    //                 workList.insert(block->getTerminal());
-    //                 liveBlock.insert(block);
-    //             }
-    //         }
-    //     }
+                //    //如果是对全局变量进行store
+                //     if(inst->getDef()->getSymbolEntry()->isVariable())
+                //     {
+                //         if(dynamic_cast<IdentifierSymbolEntry*>(inst->getDef()->getSymbolEntry())->isGlobal())
+                //         {
+                //             fprintf(stderr, "这句话不可能输出！！！\n");
+                //             workList.insert(inst);
 
-    //     // 加入该块的所有控制依赖前驱
-    //     for (BasicBlock* cdg_pred : inst->getParent()->getControlDependencePredecessors()) {
-    //         if (cdg_pred->getTerminal() && live.find(cdg_pred->getTerminal()) == live.end()) {
-    //             workList.insert(cdg_pred->getTerminal());
-    //         }
-    //     }
+                //         }
+                //     }
+                //     else{
+                //         fprintf(stderr, "这句话bshi！！！\n");
+                //         fprintf(stderr, "inst->getDef():%s\n", inst->getDef()->toStr().c_str());
+                //         fprintf(stderr, "inst->getDef()->getDef()->type:%d\n", inst->getDef()->getDef()->getInstType());
+                //         //fprintf(stderr, "inst->getDef()->getDef()->getUse()[0]:%s\n", inst->getDef()->getDef()->getUse()[0]->toStr().c_str());
+                //         Operand* base=nullptr;
 
-    //     // 对于每个 use 的变量，将其 def 加入 workList
-    //     for (Operand* use : inst->getUse()) {
-    //         if (auto* reg = dynamic_cast<IRRegister*>(use)) {
-    //             Instruction* def = defMap[use];
-    //             if (def && live.find(def) == live.end()) {
-    //                 workList.insert(def);
-    //             }
-    //         }
-    //     }
-    // }
+                //         if(inst->getDef()->getDef()->isGep())
+                //             base=inst->getDef()->getDef()->getUse()[0];
+                        
+                //         if(base!=nullptr)
+                //         {
+                //             fprintf(stderr, "666base:%s\n", base->toStr().c_str());
+                //         }
+                //         fprintf(stderr, "这句话2222bshi！！！\n");
+                //         if(base&&base->getSymbolEntry()->isVariable())
+                //         {
+                //             fprintf(stderr, "base:%s\n", base->toStr().c_str());
+                //             if(dynamic_cast<IdentifierSymbolEntry*>(base->getSymbolEntry())->isGlobal())
+                //             {
+                //                 fprintf(stderr, "\n");
+                //                 workList.insert(inst);
+                //             }
 
+                //         }
+                //         if(functionParams.find(base) != functionParams.end())
+                //             {
+                //                 fprintf(stderr, "这句话不可rrr能输出！！！\n");
+                //                 workList.insert(inst);
+                //             }
+                //     }
 
-    // // 遍历所有指令，删除不活跃的指令
-    // for (BasicBlock* bb : block_list) {
-    //     for (Instruction* inst = bb->getFirstInstruction(); inst != nullptr; ) {
-    //         Instruction* nextInst = inst->getNext();
-    //         if (live.find(inst) == live.end()) {
-    //             Operand* def = inst->getDef();
-    //             if (def) {
-    //                 defMap.erase(def);
-    //             }
-    //             for (Operand* use : inst->getUse()) {
-    //                 liveUse.erase(use);
-    //             }
-    //             inst->remove();
-    //         }
-    //         inst = nextInst;
-    //     }
-    // }
+                  workList.insert(inst);  //这个地方有问题！！！！！！！将来看到记得考虑
 
 
+
+                    // // 如果是数组类型，直接将指令视为活跃
+                    // else if(inst->getDef()->getSymbolEntry()->getType()->isAllArray())
+                    // {
+                    //     fprintf(stderr, "遇到数组类型，直接将指令视为活跃\n");
+                    //     live.insert(inst);
+                    //     liveBlock.insert(inst->getParent());
+                    //     for (Operand* use : inst->getUse()) {
+                    //         liveUse.insert(use);
+                    //     }
+                    // }
+                    
+                      
+                }
+                
+                else
+                {
+                    workList.insert(inst);//将有副作用的指令加入到workList中
+                    fprintf(stderr, "有副作用的指令是%d\n", inst->getInstType());
+                }
+                
+            }
+        }
+    }
+
+    fprintf(stderr, "worklist、defMap初始化完成\n");
+
+    //1、求反CFG
+    std::vector<BasicBlock*> reverseCFG;
+    createReverseCFG();
+
+    //2、调用jj函数，传入反CFG的入口块，求出前向支配树的支配边界
+    buildReverseDominanceTree(reverseEntry);
+    fprintf(stderr,"反支配树构建完成！！！！！\n");
+    printReverseDominanceTree(stderr);
+
+    //3、根据这个支配边界，求出控制依赖前驱
+
+    // 处理工作列表
+    while (!workList.empty()) 
+    {
+        Instruction* inst = *workList.begin();
+        fprintf(stderr, "当前处理的指令所属块是%d\n", inst->getParent()->getNo());
+        workList.erase(workList.begin());
+        fprintf(stderr, "当前处理的指令是%d\n", inst->getInstType());
+
+        live.insert(inst);
+        liveBlock.insert(inst->getParent());
+        for (Operand* use : inst->getUse()) {
+            liveUse.insert(use);
+        }
+
+
+        if(inst->isAlloca()||inst->isGep())
+        {
+            fprintf(stderr, "当前处理的指令是alloca\n");
+            for(auto &i:inst->getDef()->getUse())
+            {
+                if(live.find(i)==live.end())
+                workList.insert(i);
+            }
+            
+
+        }
+
+        
+        // 对于 phi 指令，标记其前驱块的终结指令为活跃
+        if (auto* phiInst = dynamic_cast<PhiInstruction*>(inst)) {
+            fprintf(stderr, "当前处理的指令是phi\n");
+            for (auto& [operand, block] : phiInst->incoming)//遍历phi指令所有前驱块
+            {
+                fprintf(stderr, "当前phi指令的前驱块是%d\n", block->getNo());
+                if (block->getTerminal() && live.find(block->getTerminal()) == live.end()) //如果前驱块的终结指令不在live中
+                {
+                    workList.insert(block->getTerminal());//将前驱块的终结指令加入workList
+                    fprintf(stderr, "当前被标记为活跃的块是%d\n", block->getNo());
+                    liveBlock.insert(block);//标记前驱块为活跃
+                }
+            }
+        }
+        //若要求控制依赖前驱，则需有控制依赖图 / 前向支配树的支配边界
+
+            //1、求反CFG
+            //2、调用jj函数，传入反CFG的入口块，求出前向支配树的支配边界
+            //3、根据这个支配边界，求出控制依赖前驱
+
+
+        // 加入该块的所有控制依赖前驱
+        fprintf(stderr, "当前块是%d\n", inst->getParent()->getNo());
+        for (auto cdg_pred : inst->getParent()->reverseDomFrontier) { // 遍历支配边界
+            if (cdg_pred->getTerminal() != nullptr && live.find(cdg_pred->getTerminal()) == live.end()) {
+                workList.insert(cdg_pred->getTerminal()); // 注意已经加过的不用加了
+    
+                fprintf(stderr, "当前控制依赖前驱块是%d\n", cdg_pred->getNo());
+            }
+            fprintf(stderr, "所有控制依赖前驱块是%d\n", cdg_pred->getNo());
+        }
+
+        
+        fprintf(stderr,"已遍历完该块所有的控制依赖前驱\n");
+
+
+        // 对于每个 use 的变量，将其 def 加入 workList
+        for (Operand* use : inst->getUse()) {
+            // 检查 use 是否是 IRRegister 类型且不是 IRGlobalVar 类型 //是否是局部变量，而不是全局变量 //那函数参数呢？？？
+            fprintf(stderr,"?????\n");
+            fprintf(stderr,"use是%s\n",use->toStr().c_str());
+            fprintf(stderr,"use的类型是%s\n",use->getSymbolEntry()->getType()->toStr().c_str());
+
+            // if (!dynamic_cast<IdentifierSymbolEntry*>(use->getSymbolEntry())->isLocal()) {
+            //             continue;
+            //         }
+            
+            fprintf(stderr,"已continue！！！\n");
+            Instruction* def = defMap[use];
+            // if(use->getSymbolEntry()->isTemporary())
+            // {
+            //     fprintf(stderr,"def是%d\n",def->getInstType());
+            //     fprintf(stderr,"def的def是%s\n",def->getDef()->toStr().c_str());
+            // }
+            
+            if (def && live.find(def) == live.end()) {
+                fprintf(stderr, "当前处理的指令的def是%d\n", def->getInstType());
+                workList.insert(def);
+            }
+
+
+            if(use->getSymbolEntry()->getType()->isPtr()&&functionParams.find(use) != functionParams.end())
+            {
+                
+                for(auto &i:use->getUse())
+                {
+                    if(live.find(i)==live.end())
+                    workList.insert(i);
+                }
+            }
+
+            if(use->getSymbolEntry()->isVariable()&&dynamic_cast<IdentifierSymbolEntry*>(use->getSymbolEntry())->isGlobal())
+            {
+                
+                for(auto &i:use->getUse())
+                {
+                    if(live.find(i)==live.end())
+                    workList.insert(i);
+                }
+            }
+
+        }
+
+
+    }
+
+    fprintf(stderr, "worklist处理完成，活跃分析完成\n");
+
+    for (Operand* use : liveUse) {
+            fprintf(stderr, "当前活跃的use是%s\n", use->toStr().c_str());
+        }
+
+
+    // 遍历所有指令，删除不活跃的指令
+    for (BasicBlock* bb : block_list) 
+    {
+        for (Instruction* inst = bb->begin(); inst != bb->end(); ) 
+        {
+            Instruction* nextInst = inst->getNext();
+            if (live.find(inst) == live.end())//当前指令不在live中 
+            {
+                Operand* def = inst->getDef();
+                if (def) 
+                {
+                    defMap.erase(def);
+                }
+                for (Operand* use : inst->getUse()) 
+                {
+                    liveUse.erase(use);
+                }
+                inst->save = false;
+                //fprintf(stderr, "要删除指令的def是%s\n", inst->getDef()->toStr().c_str());
+                fprintf(stderr, "删除指令%d\n", inst->getInstType());
+            }
+            inst = nextInst;
+        }
+    }
+
+    // 处理不活跃的终结指令
+    for (BasicBlock* bb : block_list) 
+    {
+        fprintf(stderr, "当前处理的块是！！！%d\n", bb->getNo());
+        Instruction* termInst = bb->getTerminal();
+        //fprintf(stderr, "当前处理终结指令所属块是！！！%d\n", termInst->getParent()->getNo());
+        if (termInst && live.find(termInst) == live.end()) //如果一个块的终结指令被标记为不活跃
+        {
+            fprintf(stderr, "当前不活跃的终结指令所属块是%d\n", termInst->getParent()->getNo());
+            // 查找第一个活跃的后继块
+            BasicBlock* target = findFirstLiveSuccessor(bb, liveBlock);
+            //fprintf(stderr, "当前不活跃的终结指令所属块的第一个活跃后继块是%d\n", target->getNo());
+            if (target) 
+            {
+                // 替换不活跃的终结指令为跳转到第一个活跃块的指令   //替换指令不正确！！！！！
+                UncondBrInstruction*  new_inst  = new UncondBrInstruction(target, bb);
+                new_inst->save=true;   //！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+
+                //跳转指令变了，自然要更新前驱后继
+                //bb->safeRemoveAllPred();
+                bb->safeRemoveAllSucc();
+
+                fprintf(stderr,"当前基本块的前驱和后继数目为: %d,%d\n", bb->getNumOfPred(),bb->getNumOfSucc());
+
+                bb->remove(termInst);
+                
+                bb->addSucc(target);
+                target->addPred(bb);
+
+                fprintf(stderr,"当前块添加完前驱后继数量为%d,%d\n", bb->getNumOfPred(),bb->getNumOfSucc());
+                fprintf(stderr, "替换不活跃的终结指令为跳转到块%d\n", target->getNo());
+            }
+            
+        }
+    }
+
+    
+
+    for(auto &bb:block_list)
+    {
+        bb->refresh();
+    }
+
+    
+    removeUnreachableBlocks();
+    
+
+
+    fprintf(stderr, "函数%s激进死代码消除结束\n", sym_ptr->toStr().c_str());
+}
+
+// 查找第一个活跃的后继块
+BasicBlock* Function::findFirstLiveSuccessor(BasicBlock* bb, const std::unordered_set<BasicBlock*>& liveBlock)
+{
+    std::unordered_set<BasicBlock*> visited;
+    std::queue<BasicBlock*> queue;
+    queue.push(bb);
+
+    while (!queue.empty()) 
+    {
+        BasicBlock* current = queue.front();
+        queue.pop();
+
+        for (BasicBlock* succ : current->getSucc()) 
+        {
+            if (visited.find(succ) == visited.end()) 
+            {
+                visited.insert(succ);
+                if (liveBlock.find(succ) != liveBlock.end()) 
+                {
+                    return succ;
+                }
+                queue.push(succ);
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+// 创建反转后的控制流图
+void Function::createReverseCFG() {
+    // 反转前驱和后继关系
+    for (auto &block : block_list) {
+        block->getReversePred().clear();
+        block->getReverseSucc().clear();
+
+        for (auto &succ : block->getSucc()) {
+            block->getReversePred().push_back(succ);
+        }
+
+        for (auto &pred : block->getPred()) {
+            block->getReverseSucc().push_back(pred);
+        }
+    }
+
+    // 设置反转后的入口基本块
+    reverseEntry = exit;
+
+    //输出一下反转后的CFG
+    for (auto &block : block_list) {
+        fprintf(stderr, "基本块%d的反转前驱有以下基本块\n", block->getNo());
+        for (auto &pred : block->getReversePred()) {
+            fprintf(stderr, "基本块%d\n", pred->getNo());
+        }
+        fprintf(stderr, "基本块%d的反转后继有以下基本块\n", block->getNo());
+        for (auto &succ : block->getReverseSucc()) {
+            fprintf(stderr, "基本块%d\n", succ->getNo());
+        }
+    }
 }
 
 void Function::output() const
@@ -553,21 +850,21 @@ void Function::output() const
         q.pop_front();//删除队列的第一个元素
 
 
-        if(!(bb->rbegin()->isCond()||bb->rbegin()->isUncond()||bb==exit||bb->rbegin()->isRet()))
-        {
-            if(bb->getNumOfPred()==0){}
-            else{
-                new UncondBrInstruction(exit, bb);//插入无条件跳转指令
-                bb->addSucc(exit);//将出口基本块加入基本块的后继
-                exit->addPred(bb);//将基本块加入出口基本块的前驱
-            }
-        }
-        if(bb->empty()&&bb->getNumOfPred()!=0)//如果基本块为空
-        {
-            new UncondBrInstruction(exit, bb);//插入无条件跳转指令
-            bb->addSucc(exit);//将出口基本块加入基本块的后继
-            exit->addPred(bb);//将基本块加入出口基本块的前驱
-        }
+        // if(!(bb->rbegin()->isCond()||bb->rbegin()->isUncond()||bb==exit||bb->rbegin()->isRet()))
+        // {
+        //     if(bb->getNumOfPred()==0){}
+        //     else{
+        //         new UncondBrInstruction(exit, bb);//插入无条件跳转指令
+        //         bb->addSucc(exit);//将出口基本块加入基本块的后继
+        //         exit->addPred(bb);//将基本块加入出口基本块的前驱
+        //     }
+        // }
+        // if(bb->empty()&&bb->getNumOfPred()!=0)//如果基本块为空
+        // {
+        //     new UncondBrInstruction(exit, bb);//插入无条件跳转指令
+        //     bb->addSucc(exit);//将出口基本块加入基本块的后继
+        //     exit->addPred(bb);//将基本块加入出口基本块的前驱
+        // }
         bb->output();//输出基本块
         for (auto succ = bb->succ_begin(); succ != bb->succ_end(); succ++)//遍历基本块的后继
         {
@@ -584,6 +881,7 @@ void Function::output() const
 
 // 输出支配树
 void Function::printDominanceTree(FILE* out) {
+        fprintf(stderr,"开始输出支配树\n");
         for (auto& bb : block_list) {
         fprintf(stderr,"bb->getNo()是 %d，他的支配前驱有 ",bb->getNo());
         for (auto& predBB : bb->DOMpred) {
@@ -626,7 +924,14 @@ void Function::PHIoptimize()
         Worklist.clear();
         for(Instruction *i:allocaOperand->getUse())
         {
-                Worklist.push_back(i->getParent());
+               
+            if(i->getParent()->getNo()==0)
+            {
+                
+                    continue;
+            }
+             Worklist.push_back(i->getParent());
+
         }
         for(BasicBlock *bb:Worklist)
         {
@@ -640,12 +945,15 @@ void Function::PHIoptimize()
                 break;
             }
             BasicBlock *bb=*(Worklist.begin());
+
             Worklist.erase(Worklist.begin());
             for(auto df:bb->DomFrontier)
             {
+                fprintf(stderr,"基本块bb %d 的支配边界有 %d\n",bb->getNo(),df->getNo());
                 if(phivisitedbb.find(df)==phivisitedbb.end())
                 {
                     phivisitedbb.insert(df);
+                    fprintf(stderr,"基本块bb %d 的支配边界有jin %d\n",bb->getNo(),df->getNo());
                     fprintf(stderr,"基本块%d插入操作数%s的phi指令\n",df->getNo(),allocaOperand->toStr().c_str());
                     if(allocaOperand->getSymbolEntry()->getType()->isPtr())
                     {
@@ -822,18 +1130,186 @@ void Function::buildDominanceTree() {
                         }
                     }
 
-                    
+            }
+
+}
+}
+
+void Function::buildReverseDominanceTree(BasicBlock *ReverseDomTreeRoot)
+{
+        if (block_list.empty()) {
+        return;
+    }
 
 
+    // 使用一个集合来计算每个基本块的支配集合
+    for (auto& bb : block_list) {
+        // 初始化每个基本块的支配前驱为空
+        bb->setReverseDOMpred({});
+    }
 
+    bool changed = true;
+    while (changed) {
+        changed = false;
+        for (auto& bb : block_list) {
+            fprintf(stderr,"bb->getNo() = %d\n",bb->getNo());
+            std::vector<BasicBlock*> newDOMpred;
+            if (bb == ReverseDomTreeRoot) {
+                // 入口基本块的支配前驱是它自己
+                newDOMpred.push_back(bb);
+            } else {
+                // 对于每个基本块，计算其支配集合
+                bool first = true;
+                for (auto& predBB : bb->getReversePred()) {
+                    if (first) {
+                        for (auto& domPred : predBB->reverseDOMpred) {
+                                newDOMpred.push_back(domPred);
+                        }
+                        first = false;
+                    } else {
+                        // 取前驱的交集
+                        std::vector<BasicBlock*> intersection;
+                        for (auto& domPred : predBB->reverseDOMpred) {
+                            if (std::find(newDOMpred.begin(), newDOMpred.end(), domPred) != newDOMpred.end()) {
+                                intersection.push_back(domPred);
+                            }
+                        }
+                        newDOMpred = intersection;
+                        
+                    }
+                
 
-
-
+                    // fprintf(stderr,"predBB->getNo() = %d\n",predBB->getNo());
+                    // fprintf(stderr,"predBB->DOMpred.size() = %ld\n",predBB->DOMpred.size());
+                    // fprintf(stderr,"newDOMpred.size() = %ld\n",newDOMpred.size());
+                }
+                if(std::find(newDOMpred.begin(), newDOMpred.end(), bb) == newDOMpred.end())
+                    newDOMpred.push_back(bb);
+                if(std::find(newDOMpred.begin(), newDOMpred.end(), ReverseDomTreeRoot) == newDOMpred.end())
+                    newDOMpred.push_back(ReverseDomTreeRoot);
 
 
             }
 
+            // 检查是否需要更新支配前驱集合
+            if (newDOMpred != bb->reverseDOMpred) {
+                fprintf(stderr,"!!!bb->getNo() = %d\n",bb->getNo());
+                bb->setReverseDOMpred(newDOMpred);
+                changed = true;
+            }
+        }
+    }
+    
+    fprintf(stderr,"支配前驱集合计算完成\n");
+    
+    //支配树的前驱排序
+    for(auto &bb:block_list)
+    {
+        int len=int(bb->reverseDOMpred.size());
+        for(int i=0;i<len;i++)
+        {
+            for(int j=i+1;j<len;j++)
+            {
+                if(std::find(bb->reverseDOMpred[i]->reverseDOMpred.begin(),bb->reverseDOMpred[i]->reverseDOMpred.end(),bb->reverseDOMpred[j])==bb->reverseDOMpred[i]->reverseDOMpred.end())
+                {
+                    BasicBlock *temp=bb->reverseDOMpred[i];
+                    bb->reverseDOMpred[i]=bb->reverseDOMpred[j];
+                    bb->reverseDOMpred[j]=temp;
+                }
+            }
+        }
+    }
+    
+    fprintf(stderr,"支配前驱集合排序完成\n");
+    printDominanceTree(stderr);
+    //计算支配树的后继节点
+    for (auto& bb : block_list) {
+        fprintf(stderr,"计算基本块%d的支配后继集合\n",bb->getNo());
+        BasicBlock* parent;
+        if(bb->reverseDOMpred.size()<=1)
+        {
+            parent = nullptr;
+        }
+        else
+        {
+            parent = bb->reverseDOMpred[1];
+        }
+        if (parent != nullptr) {
+        fprintf(stderr,"1\n");
+        fprintf(stderr,"parent->no = %d\n",parent->getNo());
+        fprintf(stderr,"reverseDOMsucc.size() = %ld\n",parent->reverseDOMsucc.size());
+        parent->reverseDOMsucc.push_back(bb);
+        fprintf(stderr,"%d的支配后继有%d\n",parent->getNo(),bb->getNo());
 
+        
+        fprintf(stderr,"1=2\n");
+
+        }
+
+    }
+    
+
+    // 计算支配边界
+        for (auto& bb : block_list) {
+
+                std::queue<BasicBlock*> q;  // 用队列进行层序遍历
+                q.push(bb);  // 将根节点加入队列
+
+                while (!q.empty()) {
+                    int level_size = q.size();  // 当前层的节点数
+
+                    // 遍历当前层的所有节点
+                    for (int i = 0; i < level_size; ++i) {
+                        BasicBlock* node = q.front();
+                        q.pop();
+                        for(auto &j:node->getReverseSucc())
+                        {
+                            if(j==bb||std::find(j->reverseDOMpred.begin(),j->reverseDOMpred.end(),bb)==j->reverseDOMpred.end())
+                            {
+                                bb->reverseDomFrontier.push_back(j);
+                            }
+                        }
+                      
+                        // 将当前节点的所有子节点加入队列
+                        for (auto& child : node->reverseDOMsucc) {
+                            q.push(child);
+                        }
+                    }
+
+            }
+
+    }
 
 }
+
+
+// 输出支配树
+void Function::printReverseDominanceTree(FILE* out) {
+    fprintf(stderr,"反支配树输出\n");
+        for (auto& bb : block_list) {
+        fprintf(stderr,"bb->getNo()是 %d，他的支配前驱有 ",bb->getNo());
+        for (auto& predBB : bb->reverseDOMpred) {
+            fprintf(stderr,"%d ",predBB->getNo());
+            
+        }
+        fprintf(stderr,"\n");
+    }
+
+        // 计算支配树的后继节点
+    for (auto& bb : block_list) {
+        fprintf(stderr,"bb->getNo()是 %d，他的支配后继有 ",bb->getNo());
+        for (auto& BB : bb->reverseDOMsucc) {
+            fprintf(stderr,"%d ",BB->getNo());
+            
+        }
+        fprintf(stderr,"\n");
+        fprintf(stderr,"bb->getNo()是 %d，他的支配边界有 ",bb->getNo());
+        for (auto& predBB : bb->reverseDomFrontier) {
+            fprintf(stderr,"%d ",predBB->getNo());
+            
+        }
+        fprintf(stderr,"\n");
+
+    }
+
 }

@@ -2,6 +2,7 @@
 #include "Function.h"
 #include <algorithm>
 #include <unordered_map>
+#include <stack>
 #include "Type.h"
 
 extern FILE* yyout;
@@ -50,14 +51,11 @@ void BasicBlock::output() const
 
     if (!pred.empty())//如果前驱不为空，则输出前驱
     {
-        fprintf(stderr,"pred不为空\n");
-        fprintf(yyout, "%*c; preds = %%B%d", 32, '\t', pred[0]->getNo());
+        fprintf(yyout, "%*c; preds = %%B%d", 32, '\t', pred[0]->getNo()); //块前驱提示内容
         for (auto i = pred.begin() + 1; i != pred.end(); i++)
             fprintf(yyout, ", %%B%d", (*i)->getNo());
     }
     fprintf(yyout, "\n");
-    fprintf(stderr,"已输出B%d,开始遍历指令链表:\n", no);
-    fprintf(stderr,"head->getNext()是否等于head:%d\n",head->getNext()==head);
     for (auto i = head->getNext(); i != head; i = i->getNext()){
         //fprintf(stderr,"进来了吗\n");
         //fprintf(stderr,"i的指令类型是%d\n",i->getInstType());
@@ -239,7 +237,53 @@ void BasicBlock::addPred(BasicBlock *bb)
 void BasicBlock::removePred(BasicBlock *bb)
 {
     pred.erase(std::find(pred.begin(), pred.end(), bb));
+    fprintf(stderr,"开始处理phi前驱清理\n");
+    Instruction *next;
+  //fprintf(stderr,"head是%d\n",head->getInstType());
+  for (auto i = head->getNext(); i != head; i = next)
+  {
+    if(i->isPhi())
+    {
+        fprintf(stderr,"遇到了phi指令\n");
+        PhiInstruction *phiInst = dynamic_cast<PhiInstruction*>(i);
+        fprintf(stderr,"删之前phi指令的incoming数目是%ld\n",phiInst->incoming.size());
+
+        phiInst->removeIncoming(bb);
+        fprintf(stderr,"删之后phi指令的incoming数目是%ld\n",phiInst->incoming.size());
+
+    }
+    next=i->getNext();
+
+  }
 }
+
+void BasicBlock::safeRemoveAllSucc()
+{
+    for(auto &bb:succ)
+        bb->removePred(this);
+    succ.clear();
+}
+
+void BasicBlock::safeRemoveAllPred()
+{
+    for(auto &bb:pred)
+        bb->removeSucc(this);
+    pred.clear();
+}
+
+Instruction *BasicBlock::getTerminal()//获取基本块的终结指令
+{
+    if(empty()){
+        return nullptr;
+    }
+    Instruction* lastInst = rbegin();
+    if(lastInst->isUncond() || lastInst->isCond() || lastInst->isRet())
+    {
+        return lastInst;
+    }
+    return nullptr;
+}
+
 
 void BasicBlock::refresh()
 {

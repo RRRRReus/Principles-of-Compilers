@@ -12,16 +12,20 @@ class BasicBlock
 
 private:
     std::vector<BasicBlock *> pred, succ;//前驱和后继
+    std::vector<BasicBlock *> reversePred,reverseSucc;//反向前驱和后继
 
     Instruction *head;//指向第一条指令
     Instruction *optimizeHead;//优化后的链表头
     Function *parent;//指向所属函数
     int no;//基本块编号
 
+
 public:
     bool reachable=false;//是否可达
     std::vector<BasicBlock *> DOMpred, DOMsucc;//支配树的前驱和后继
     std::vector<BasicBlock *> DomFrontier;//支配边界
+    std::vector<BasicBlock *> reverseDOMpred,reverseDOMsucc;//反支配树的前驱和后继
+    std::vector<BasicBlock *> reverseDomFrontier;//反支配边界(反支配树的支配边界)
     BasicBlock *while_cond;//如果该基本块是while循环的循环体，则while_cond指向循环条件
     BasicBlock *while_end;//如果该基本块是while循环的循环体，则while_end指向循环结束
     BasicBlock(Function *);
@@ -42,6 +46,8 @@ public:
     void removePred(BasicBlock *);//删除前驱
     void cleanPred(){pred.clear();}
     void cleanSucc(){succ.clear();}
+    void safeRemoveAllSucc();//安全删除所有后继
+    void safeRemoveAllPred();//安全删除所有前驱
     int getNo() { return no; };
     Function *getParent() { return parent; };
     Instruction* begin() { return head->getNext();};
@@ -59,10 +65,18 @@ public:
         // 设置支配树的前驱和后继
     void setDOMpred(const std::vector<BasicBlock*>& predBlocks) { DOMpred = predBlocks; }
     void setDOMsucc(const std::vector<BasicBlock*>& succBlocks) { DOMsucc = succBlocks; }
+        // 设置反支配树的前驱和后继
+    void setReverseDOMpred(const std::vector<BasicBlock*>& predBlocks) { reverseDOMpred = predBlocks; }
+    void setReverseDOMsucc(const std::vector<BasicBlock*>& succBlocks) { reverseDOMsucc = succBlocks; }//????
 
     // 获取的前驱和后继
     std::vector<BasicBlock*>& getPred() { return pred; }
     std::vector<BasicBlock*>& getSucc() { return succ; }
+    std::vector<BasicBlock*>& getReversePred() { return reversePred; }
+    std::vector<BasicBlock*>& getReverseSucc() { return reverseSucc; }
+
+    Instruction* getTerminal();//获取基本块的终结指令
+
     
 };
 

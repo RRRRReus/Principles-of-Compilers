@@ -1,125 +1,178 @@
 target triple = "armv7-unknown-linux-gnueabihf"
+@A = global [100 x i32] zeroinitializer, align 4
+@B = global [100 x i32] zeroinitializer, align 4
+@C = global [100 x i32] zeroinitializer, align 4
+@D = global [100 x i32] zeroinitializer, align 4
+@p = constant i32 234145, align 4
+define void @f(i32* %t171, i32* %t173, i32* %t175, i32* %t177, i32 %t179) {
+B169:
+  %t178 = alloca i32*, align 4
+  %t176 = alloca i32*, align 4
+  %t174 = alloca i32*, align 4
+  %t172 = alloca i32*, align 4
+  store i32* %t171, i32** %t172, align 4
+  store i32* %t173, i32** %t174, align 4
+  store i32* %t175, i32** %t176, align 4
+  store i32* %t177, i32** %t178, align 4
+  %t184 = icmp eq i32 %t179, 0
+  %t185 = icmp ne i1 %t184, 0
+  br i1 %t185, label %B181, label %B182
+B181:                               	; preds = %B169
+  br label %B170
+B182:                               	; preds = %B169
+  br label %B189
+B170:                               	; preds = %B181, %B188
+  ret void
+B189:                               	; preds = %B182, %B187
+  %t452 = phi i32 [ 0, %B182 ], [ %t65, %B187 ]
+  %t191 = icmp slt i32 %t452, 100
+  br i1 %t191, label %B187, label %B188
+B187:                               	; preds = %B189
+  %t193 = load i32*, i32** %t172, align 4
+  %t197 = load i32*, i32** %t176, align 4
+  %t201 = load i32*, i32** %t174, align 4
+  %t205 = load i32*, i32** %t178, align 4
+  %t209 = load i32*, i32** %t174, align 4
+  %t213 = load i32*, i32** %t172, align 4
+  %t217 = load i32*, i32** %t176, align 4
+  %t221 = load i32*, i32** %t178, align 4
+  %t225 = load i32*, i32** %t176, align 4
+  %t229 = load i32*, i32** %t174, align 4
+  %t233 = load i32*, i32** %t172, align 4
+  %t237 = load i32*, i32** %t178, align 4
+  %t241 = load i32*, i32** %t172, align 4
+  %t245 = load i32*, i32** %t172, align 4
+  %t250 = load i32*, i32** %t174, align 4
+  %t254 = load i32*, i32** %t174, align 4
+  %t259 = load i32*, i32** %t176, align 4
+  %t263 = load i32*, i32** %t176, align 4
+  %t65 = add i32 %t452, 1
+  br label %B189
+B188:                               	; preds = %B189
+  %t269 = load i32*, i32** %t174, align 4
+  %t270 = load i32*, i32** %t176, align 4
+  %t271 = load i32*, i32** %t172, align 4
+  %t272 = load i32*, i32** %t178, align 4
+  %t71 = sub i32 %t179, 1
+  call void @f(i32* %t269, i32* %t270, i32* %t271, i32* %t272, i32 %t71)
+  br label %B170
+}
+define i32 @sum(i32* %t280) {
+B275:
+  %t281 = alloca i32*, align 4
+  store i32* %t280, i32** %t281, align 4
+  br label %B286
+B286:                               	; preds = %B275, %B284
+  %t456 = phi i32 [ 0, %B275 ], [ %t85, %B284 ]
+  %t455 = phi i32 [ 0, %B275 ], [ %t82, %B284 ]
+  %t288 = icmp slt i32 %t456, 100
+  br i1 %t288, label %B284, label %B285
+B284:                               	; preds = %B286
+  %t292 = load i32*, i32** %t281, align 4
+  %t293 = getelementptr inbounds i32,i32* %t292, i32 %t456
+  %t294 = load i32, i32* %t293, align 4
+  %t82 = add i32 %t455, %t294
+  %t85 = add i32 %t456, 1
+  br label %B286
+B285:                               	; preds = %B286
+  ret i32 %t455
+}
 define i32 @main() {
-B52:
-  br label %B61
-B61:                               	; preds = %B52, %B66
-  %t170 = phi i32 [ 0, %B52 ], [ %t169, %B66 ]
-  %t162 = phi i32 [ 0, %B52 ], [ %t50, %B66 ]
-  %t157 = phi i32 [ 0, %B52 ], [ %t158, %B66 ]
-  %t155 = phi i32 [ 0, %B52 ], [ %t152, %B66 ]
-  %t150 = phi i32 [ 0, %B52 ], [ %t149, %B66 ]
-  %t141 = phi i32 [ 0, %B52 ], [ %t140, %B66 ]
-  %t63 = icmp slt i32 %t162, 20
-  br i1 %t63, label %B59, label %B60
-B59:                               	; preds = %B61
-  br label %B67
-B60:                               	; preds = %B61
-  ret i32 %t170
-B67:                               	; preds = %B59, %B72
-  %t169 = phi i32 [ %t170, %B59 ], [ %t168, %B72 ]
-  %t161 = phi i32 [ %t162, %B59 ], [ %t163, %B72 ]
-  %t158 = phi i32 [ 0, %B59 ], [ %t44, %B72 ]
-  %t152 = phi i32 [ %t155, %B59 ], [ %t153, %B72 ]
-  %t149 = phi i32 [ %t150, %B59 ], [ %t143, %B72 ]
-  %t140 = phi i32 [ %t141, %B59 ], [ %t139, %B72 ]
-  %t69 = icmp slt i32 %t158, 10
-  br i1 %t69, label %B65, label %B66
-B65:                               	; preds = %B67
-  br label %B73
-B66:                               	; preds = %B67
-  %t50 = add i32 %t161, 1
-  br label %B61
-B73:                               	; preds = %B65, %B121
-  %t168 = phi i32 [ %t169, %B65 ], [ %t167, %B121 ]
-  %t163 = phi i32 [ %t161, %B65 ], [ %t164, %B121 ]
-  %t156 = phi i32 [ %t158, %B65 ], [ %t159, %B121 ]
-  %t153 = phi i32 [ 0, %B65 ], [ %t41, %B121 ]
-  %t143 = phi i32 [ %t149, %B65 ], [ %t144, %B121 ]
-  %t139 = phi i32 [ %t140, %B65 ], [ %t138, %B121 ]
-  %t75 = icmp slt i32 %t153, 5
-  br i1 %t75, label %B71, label %B72
-B71:                               	; preds = %B73
-  br label %B79
-B72:                               	; preds = %B73
-  %t44 = add i32 %t156, 1
-  br label %B67
-B79:                               	; preds = %B71, %B108
-  %t167 = phi i32 [ %t168, %B71 ], [ %t38, %B108 ]
-  %t164 = phi i32 [ %t163, %B71 ], [ %t165, %B108 ]
-  %t159 = phi i32 [ %t156, %B71 ], [ %t160, %B108 ]
-  %t151 = phi i32 [ %t153, %B71 ], [ %t154, %B108 ]
-  %t148 = phi i32 [ 0, %B71 ], [ %t35, %B108 ]
-  %t138 = phi i32 [ %t139, %B71 ], [ %t137, %B108 ]
-  %t81 = icmp slt i32 %t148, 3
-  br i1 %t81, label %B77, label %B78
-B77:                               	; preds = %B79
-  %t14 = add i32 %t148, 1
-  %t85 = icmp sge i32 %t14, 3
-  %t105 = icmp ne i1 %t85, 0
-  br i1 %t105, label %B82, label %B83
-B78:                               	; preds = %B79, %B97
-  %t144 = phi i32 [ %t148, %B79 ], [ %t148, %B97 ]
-  br label %B122
-B82:                               	; preds = %B77
-  %t104 = icmp ne i32 %t148, 0
-  br i1 %t104, label %B86, label %B87
-B83:                               	; preds = %B77, %B87
-  %t145 = phi i32 [ %t148, %B77 ], [ %t146, %B87 ]
-  br label %B109
-B122:                               	; preds = %B78
-  %t123 = icmp ne i32 1, 0
-  br i1 %t123, label %B120, label %B121
-B86:                               	; preds = %B82
-  %t94 = icmp ne i32 %t148, 0
-  %t93 = xor i1 %t94, 1
-  %t95 = icmp ne i32 %t148, 0
-  %t96 = or i1 %t95, %t93
-  %t103 = icmp ne i1 %t96, 0
-  br i1 %t103, label %B89, label %B90
-B87:                               	; preds = %B82, %B90
-  %t146 = phi i32 [ %t148, %B82 ], [ %t147, %B90 ]
-  br label %B83
-B109:                               	; preds = %B83, %B107
-  %t166 = phi i32 [ %t167, %B83 ], [ %t166, %B107 ]
-  %t165 = phi i32 [ %t164, %B83 ], [ %t165, %B107 ]
-  %t160 = phi i32 [ %t159, %B83 ], [ %t160, %B107 ]
-  %t154 = phi i32 [ %t151, %B83 ], [ %t154, %B107 ]
-  %t142 = phi i32 [ %t145, %B83 ], [ %t142, %B107 ]
-  %t137 = phi i32 [ 0, %B83 ], [ %t29, %B107 ]
-  %t111 = icmp slt i32 %t137, 2
-  br i1 %t111, label %B107, label %B108
-B120:                               	; preds = %B122
-  br label %B126
-B121:                               	; preds = %B122, %B125
-  %t41 = add i32 %t151, 1
-  br label %B73
-B89:                               	; preds = %B86
-  %t100 = sub i32 0, 1
-  %t22 = sub i32 %t148, %t100
-  %t101 = icmp sge i32 %t22, 3
-  %t102 = icmp ne i1 %t101, 0
-  br i1 %t102, label %B97, label %B98
-B90:                               	; preds = %B86, %B98
-  %t147 = phi i32 [ %t148, %B86 ], [ %t148, %B98 ]
-  br label %B87
-B107:                               	; preds = %B109
-  %t29 = add i32 %t137, 1
-  br label %B109
-B108:                               	; preds = %B109
-  %t35 = add i32 %t142, 1
-  %t38 = add i32 %t166, 1
-  br label %B79
-B126:                               	; preds = %B120
-  %t127 = icmp ne i32 1, 0
-  br i1 %t127, label %B124, label %B125
-B97:                               	; preds = %B89
-  br label %B78
-B98:                               	; preds = %B89
-  br label %B90
-B124:                               	; preds = %B126
-  br label %B125
-B125:                               	; preds = %B124, %B126
-  br label %B121
+B298:
+  br label %B306
+B306:                               	; preds = %B298, %B304
+  %t457 = phi i32 [ 0, %B298 ], [ %t111, %B304 ]
+  %t308 = icmp slt i32 %t457, 100
+  br i1 %t308, label %B304, label %B305
+B304:                               	; preds = %B306
+  %t312 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 %t457
+  %t313 = load i32, i32* %t312, align 4
+  %t93 = sdiv i32 %t457, 4
+  %t94 = add i32 1, %t93
+  store i32 %t94, i32* %t312, align 4
+  %t318 = getelementptr inbounds [100 x i32],[100 x i32]* @B, i32 0, i32 %t457
+  %t319 = load i32, i32* %t318, align 4
+  %t98 = sdiv i32 %t457, 3
+  %t99 = add i32 2, %t98
+  store i32 %t99, i32* %t318, align 4
+  %t324 = getelementptr inbounds [100 x i32],[100 x i32]* @C, i32 0, i32 %t457
+  %t325 = load i32, i32* %t324, align 4
+  %t103 = sdiv i32 %t457, 2
+  %t104 = add i32 3, %t103
+  store i32 %t104, i32* %t324, align 4
+  %t330 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 %t457
+  %t331 = load i32, i32* %t330, align 4
+  %t108 = add i32 4, %t457
+  store i32 %t108, i32* %t330, align 4
+  %t111 = add i32 %t457, 1
+  br label %B306
+B305:                               	; preds = %B306
+  %t340 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t341 = load i32, i32* %t340, align 4
+  %t342 = call i32 @sum(i32* %t340)
+  %t117 = add i32 0, %t342
+  %t345 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 0
+  %t346 = load i32, i32* %t345, align 4
+  %t349 = getelementptr inbounds [100 x i32],[100 x i32]* @B, i32 0, i32 0
+  %t350 = load i32, i32* %t349, align 4
+  %t353 = getelementptr inbounds [100 x i32],[100 x i32]* @C, i32 0, i32 0
+  %t354 = load i32, i32* %t353, align 4
+  %t357 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t358 = load i32, i32* %t357, align 4
+  call void @f(i32* %t345, i32* %t349, i32* %t353, i32* %t357, i32 10)
+  %t364 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t365 = load i32, i32* %t364, align 4
+  %t366 = call i32 @sum(i32* %t364)
+  %t127 = add i32 %t117, %t366
+  %t369 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 0
+  %t370 = load i32, i32* %t369, align 4
+  %t373 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 0
+  %t374 = load i32, i32* %t373, align 4
+  %t377 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 0
+  %t378 = load i32, i32* %t377, align 4
+  %t381 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t382 = load i32, i32* %t381, align 4
+  call void @f(i32* %t369, i32* %t373, i32* %t377, i32* %t381, i32 10)
+  %t388 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t389 = load i32, i32* %t388, align 4
+  %t390 = call i32 @sum(i32* %t388)
+  %t137 = add i32 %t127, %t390
+  %t395 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 0
+  %t396 = load i32, i32* %t395, align 4
+  %t397 = call i32 @sum(i32* %t395)
+  %t142 = add i32 %t137, %t397
+  %t400 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t401 = load i32, i32* %t400, align 4
+  %t404 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t405 = load i32, i32* %t404, align 4
+  %t408 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t409 = load i32, i32* %t408, align 4
+  %t412 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 0
+  %t413 = load i32, i32* %t412, align 4
+  call void @f(i32* %t400, i32* %t404, i32* %t408, i32* %t412, i32 10)
+  %t419 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 0
+  %t420 = load i32, i32* %t419, align 4
+  %t421 = call i32 @sum(i32* %t419)
+  %t152 = add i32 %t142, %t421
+  %t426 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t427 = load i32, i32* %t426, align 4
+  %t428 = call i32 @sum(i32* %t426)
+  %t157 = add i32 %t152, %t428
+  call void @putint(i32 %t157)
+  call void @putch(i32 10)
+  %t434 = getelementptr inbounds [100 x i32],[100 x i32]* @A, i32 0, i32 0
+  %t435 = load i32, i32* %t434, align 4
+  call void @putarray(i32 100, i32* %t434)
+  %t439 = getelementptr inbounds [100 x i32],[100 x i32]* @B, i32 0, i32 0
+  %t440 = load i32, i32* %t439, align 4
+  call void @putarray(i32 100, i32* %t439)
+  %t444 = getelementptr inbounds [100 x i32],[100 x i32]* @C, i32 0, i32 0
+  %t445 = load i32, i32* %t444, align 4
+  call void @putarray(i32 100, i32* %t444)
+  %t449 = getelementptr inbounds [100 x i32],[100 x i32]* @D, i32 0, i32 0
+  %t450 = load i32, i32* %t449, align 4
+  call void @putarray(i32 100, i32* %t449)
+  ret i32 0
 }
 declare i32 @getint()
 declare void @putint(i32)
