@@ -57,6 +57,7 @@ public:
     virtual ~ConstantSymbolEntry() {};
     int getValue() const {return value;};
     float getFloatValue() const {return fvalue;};
+    void setFloatValue(float fvalue) {this->fvalue = fvalue;};
     std::string toStr();
     long long getLongLongValue() const {return llvalue;};
     // You can add any function you need here.

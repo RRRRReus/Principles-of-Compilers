@@ -174,7 +174,7 @@ void Function::removeUnreachableBlocks()
     for (auto it = block_list.begin(); it != block_list.end(); ) {
         fprintf(stderr,"块%d是否可达%d\n",(*it)->getNo(),(*it)->reachable);
         BasicBlock* bb = *it;
-        if (bb->reachable==false) { // 示例条件：删除编号为偶数的块
+        if (bb->reachable==false) { 
             delete bb;
             it = block_list.begin(); // 删除元素并更新迭代器
             
@@ -362,6 +362,7 @@ for (auto i = entry->getHead()->getNext(); i != entry->getHead(); i = i->getNext
         }
         
     }
+    sccp();
     //fprintf(stderr, "函数%s优化完成\n", sym_ptr->toStr().c_str());
     deadCodeElimination();//执行死代码消除优化
     if(block_list.size()<1000)
@@ -818,6 +819,129 @@ void Function::createReverseCFG() {
             fprintf(stderr, "基本块%d\n", succ->getNo());
         }
     }
+}
+
+void Function::sccp()
+{
+    fprintf(stderr, "开始执行函数%s常数传播\n", sym_ptr->toStr().c_str());
+
+
+    bool needsccp=true;
+    while(needsccp)
+    {
+        needsccp=false;
+    
+
+    std::set<BasicBlock *> v;   //用于记录已经访问过的基本块
+    std::list<BasicBlock *> q;  //用于广度优先搜索
+    q.push_back(entry);//将入口基本块加入队列
+    v.insert(entry);//将入口基本块加入已访问集合
+    while (!q.empty())//广度优先搜索
+    {
+        auto bb = q.front();//取出队列的第一个元素
+        q.pop_front();//删除队列的第一个元素
+       
+
+        for (auto i = bb->getHead()->getNext(); i != bb->getHead(); i = i->getNext())
+        {
+            if(i->isBinary()&&dynamic_cast<BinaryInstruction*>(i)->canBeCalculated())
+            {
+                
+                i->getDef()->replaceAllUsesWith(dynamic_cast<BinaryInstruction*>(i)->CalculatedResult());
+                needsccp=true;
+                i->save=false;
+            }
+            if(i->isCmp()&&dynamic_cast<CmpInstruction*>(i)->canBeCalculated())
+            {
+                needsccp=true;
+                i->getDef()->replaceAllUsesWith(dynamic_cast<CmpInstruction*>(i)->CalculatedResult());
+                i->save=false;
+            }
+            if(i->isZext()&&dynamic_cast<ZextInstruction*>(i)->canBeCalculated())
+            {
+                needsccp=true;
+                i->getDef()->replaceAllUsesWith(dynamic_cast<ZextInstruction*>(i)->CalculatedResult());
+                i->save=false;
+            }
+
+            if(i->isCond()&&dynamic_cast<CondBrInstruction*>(i)->getUse()[0]->getSymbolEntry()->isConstant())
+            {
+                needsccp=true;
+                if(dynamic_cast<ConstantSymbolEntry*>(dynamic_cast<CondBrInstruction*>(i)->getUse()[0]->getSymbolEntry())->getValue())
+                {
+                    Instruction* uncond=new UncondBrInstruction(dynamic_cast<CondBrInstruction*>(i)->getTrueBranch(), bb);
+                    uncond->save=true;
+                    bb->removeSucc(dynamic_cast<CondBrInstruction*>(i)->getFalseBranch());
+                    dynamic_cast<CondBrInstruction*>(i)->getFalseBranch()->removePred(bb);
+                    i->save=false;
+                }
+                else
+                {
+                    Instruction* uncond=new UncondBrInstruction(dynamic_cast<CondBrInstruction*>(i)->getFalseBranch(), bb);
+                    uncond->save=true;
+                    bb->removeSucc(dynamic_cast<CondBrInstruction*>(i)->getTrueBranch());
+                    dynamic_cast<CondBrInstruction*>(i)->getTrueBranch()->removePred(bb);
+                    i->save=false;
+                }
+            }
+        }
+
+        bb->refresh();
+
+
+       
+        for (auto succ = bb->succ_begin(); succ != bb->succ_end(); succ++)//遍历基本块的后继
+        {
+            if (v.find(*succ) == v.end())//如果后继不在已访问集合中
+            {
+                v.insert(*succ);//将后继加入已访问集合
+                q.push_back(*succ);//将后继加入队列
+            }
+        }
+    }
+
+    removeUnreachableBlocks();
+    deleteSingalPHI();
+    }
+    
+}
+
+void Function::deleteSingalPHI()
+{
+    std::set<BasicBlock *> v;   //用于记录已经访问过的基本块
+    std::list<BasicBlock *> q;  //用于广度优先搜索
+    q.push_back(entry);//将入口基本块加入队列
+    v.insert(entry);//将入口基本块加入已访问集合
+    while (!q.empty())//广度优先搜索
+    {
+        auto bb = q.front();//取出队列的第一个元素
+        q.pop_front();//删除队列的第一个元素
+       
+
+        for (auto i = bb->getHead()->getNext(); i != bb->getHead(); i = i->getNext())
+        {
+            if(i->isPhi())
+            {
+                PhiInstruction *PHIins=dynamic_cast<PhiInstruction*>(i);
+                if(PHIins->incoming.size()==1)
+                {
+                    PHIins->getDef()->replaceAllUsesWith(PHIins->getUse()[0]);
+                    PHIins->save=false;
+                }
+
+            }
+        }
+       bb->refresh();
+        for (auto succ = bb->succ_begin(); succ != bb->succ_end(); succ++)//遍历基本块的后继
+        {
+            if (v.find(*succ) == v.end())//如果后继不在已访问集合中
+            {
+                v.insert(*succ);//将后继加入已访问集合
+                q.push_back(*succ);//将后继加入队列
+            }
+        }
+    }
+
 }
 
 void Function::output() const

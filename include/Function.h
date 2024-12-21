@@ -65,6 +65,8 @@ public:
     void aggressiveDeadCodeElimination(); //激进的死代码消除优化
     BasicBlock* findFirstLiveSuccessor(BasicBlock* bb, const std::unordered_set<BasicBlock*>& liveBlock);
     void createReverseCFG();
+    void sccp();
+    void deleteSingalPHI();
 };
 
 #endif
