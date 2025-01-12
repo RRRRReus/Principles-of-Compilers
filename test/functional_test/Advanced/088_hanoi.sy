@@ -25,14 +25,3 @@ int main()
     }
     return 0;
 }
-
-// int main()
-// {
-//     int n=10; 
-//     putint(n); 
-//     putint(10);
-//     putint(n);
-//     putch(98);
-//     putch(32);
-//     putch(97);
-// }
