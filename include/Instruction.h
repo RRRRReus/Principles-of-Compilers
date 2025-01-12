@@ -381,6 +381,7 @@ public:
     Operand *getDef() { return operands.empty() ? nullptr : operands[0]; }//获取返回值操作数
     std::vector<Operand *> getUse() { return std::vector<Operand *>(operands.begin() + 1, operands.end()); }//获取所有实参操作数
     bool hasSideEffects() const override { return true; } // Call 指令有副作用
+    void genMachineCode(AsmBuilder*) {};
 
 private:
     IdentifierSymbolEntry *funcSE=nullptr;
@@ -402,7 +403,7 @@ public:
     std::vector<Operand *> getUse() override;
     bool canBeCalculated();//是否可以计算
     Operand *CalculatedResult();//计算结果
-
+    void genMachineCode(AsmBuilder*) {};
     
 };
 class GetElementPtrInstruction : public Instruction
@@ -413,6 +414,7 @@ public:
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
+    void genMachineCode(AsmBuilder*) {};
     
 
 private:
@@ -432,6 +434,7 @@ public:
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
+    void genMachineCode(AsmBuilder*) {};
     
 };
 
@@ -450,6 +453,7 @@ public:
     void output() const override;
     Operand *getDef() override {return operands[0];}
     std::vector<Operand *> getUse() override {return {operands[1]};}
+    void genMachineCode(AsmBuilder*) {};
     
 
 };
@@ -469,6 +473,7 @@ public:
     void output() const override;
     Operand *getDef() override {return operands[0];}
     std::vector<Operand *> getUse() override {return {operands[1]};}
+    void genMachineCode(AsmBuilder*) {};
     
 };
 /**
@@ -489,6 +494,7 @@ public:
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
     std::vector<std::pair<Operand *, BasicBlock *>> incoming;//phi指令的入口
+    void genMachineCode(AsmBuilder*) {};
 
 private:
     
