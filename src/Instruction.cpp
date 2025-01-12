@@ -1,6 +1,8 @@
 #include "Instruction.h"
 #include "BasicBlock.h"
 #include <iostream>
+#include <sstream>
+#include <string>
 #include "Function.h"
 #include "Type.h"
 extern FILE* yyout;
@@ -25,6 +27,58 @@ Instruction::~Instruction()
 BasicBlock *Instruction::getParent()
 {
     return parent;
+}
+
+bool Instruction::haveSameOperator(Instruction *inst)
+{
+    //fprintf(stderr,"看是不是相同的操作符\n");
+    if(this->instType!=inst->instType)
+        return false;
+    //fprintf(stderr,"看是不是相同的二元操作符\n");
+    if(this->instType == BINARY&&inst->instType == BINARY)
+    {
+        if(dynamic_cast<BinaryInstruction*>(this)->opcode == dynamic_cast<BinaryInstruction*>(inst)->opcode)
+        {
+            //fprintf(stderr,"sizaizh>jhfladkjhgflaanrfggjk;lnnds;jsfhg\n");
+            return true;
+        }
+            
+        else
+        {
+            return false;       
+        }
+            
+    }
+    //fprintf(stderr,"看是不是相同的比较符\n");
+    if(this->instType == CMP&&inst->instType == CMP)
+    {
+        if(dynamic_cast<CmpInstruction*>(this)->opcode == dynamic_cast<CmpInstruction*>(inst)->opcode)
+            return true;
+        else
+            return false;
+    }
+
+    return false;
+}
+
+bool Instruction::canBeSwapped()
+{
+    if(this->instType == BINARY)
+    {
+        if(dynamic_cast<BinaryInstruction*>(this)->opcode == BinaryInstruction::ADD || dynamic_cast<BinaryInstruction*>(this)->opcode == BinaryInstruction::MUL)
+            return true;
+        else
+            return false;
+    }
+    if(this->instType == CMP)
+    {
+        if(dynamic_cast<CmpInstruction*>(this)->opcode == CmpInstruction::E || dynamic_cast<CmpInstruction*>(this)->opcode == CmpInstruction::NE)
+            return true;
+        else
+            return false;
+    }
+    return false;
+    
 }
 
 void Instruction::setParent(BasicBlock *bb)
@@ -74,23 +128,170 @@ BinaryInstruction::~BinaryInstruction()
 
 void BinaryInstruction::output() const
 {
-    std::string s1, s2, s3, op, type;
+    std::string s1, s2, s3, op, type;//s1为目的操作数，s2为源操作数1，s3为源操作数2，op为操作符，type为类型
     s1 = operands[0]->toStr();
     s2 = operands[1]->toStr();
     s3 = operands[2]->toStr();
     type = operands[0]->getType()->toStr();
+    fprintf(stderr, "看这里的type是%s\n",type.c_str());
     switch (opcode)
     {
+    case XOR:
+        op = "xor";
+        fprintf(stderr, "进入XOR,type是%s\n",type.c_str());
+        break;
+    case AND:
+        op = "and";
+        break;
+    case OR:
+        op = "or";
+        break;
+
     case ADD:
-        op = "add";
+        if(type == "float")
+            op = "fadd";
+        else
+            op = "add";
         break;
     case SUB:
-        op = "sub";
+        if(type == "float")
+            op = "fsub";
+        else
+            op = "sub";
         break;
+    case MUL:
+        if(type == "float")
+            op = "fmul";
+        else
+            op = "mul";
+        break;
+    case DIV:
+        if(type == "float")
+            op = "fdiv";
+        else
+            op = "sdiv";
+        break;
+    case MOD:
+        op = "srem";
+        break;
+        
     default:
         break;
     }
     fprintf(yyout, "  %s = %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+}
+
+bool BinaryInstruction::canBeCalculated()
+{
+    
+    if(operands[1]->getSymbolEntry()->isConstant() && operands[2]->getSymbolEntry()->isConstant())
+    {
+        fprintf(stderr,"oooop是%d\n",opcode);
+
+        ConstantSymbolEntry *val1 = dynamic_cast<ConstantSymbolEntry *>(operands[1]->getSymbolEntry());
+        ConstantSymbolEntry *val2 = dynamic_cast<ConstantSymbolEntry *>(operands[2]->getSymbolEntry());
+        if(val1->getType()->isLongLong()||val2->getType()->isLongLong())
+        {
+            fprintf(stderr,"LONGLONG超限\n");
+            return false;
+        }
+        if(val1->getType()->isInt())
+        {
+
+            int v1 = (val1)->getValue();
+            int v2 = (val2)->getValue();
+            fprintf(stderr,"op是%d\n",opcode);
+            fprintf(stderr,"v1是%d\n",v1);
+            fprintf(stderr,"v2是%d\n",v2);
+
+            if(v1==-2147483648||v2==-2147483648)
+            {
+                fprintf(stderr,"运算超限\n");
+                return false;
+            }
+            if(v1==2147483647||v2==2147483647)
+            {
+                fprintf(stderr,"运算超限\n");
+                return false;
+            }
+
+        }
+
+        return true;
+    }
+    return false;
+}
+
+Operand *BinaryInstruction::CalculatedResult()
+{
+    if(canBeCalculated())
+    {
+        ConstantSymbolEntry *val1 = dynamic_cast<ConstantSymbolEntry *>(operands[1]->getSymbolEntry());
+        ConstantSymbolEntry *val2 = dynamic_cast<ConstantSymbolEntry *>(operands[2]->getSymbolEntry());
+        ConstantSymbolEntry *result = new ConstantSymbolEntry(operands[0]->getType(), 0);
+        if(val1->getType()->isInt())
+        {
+            int v1 = (val1)->getValue();
+            int v2 = (val2)->getValue();
+            int res = 0;
+            switch (opcode)
+            {
+            case ADD:
+                res = v1 + v2;
+                break;
+            case SUB:
+                res = v1 - v2;
+                break;
+            case MUL:
+                res = v1 * v2;
+                break;
+            case DIV:
+                res = v1 / v2;
+                break;
+            case MOD:
+                res = v1 % v2;
+                break;
+            case AND:
+                res = v1 & v2;
+                break;
+            case OR:
+                res = v1 | v2;
+                break;
+            case XOR:
+                res = v1 ^ v2;
+                break;
+            default:
+                break;
+            }
+            result->setIntValue(res);
+        }
+        else if(val1->getType()->isFloat())
+        {
+            float v1 = (val1)->getFloatValue();
+            float v2 = (val2)->getFloatValue();
+            float res = 0.0f;
+            switch (opcode)
+            {
+            case ADD:
+                res = v1 + v2;
+                break;
+            case SUB:
+                res = v1 - v2;
+                break;
+            case MUL:
+                res = v1 * v2;
+                break;
+            case DIV:
+                res = v1 / v2;
+                break;
+            default:
+                break;
+            }
+            result->setFloatValue(res);
+        }
+            return new Operand(result);
+        }
+    return nullptr;
 }
 
 CmpInstruction::CmpInstruction(unsigned opcode, Operand *dst, Operand *src1, Operand *src2, BasicBlock *insert_bb): Instruction(CMP, insert_bb){
@@ -118,37 +319,132 @@ void CmpInstruction::output() const
     s1 = operands[0]->toStr();
     s2 = operands[1]->toStr();
     s3 = operands[2]->toStr();
-    type = operands[1]->getType()->toStr();
+    type = operands[1]->getType()->toStr();//能到这里来，说明两个操作数一定已经是同一种类型的了
     switch (opcode)
     {
     case E:
         op = "eq";
+        if(type == "float")
+            op = "oeq";
         break;
     case NE:
         op = "ne";
+        if(type == "float")
+            op = "one";
         break;
     case L:
         op = "slt";
+        if(type == "float")
+            op = "olt";
         break;
     case LE:
         op = "sle";
+        if(type == "float")
+            op = "ole";
         break;
     case G:
         op = "sgt";
+        if(type == "float")
+            op = "ogt";
         break;
     case GE:
         op = "sge";
+        if(type == "float")
+            op = "oge";
         break;
     default:
         op = "";
         break;
     }
 
+    if(type == "float")
+        fprintf(yyout, "  %s = fcmp %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+    else
     fprintf(yyout, "  %s = icmp %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+}
+
+bool CmpInstruction::canBeCalculated()
+{
+    if(operands[1]->getSymbolEntry()->isConstant() && operands[2]->getSymbolEntry()->isConstant())
+        return true;
+    return false;
+}
+
+Operand *CmpInstruction::CalculatedResult()
+{
+    if(canBeCalculated())
+    {
+        ConstantSymbolEntry *val1 = dynamic_cast<ConstantSymbolEntry *>(operands[1]->getSymbolEntry());
+        ConstantSymbolEntry *val2 = dynamic_cast<ConstantSymbolEntry *>(operands[2]->getSymbolEntry());
+        ConstantSymbolEntry *result = new ConstantSymbolEntry(operands[0]->getType(), 0);
+        if(val1->getType()->isInt())
+        {
+            int v1 = (val1)->getValue();
+            int v2 = (val2)->getValue();
+            int res = 0;
+            switch (opcode)
+            {
+            case E:
+                res = v1 == v2;
+                break;
+            case NE:
+                res = v1 != v2;
+                break;
+            case L:
+                res = v1 < v2;
+                break;
+            case LE:
+                res = v1 <= v2;
+                break;
+            case G:
+                res = v1 > v2;
+                break;
+            case GE:
+                res = v1 >= v2;
+                break;
+            default:
+                break;
+            }
+            result->setIntValue(res);
+        }
+        else if(val1->getType()->isFloat())
+        {
+            float v1 = (val1)->getFloatValue();
+            float v2 = (val2)->getFloatValue();
+            int res = 0;
+            switch (opcode)
+            {
+            case E:
+                res = v1 == v2;
+                break;
+            case NE:
+                res = v1 != v2;
+                break;
+            case L:
+                res = v1 < v2;
+                break;
+            case LE:
+                res = v1 <= v2;
+                break;
+            case G:
+                res = v1 > v2;
+                break;
+            case GE:
+                res = v1 >= v2;
+                break;
+            default:
+                break;
+            }
+            result->setIntValue(res);
+        }
+        return new Operand(result);
+    }
+    return nullptr;
 }
 
 UncondBrInstruction::UncondBrInstruction(BasicBlock *to, BasicBlock *insert_bb) : Instruction(UNCOND, insert_bb)
 {
+    //fprintf(stderr,"UncondBrInstruction::UncondBrInstruction\n");
     branch = to;
 }
 
@@ -168,10 +464,12 @@ BasicBlock *UncondBrInstruction::getBranch()
 }
 
 CondBrInstruction::CondBrInstruction(BasicBlock*true_branch, BasicBlock*false_branch, Operand *cond, BasicBlock *insert_bb) : Instruction(COND, insert_bb){
+    
     this->true_branch = true_branch;
     this->false_branch = false_branch;
     cond->addUse(this);
     operands.push_back(cond);
+    //fprintf(stderr,"CondBrInstruction::CondBrInstruction\n");
 }
 
 CondBrInstruction::~CondBrInstruction()
@@ -241,8 +539,8 @@ void RetInstruction::output() const
 
 AllocaInstruction::AllocaInstruction(Operand *dst, SymbolEntry *se, BasicBlock *insert_bb) : Instruction(ALLOCA, insert_bb)
 {
-    operands.push_back(dst);
-    dst->setDef(this);
+    operands.push_back(dst);//将dst加入操作数列表
+    dst->setDef(this);//设置dst的定义
     this->se = se;
 }
 
@@ -255,6 +553,7 @@ AllocaInstruction::~AllocaInstruction()
 
 void AllocaInstruction::output() const
 {
+    fprintf(stderr,"进入AllocaInstruction::output函数\n");
     std::string dst, type;
     dst = operands[0]->toStr();
     type = se->getType()->toStr();
@@ -263,15 +562,15 @@ void AllocaInstruction::output() const
 
 LoadInstruction::LoadInstruction(Operand *dst, Operand *src_addr, BasicBlock *insert_bb) : Instruction(LOAD, insert_bb)
 {
-    operands.push_back(dst);
-    operands.push_back(src_addr);
+    operands.push_back(dst);//将dst加入操作数列表
+    operands.push_back(src_addr);//将src_addr加入操作数列表
     dst->setDef(this);
     src_addr->addUse(this);
 }
 
 LoadInstruction::~LoadInstruction()
 {
-    operands[0]->setDef(nullptr);
+    operands[0]->setDef(nullptr);//将dst的定义设为空
     if(operands[0]->usersNum() == 0)
         delete operands[0];
     operands[1]->removeUse(this);
@@ -279,14 +578,32 @@ LoadInstruction::~LoadInstruction()
 
 void LoadInstruction::output() const
 {
-    std::string dst = operands[0]->toStr();
-    std::string src = operands[1]->toStr();
+    //fprintf(stderr,"进入LoadInstruction::output函数\n");
+    std::string dst = operands[0]->toStr();//目的操作数
+    std::string src = operands[1]->toStr();//源操作数
     std::string src_type;
     std::string dst_type;
-    dst_type = operands[0]->getType()->toStr();
+    dst_type = operands[0]->getType()->toStr();//目的操作数的类型
     src_type = operands[1]->getType()->toStr();
+    
+    Type *Element=dynamic_cast<PointerType*>(operands[1]->getType())->getValueType();
+    if(Element->isIntArray())
+    {
+        Type *newdst=new PointerType(TypeSystem::intType);
+        src_type=newdst->toStr();
+    }
+        if(Element->isFloatArray())
+    {
+        Type *newdst=new PointerType(TypeSystem::floatType);
+        src_type=newdst->toStr();
+
+    }
+
     fprintf(yyout, "  %s = load %s, %s %s, align 4\n", dst.c_str(), dst_type.c_str(), src_type.c_str(), src.c_str());
+    //fprintf(stderr, "  %s = load %s, %s %s, align 4\n", dst.c_str(), dst_type.c_str(), src_type.c_str(), src.c_str());
+
 }
+
 
 StoreInstruction::StoreInstruction(Operand *dst_addr, Operand *src, BasicBlock *insert_bb) : Instruction(STORE, insert_bb)
 {
@@ -294,6 +611,7 @@ StoreInstruction::StoreInstruction(Operand *dst_addr, Operand *src, BasicBlock *
     operands.push_back(src);
     dst_addr->addUse(this);
     src->addUse(this);
+    dst_addr->storeInsts.push_back(this);
 }
 
 StoreInstruction::~StoreInstruction()
@@ -304,14 +622,452 @@ StoreInstruction::~StoreInstruction()
 
 void StoreInstruction::output() const
 {
+    fprintf(stderr, "进入StoreInstruction::output函数\n");
     std::string dst = operands[0]->toStr();
     std::string src = operands[1]->toStr();
+
     std::string dst_type = operands[0]->getType()->toStr();
     std::string src_type = operands[1]->getType()->toStr();
 
+    if(dynamic_cast<PointerType*>(operands[0]->getType())!=nullptr)
+    {
+        Type *Element=dynamic_cast<PointerType*>(operands[0]->getType())->getValueType();
+        if(Element->isIntArray())
+        {
+            Type *newdst=new PointerType(TypeSystem::intType);
+            dst_type=newdst->toStr();
+        }
+            if(Element->isFloatArray())
+        {
+            Type *newdst=new PointerType(TypeSystem::floatType);
+            dst_type=newdst->toStr();
+
+        }
+
+    }
     fprintf(yyout, "  store %s %s, %s %s, align 4\n", src_type.c_str(), src.c_str(), dst_type.c_str(), dst.c_str());
+    //把src存给dst，后面为被赋值的
 }
 
+//函数调用命令
+CallInstruction::CallInstruction(Operand *dst, IdentifierSymbolEntry *funcSE, const std::vector<Operand *> &args, BasicBlock *insert_bb)
+    : Instruction(CALL, insert_bb), funcSE(funcSE)
+{
+    if (dst != nullptr) {
+        operands.push_back(dst);
+        dst->setDef(this);
+    }
+    for (auto arg : args) {
+        operands.push_back(arg);
+        arg->addUse(this);
+    }
+}
+
+//函数调用命令2
+CallInstruction::CallInstruction(Operand *dst, FunctionSymbolEntry *library_funcSE, const std::vector<Operand *> &args, BasicBlock *insert_bb)
+    : Instruction(CALL, insert_bb), library_funcSE(library_funcSE)
+{
+    if (dst != nullptr) {
+        operands.push_back(dst);
+        dst->setDef(this);
+    }
+    for (auto arg : args) {
+        operands.push_back(arg);
+        arg->addUse(this);
+    }
+}
+
+
+CallInstruction::~CallInstruction() {
+
+}
+
+void CallInstruction::output() const
+{
+    // 输出指令的字符串表示
+    // 这里可以根据需要实现具体的输出逻辑
+    std::string dst = operands[0]->toStr();//返回值操作数
+    std::string func;
+    std::string retType;
+    if(funcSE==nullptr){
+        func = library_funcSE->toStr();//函数名
+        retType= dynamic_cast<FunctionType*>(library_funcSE->getType())->getRetType()->toStr();//由符号表获取返回值类型
+    }
+        
+
+    else{
+        func = funcSE->toStr();//函数名
+        retType= dynamic_cast<FunctionType*>(funcSE->getType())->getRetType()->toStr();//由符号表获取返回值类型
+    }
+        
+    //Type* retType=funcSE->getType();//返回值类型
+    
+    std::vector<std::string> args;//实参字符串列表
+    std::vector<std::string> args_type;//实参类型列表
+    for(long unsigned int i = 1; i < operands.size(); i++)
+    {
+        args.push_back(operands[i]->toStr());//将实参加入到args中
+        args_type.push_back(operands[i]->getType()->toStr());//将实参类型加入到args_type中
+    }
+    if(retType!="void")
+        fprintf(yyout, "  %s = call %s %s(", dst.c_str(), retType.c_str(), func.c_str()); 
+    else
+    {
+        fprintf(yyout, "  call %s %s(" ,retType.c_str(), func.c_str()); 
+
+    }
+
+     // 输出实参
+    for (size_t i = 0; i < args.size(); i++)
+    {
+        if (i > 0)
+        {
+            fprintf(yyout, ", ");
+        }
+        fprintf(yyout, "%s %s", args_type[i].c_str(), args[i].c_str());//函数实惨类型 + 实参
+    }
+
+    fprintf(yyout, ")\n");
+
+}
+
+/**
+ * @brief 构造一个新的 ZextInstruction 对象。
+ * @param dst 目标操作数。
+ * @param src 源操作数。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ */
+ZextInstruction::ZextInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(ZEXT, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+    
+}
+
+/**
+ * @brief 输出指令的字符串表示。
+ */
+void ZextInstruction::output() const
+{
+    fprintf(yyout, "  %s = zext %s %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
+}
+
+/**
+ * @brief 获取定义操作数。
+ * @return 定义操作数。
+ */
+Operand *ZextInstruction::getDef()
+{
+    return operands[0];
+}
+
+/**
+ * @brief 获取使用操作数。
+ * @return 使用操作数的向量。
+ */
+std::vector<Operand *> ZextInstruction::getUse()
+{
+    return {operands[1]};
+}
+
+bool ZextInstruction::canBeCalculated()
+{
+    if(operands[1]->getSymbolEntry()->isConstant())
+        return true;
+    return false;
+}
+
+Operand *ZextInstruction::CalculatedResult()
+{
+    if(canBeCalculated())
+    {
+        ConstantSymbolEntry *result = new ConstantSymbolEntry(operands[0]->getType(), 0);
+
+        ConstantSymbolEntry *val=dynamic_cast<ConstantSymbolEntry*>(operands[1]->getSymbolEntry());
+        if(val->getValue()==1)
+        {
+            result->setIntValue(1);
+        }
+        else
+        {
+            result->setIntValue(0);
+        }
+        return new Operand(result);
+
+
+    }
+
+
+    return nullptr;
+}
+
+/**
+ * @brief 构造一个新的 GetElementPtrInstruction 对象。
+ * @param dst 目标操作数。
+ * @param src 源操作数。
+ * @param indices 索引操作数的向量。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ * 
+ *   `dst` = getelementptr inbounds `dst->type`, `src->type` `src`, `indices`
+ */
+GetElementPtrInstruction::GetElementPtrInstruction(Operand *dst,Operand *element, Operand *src, const std::vector<Operand *> &indices, BasicBlock *insert_bb)
+    : Instruction(GEP, insert_bb), indices(indices)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    operands.push_back(element);
+    operands.insert(operands.end(), indices.begin(), indices.end());
+    dst->setDef(this);
+    src->addUse(this);
+    for(auto index:indices)
+    {
+        index->addUse(this);
+    }
+    
+}
+
+/**
+ * @brief 输出指令的字符串表示。
+ */
+void GetElementPtrInstruction::output() const
+{
+    fprintf(yyout, "  %s = getelementptr inbounds %s,%s %s",
+            operands[0]->toStr().c_str(),
+            operands[2]->getType()->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->toStr().c_str());
+        if(operands[2]->getSymbolEntry()->getType()->isIntArray()||operands[2]->getSymbolEntry()->getType()->isFloatArray())
+        {
+            fprintf(yyout,", i32 0");
+        }
+    for (size_t i = 3; i < operands.size(); ++i)
+    {
+        fprintf(yyout, ", %s %s",
+                operands[i]->getType()->toStr().c_str(),
+                operands[i]->toStr().c_str());
+    }
+    fprintf(yyout, "\n");
+}
+
+/**
+ * @brief 获取定义操作数。
+ * @return 定义操作数。
+ */
+Operand *GetElementPtrInstruction::getDef()
+{
+    return operands[0];
+}
+
+/**
+ * @brief 获取使用操作数。
+ * @return 使用操作数的向量。
+ */
+std::vector<Operand *> GetElementPtrInstruction::getUse()
+{
+    return std::vector<Operand *>(operands.begin() + 1, operands.end());
+}
+
+
+/**
+ * @brief 构造一个新的 BitcastInstruction 对象。
+ * @param dst 目标操作数。
+ * @param src 源操作数。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ */
+BitcastInstruction::BitcastInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(BITCAST, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+}
+
+/**
+ * @brief 输出指令的字符串表示。
+ */
+void BitcastInstruction::output() const
+{
+    fprintf(yyout, "  %s = bitcast %s %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
+}
+
+/**
+ * @brief 获取定义操作数。
+ * @return 定义操作数。
+ */
+Operand *BitcastInstruction::getDef()
+{
+    return operands[0];
+}
+
+/**
+ * @brief 获取使用操作数。
+ * @return 使用操作数的向量。
+ */
+std::vector<Operand *> BitcastInstruction::getUse()
+{
+    return {operands[1]};
+}
+
+//浮点数转整数指令
+
+FpToSiInstruction::FpToSiInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(FPTOI, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+FpToSiInstruction::~FpToSiInstruction()
+{
+    operands[0]->setDef(nullptr);
+    if(operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void FpToSiInstruction::output() const
+{
+    fprintf(yyout, "  %s = fptosi %s %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
+}
+
+//整数转浮点数指令
+SiToFpInstruction::SiToFpInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb)
+    : Instruction(SITOF, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+SiToFpInstruction::~SiToFpInstruction()
+{   
+    operands[0]->setDef(nullptr);
+    if(operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void SiToFpInstruction::output() const
+{
+    fprintf(yyout, "  %s = sitofp %s %s to %s\n",
+            operands[0]->toStr().c_str(),
+            operands[1]->getType()->toStr().c_str(),
+            operands[1]->toStr().c_str(),
+            operands[0]->getType()->toStr().c_str());
+}
+/**
+ * @brief 构造一个新的 PhiInstruction 对象。
+ * @param dst 目标操作数。
+ * @param incoming 输入边的操作数和基本块对的向量。
+ * @param insert_bb 将插入此指令的基本块。默认为 nullptr。
+ */
+PhiInstruction::PhiInstruction(Operand *dst, const std::vector<std::pair<Operand *, BasicBlock *>> &incoming, BasicBlock *insert_bb)
+    : Instruction(PHI, insert_bb), incoming(incoming)
+{
+    operands.push_back(dst);
+    dst->setDef(this);
+    for (const auto &pair : incoming)
+    {
+        operands.push_back(pair.first);
+        pair.first->addUse(this);
+    }
+}
+
+PhiInstruction::PhiInstruction(Operand *dst, BasicBlock *insert_bb): Instruction(PHI, insert_bb)
+{
+    operands.push_back(dst);
+    dst->setDef(this);
+    
+}
+
+void PhiInstruction::addIncoming(Operand *op, BasicBlock *bb)
+{
+    incoming.push_back(std::make_pair(op, bb));
+    operands.push_back(op);
+    op->addUse(this);
+}
+
+void PhiInstruction::removeIncoming(BasicBlock *bb)
+{
+    for (size_t i = 1; i < operands.size(); ++i)
+    {
+        if (incoming[i - 1].second == bb)
+        {
+            operands.erase(operands.begin() + i);
+            incoming.erase(incoming.begin() + i - 1);
+            //incoming[i - 1].first->removeUse(this);
+            break;
+        }
+    }
+    
+}
+
+/**
+ * @brief 输出指令的字符串表示。
+ */
+void PhiInstruction::output() const
+{
+    std::string dst = operands[0]->toStr();
+    std::string type = operands[0]->getType()->toStr();
+    if(operands[0]->getType()->isPtr())
+    {
+        type=dynamic_cast<PointerType*>(operands[0]->getType())->getValueType()->toStr();
+    }
+    fprintf(yyout, "  %s = phi %s ", dst.c_str(), type.c_str());
+    for(size_t i = 1; i < operands.size(); ++i)
+    {
+            fprintf(yyout, "[ ");
+            fprintf(yyout, "%s, %%B%d", operands[i]->toStr().c_str(),incoming[i-1].second->getNo());
+            fprintf(yyout, " ] ");
+        if(i<operands.size()-1)
+            fprintf(yyout, ",");
+    }
+    fprintf(yyout, "\n");
+}
+
+/**
+ * @brief 获取定义操作数。
+ * @return 定义操作数。
+ */
+Operand *PhiInstruction::getDef()
+{
+    return operands[0];
+}
+
+/**
+ * @brief 获取使用操作数。
+ * @return 使用操作数的向量。
+ */
+std::vector<Operand *> PhiInstruction::getUse()
+{
+    fprintf(stderr,"PhiInstruction::getUse\n");
+    fprintf(stderr,"operands.size()是%ld\n",operands.size());
+    std::vector<Operand *> uses;
+    for (size_t i = 1; i < operands.size(); ++i)
+    {
+        uses.push_back(operands[i]);
+        fprintf(stderr,"use:%s\n",operands[i]->toStr().c_str());
+    }
+
+    return uses;
+}
 MachineOperand* Instruction::genMachineOperand(Operand* ope)
 {
     auto se = ope->getEntry();

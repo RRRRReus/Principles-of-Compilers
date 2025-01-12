@@ -4,12 +4,16 @@
 class Unit;
 class Function;
 class BasicBlock;
-
+/**
+ * @class IRBuilder
+ * @brief 表示编译器中间表示中的IR构建器。
+ * 把unit和insertBB放在一起，方便生成IR。
+ */
 class IRBuilder
 {
 private:
-    Unit *unit;
-    BasicBlock *insertBB;   // The current basicblock that instructions should be inserted into.
+    Unit *unit; //表示当前的编译单元
+    BasicBlock *insertBB;   // The current basicblock that instructions should be inserted into. // 当前指令应插入的基本块。
 
 public:
     IRBuilder(Unit*unit) : unit(unit){};

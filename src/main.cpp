@@ -63,10 +63,16 @@ int main(int argc, char *argv[])
     yyparse();
     if(dump_type == AST)
         ast.output();
-    ast.typeCheck();
-    ast.genCode(&unit);
+    ast.typeCheck();    //类型检查
     if(dump_type == IR)
+    {
+        ast.genCode(&unit); //生成中间代码
+        unit.optimize();    //优化
         unit.output();
+    }
+
+    int f=6;
+    fprintf(stderr, "compile success,%d\n",f);
     unit.genMachineCode(&mUnit);
     LinearScan linearScan(&mUnit);
     linearScan.allocateRegisters();
