@@ -1165,6 +1165,54 @@ void LoadInstruction::genMachineCode(AsmBuilder* builder)
 void StoreInstruction::genMachineCode(AsmBuilder* builder)
 {
     // TODO
+
+     fprintf(stderr,"进入StoreInstruction::genMachineCode函数\n");
+
+    auto cur_block = builder->getBlock();
+    MachineInstruction* cur_inst = nullptr;
+    // store global operand
+    if(operands[0]->getEntry()->isVariable()
+    && dynamic_cast<IdentifierSymbolEntry*>(operands[0]->getEntry())->isGlobal())
+    {
+        fprintf(stderr,"StoreInstruction::genMachineCode函数中的全局变量\n");
+        auto dst = genMachineOperand(operands[1]);
+        auto internal_reg1 = genMachineVReg();
+        auto internal_reg2 = new MachineOperand(*internal_reg1);
+        auto src = genMachineOperand(operands[0]);
+        fprintf(stderr,"StoreInstruction::genMachineCode全局变量函数结束\n");
+
+        // example: Store r0, addr_a
+        cur_inst = new LoadMInstruction(cur_block, internal_reg1, src);
+        cur_block->InsertInst(cur_inst);
+        // example: Store r1, [r0]
+        cur_inst = new StoreMInstruction(cur_block, dst, internal_reg2);
+        cur_block->InsertInst(cur_inst);
+    }
+    // Store local operand
+    else if(operands[0]->getEntry()->isTemporary()
+    && operands[0]->getDef()
+    && operands[0]->getDef()->isAlloc())
+    {
+        fprintf(stderr,"StoreInstruction::genMachineCode函数中的局部变量\n");
+        // example: load r1, [r0, #4]
+        auto dst = genMachineOperand(operands[0]);
+        auto src1 = genMachineReg(11);
+        auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
+                fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
+
+        cur_inst = new StoreMInstruction(cur_block, dst, src1, src2);
+        cur_block->InsertInst(cur_inst);
+    }
+    // Load operand from temporary variable
+    else
+    {
+        // example: load r1, [r0]
+        auto dst = genMachineOperand(operands[0]);
+        auto src = genMachineOperand(operands[1]);
+        cur_inst = new StoreMInstruction(cur_block, dst, src);
+        cur_block->InsertInst(cur_inst);
+    }
+    fprintf(stderr,"StoreInstruction::genMachineCode函数结束\n");
 }
 
 void BinaryInstruction::genMachineCode(AsmBuilder* builder)

@@ -112,11 +112,28 @@ bool MachineOperand::isValidImm()
 void MachineInstruction::PrintCond()
 {
     // TODO
+    //OK???
     switch (cond)
     {
     case LT:
         fprintf(yyout, "lt");
         break;
+    case LE:
+        fprintf(yyout, "le");
+        break;
+    case GT:
+        fprintf(yyout, "gt");
+        break;
+    case GE:
+        fprintf(yyout, "ge");
+        break;
+    case EQ:
+        fprintf(yyout, "eq");
+        break;
+    case NE:    
+        fprintf(yyout, "ne");
+        break;
+
     default:
         break;
     }
@@ -268,11 +285,61 @@ StoreMInstruction::StoreMInstruction(MachineBlock* p,
     int cond)
 {
     // TODO
+
+
+
+    this->parent = p;
+    this->type = MachineInstruction::LOAD;
+    this->op = -1;
+    this->cond = cond;
+    this->use_list.push_back(src1);
+    this->use_list.push_back(src2);
+    src1->setParent(this);
+    src2->setParent(this);
+
+
+    if (src3)
+    {
+        this->use_list.push_back(src3);
+        src3->setParent(this);
+    }
+
 }
 
 void StoreMInstruction::output()
 {
     // TODO
+
+
+
+
+
+    fprintf(yyout, "\tstr ");
+    this->use_list[0]->output();
+    fprintf(yyout, ", ");
+
+    // Load immediate num, eg: ldr r1, =8
+    if(this->use_list[1]->isImm())
+    {
+        fprintf(yyout, "=%d\n", this->use_list[0]->getVal());
+        return;
+    }
+
+    // Load address
+    if(this->use_list[1]->isReg()||this->use_list[1]->isVReg())
+        fprintf(yyout, "[");
+
+    this->use_list[1]->output();
+    if( this->use_list.size() > 2 )
+    {
+        fprintf(yyout, ", ");
+        this->use_list[2]->output();
+    }
+
+    if(this->use_list[1]->isReg()||this->use_list[1]->isVReg())
+        fprintf(yyout, "]");
+    fprintf(yyout, "\n");
+
 }
 
 MovMInstruction::MovMInstruction(MachineBlock* p, int op, 
