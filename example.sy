@@ -12,7 +12,7 @@ int main(){
     a = 10;
     b = 4;
     c = 2;
-    if(c>3)
+    if(c>a)
     {
         c=6;
     }
@@ -21,5 +21,10 @@ int main(){
         c=7;
     }
     d = b+c;
+    while(d>3)
+    {
+        d = f();
+        return d;
+    }
     return f();
 }

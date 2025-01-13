@@ -288,11 +288,50 @@ BranchMInstruction::BranchMInstruction(MachineBlock* p, int op,
     int cond)
 {
     // TODO
+
+
+    this->parent = p;
+    this->type = MachineInstruction::BRANCH;
+    this->op = op;
+    this->cond = cond;
+    this->use_list.push_back(dst);
+    dst->setParent(this);
+
 }
 
 void BranchMInstruction::output()
 {
     // TODO
+
+
+    fprintf(yyout, "\t");
+    switch (this->op)
+    {
+    case MachineInstruction::EQ:
+        fprintf(yyout, "beq ");
+        break;
+    case MachineInstruction::NE:
+        fprintf(yyout, "bne ");
+        break;
+    case MachineInstruction::LT:
+        fprintf(yyout, "blt ");
+        break;
+    case MachineInstruction::LE:
+        fprintf(yyout, "ble ");
+        break;
+    case MachineInstruction::GT:
+        fprintf(yyout, "bgt ");
+        break;
+    case MachineInstruction::GE:
+        fprintf(yyout, "bge ");
+        break;
+    default:
+        fprintf(yyout, "b ");
+        break;
+    }
+    this->use_list[0]->output();
+    fprintf(yyout, "\n");
+
 }
 
 CmpMInstruction::CmpMInstruction(MachineBlock* p, 
@@ -300,6 +339,17 @@ CmpMInstruction::CmpMInstruction(MachineBlock* p,
     int cond)
 {
     // TODO
+
+
+    this->parent = p;
+    this->type = MachineInstruction::CMP;
+    this->op = -1;
+    this->cond = cond;
+    this->use_list.push_back(src1);
+    this->use_list.push_back(src2);
+    src1->setParent(this);
+    src2->setParent(this);
+
 }
 
 void CmpMInstruction::output()
@@ -307,6 +357,14 @@ void CmpMInstruction::output()
     // TODO
     // Jsut for reg alloca test
     // delete it after test
+
+
+    fprintf(yyout, "\tcmp ");
+    this->use_list[0]->output();
+    fprintf(yyout, ", ");
+    this->use_list[1]->output();
+    fprintf(yyout, "\n");
+
 }
 
 StackMInstrcuton::StackMInstrcuton(MachineBlock* p, int op, 

@@ -1250,16 +1250,56 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
 void CmpInstruction::genMachineCode(AsmBuilder* builder)
 {
     // TODO
+
+
+    auto cur_block = builder->getBlock();
+    auto src1 = genMachineOperand(operands[1]);
+    auto src2 = genMachineOperand(operands[2]);
+    MachineInstruction* cur_inst = nullptr;
+    cur_inst = new CmpMInstruction(cur_block, src1, src2);
+    cur_block->InsertInst(cur_inst);
+    builder->setCmpOpcode(opcode);
+
+
+    
+
 }
 
 void UncondBrInstruction::genMachineCode(AsmBuilder* builder)
 {
     // TODO
+
+
+
+
+    auto cur_block = builder->getBlock();
+    std::string true_label = ".L" + std::to_string(branch->getNo());
+    MachineOperand* true_src = new MachineOperand(true_label);
+    MachineInstruction* cur_inst = new BranchMInstruction(cur_block, -1, true_src);
+    cur_block->InsertInst(cur_inst);
+    
+
 }
 
 void CondBrInstruction::genMachineCode(AsmBuilder* builder)
 {
     // TODO
+
+
+    auto cur_block = builder->getBlock();
+    int opcode = builder->getCmpOpcode();
+    MachineInstruction* cur_inst = nullptr;
+    std::string true_label = ".L" + std::to_string(true_branch->getNo());
+    std::string false_label = ".L" + std::to_string(false_branch->getNo());
+    MachineOperand* true_src = new MachineOperand(true_label);
+    MachineOperand* false_src = new MachineOperand(false_label);
+    cur_inst = new BranchMInstruction(cur_block, opcode, true_src);
+    cur_block->InsertInst(cur_inst);
+    cur_inst = new BranchMInstruction(cur_block, -1,false_src);
+    cur_block->InsertInst(cur_inst);
+
+
+
 }
 
 void RetInstruction::genMachineCode(AsmBuilder* builder)
