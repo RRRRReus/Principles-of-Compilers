@@ -1,9 +1,25 @@
-#include"sysyruntimelibrary/sylib.h"
+//#include"sysyruntimelibrary/sylib.h"
+int ggg=9,kk=6;
+int f(){
+    int c;
+    int a;
+    kk=5;
+    a=kk;
+    return a;
+}
 int main(){
     int a, b, c, d;
     a = 10;
     b = 4;
     c = 2;
-    d = 2;
-    return (c + a) * (b - d); 
+    if(c>3)
+    {
+        c=6;
+    }
+    else
+    {
+        c=7;
+    }
+    d = b+c;
+    return f();
 }

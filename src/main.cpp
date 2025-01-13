@@ -63,19 +63,16 @@ int main(int argc, char *argv[])
     yyparse();
     if(dump_type == AST)
         ast.output();
-    ast.typeCheck();    //类型检查
-    if(dump_type == IR)
-    {
-        ast.genCode(&unit); //生成中间代码
-        unit.optimize();    //优化
-        unit.output();
-    }
+    ast.typeCheck();
+    ast.genCode(&unit);
+    //unit.optimize();
 
-    int f=6;
-    fprintf(stderr, "compile success,%d\n",f);
+    if(dump_type == IR)
+        unit.output();
     unit.genMachineCode(&mUnit);
-    LinearScan linearScan(&mUnit);
-    linearScan.allocateRegisters();
+    //LinearScan linearScan(&mUnit);
+    //linearScan.allocateRegisters();
+    fprintf(stderr, "生成汇编代码结束\n");
     if(dump_type == ASM)
         mUnit.output();
     return 0;
