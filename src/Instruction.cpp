@@ -1336,4 +1336,21 @@ void RetInstruction::genMachineCode(AsmBuilder* builder)
     * 1. Generate mov instruction to save return value in r0
     * 2. Restore callee saved registers and sp, fp
     * 3. Generate bx instruction */
+    auto cur_block = builder->getBlock();   
+    MachineInstruction* cur_inst = nullptr;
+    if(operands.empty())
+    {
+        //空的再说
+    }
+    else
+    {
+        auto src = genMachineOperand(operands[0]);
+        cur_inst = new MovMInstruction(cur_block,-1, genMachineReg(0), src);
+        cur_block->InsertInst(cur_inst);
+        cur_inst = new MovMInstruction(cur_block,-1, genMachineReg(13), genMachineReg(11));
+        cur_block->InsertInst(cur_inst);
+        cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::BX, genMachineReg(13));
+
+    }
+
 }

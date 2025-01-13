@@ -121,7 +121,7 @@ public:
 class BranchMInstruction : public MachineInstruction
 {
 public:
-    enum opType { B, BL, BX };
+    enum opType { B, BL, BX=20 };
     BranchMInstruction(MachineBlock* p, int op, 
                 MachineOperand* dst, 
                 int cond = MachineInstruction::NONE);
@@ -165,6 +165,7 @@ public:
     std::vector<MachineInstruction*>::iterator end() { return inst_list.end(); };
     MachineBlock(MachineFunction* p, int no) { this->parent = p; this->no = no; };
     void InsertInst(MachineInstruction* inst) { this->inst_list.push_back(inst); };
+    void InsertFront(MachineInstruction* inst) { this->inst_list.insert(inst_list.begin(), inst); };
     void addPred(MachineBlock* p) { this->pred.push_back(p); };
     void addSucc(MachineBlock* s) { this->succ.push_back(s); };
     std::set<MachineOperand*>& getLiveIn() {return live_in;};
@@ -187,6 +188,7 @@ public:
     std::vector<MachineBlock*>::iterator begin() { return block_list.begin(); };
     std::vector<MachineBlock*>::iterator end() { return block_list.end(); };
     MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr);
+    int getStackSize() { return stack_size; };
     /* HINT:
     * Alloc stack space for local variable;
     * return current frame offset ;

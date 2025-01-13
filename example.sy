@@ -1,3 +1,5 @@
+
+#include"sysyruntimelibrary/sylib.h"
 int sss=3;
 int aaa=1;
 int main(){
@@ -7,5 +9,6 @@ int main(){
   {
     
   }
+  putint(a);
   return a;
 }

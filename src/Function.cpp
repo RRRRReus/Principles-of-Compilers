@@ -12,6 +12,8 @@
 #include <stack>
 #include <unordered_map>
 #include <unordered_set>
+#include "AsmBuilder.h"
+#include "MachineCode.h"
 
 extern FILE* yyout;
 
