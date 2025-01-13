@@ -731,6 +731,49 @@ void CallInstruction::output() const
 
 }
 
+void CallInstruction::genMachineCode(AsmBuilder *builder)
+{
+
+    fprintf(stderr,"进入CallInstruction::genMachineCode函数\n");
+    //auto cur_func = builder->getFunction();
+    auto cur_bb = builder->getBlock();
+    MachineInstruction *call_inst = nullptr;
+    if(this->operands.size()>5)
+    {
+        fprintf(stderr,"参数个数超过4个\n");
+        //再说
+    }
+    else
+    {
+
+
+        for(int i=0;i<int(this->operands.size()-1);i++)
+        {
+            call_inst =new MovMInstruction(cur_bb,-1,genMachineOperand(this->operands[i+1]),genMachineReg(i));
+            cur_bb->InsertInst(call_inst);
+        }
+        std::string funcname;
+        if(funcSE)
+            funcname=funcSE->getName();
+        else
+        {
+            funcname=library_funcSE->getName();
+        }
+        call_inst = new BranchMInstruction(cur_bb,BranchMInstruction::BL,new MachineOperand(funcname));
+        cur_bb->InsertInst(call_inst);
+        fprintf(stderr,"this->getDef()->getSymbolEntry()->getType()是%s\n",this->getDef()->getSymbolEntry()->getType()->toStr().c_str());
+        fprintf(stderr,"this->getDef()->getSymbolEntry()->getType()->isVoid()是%d\n",this->getDef()->getSymbolEntry()->getType()->isVoid());
+        if(!(this->getDef()->getSymbolEntry()->getType()->isFuncVoid()))
+        {
+
+            call_inst = new MovMInstruction(cur_bb,-1,genMachineReg(0),genMachineOperand(this->getDef()));
+            cur_bb->InsertInst(call_inst);
+        }
+
+
+    }
+}
+
 /**
  * @brief 构造一个新的 ZextInstruction 对象。
  * @param dst 目标操作数。

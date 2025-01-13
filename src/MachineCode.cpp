@@ -417,11 +417,17 @@ void BranchMInstruction::output()
     case BranchMInstruction::BX:
         fprintf(yyout, "bx ");
         break;
+    case BranchMInstruction::BL:
+        fprintf(yyout, "bl ");
+        break;
     default:
         fprintf(yyout, "b ");
         break;
     }
-    this->use_list[0]->output();
+    if(this->op!=BranchMInstruction::BL)
+        this->use_list[0]->output();
+    else
+        fprintf(yyout, "%s", this->use_list[0]->getLabel().c_str());
     fprintf(yyout, "\n");
 
 }
@@ -567,6 +573,20 @@ void MachineUnit::output()
     PrintGlobalDecl();
     for(auto iter : func_list)
         iter->output();
+
+
+
+    fprintf(yyout, "\t.extern getint\n");
+    fprintf(yyout, "\t.extern putint\n");
+    fprintf(yyout, "\t.extern putch\n");
+    fprintf(yyout, "\t.extern putarray\n");
+    fprintf(yyout, "\t.extern getfarray\n");
+    fprintf(yyout, "\t.extern putfarray\n");
+    fprintf(yyout, "\t.extern getch\n");
+    fprintf(yyout, "\t.extern putfloat\n");
+    fprintf(yyout, "\t.extern getfloat\n");
+
+
 
     fprintf(stderr, "MachineUnit::output已输出\n");
 }

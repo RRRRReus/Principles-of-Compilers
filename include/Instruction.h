@@ -381,7 +381,7 @@ public:
     Operand *getDef() { return operands.empty() ? nullptr : operands[0]; }//获取返回值操作数
     std::vector<Operand *> getUse() { return std::vector<Operand *>(operands.begin() + 1, operands.end()); }//获取所有实参操作数
     bool hasSideEffects() const override { return true; } // Call 指令有副作用
-    void genMachineCode(AsmBuilder*) {};
+    void genMachineCode(AsmBuilder*);
 
 private:
     IdentifierSymbolEntry *funcSE=nullptr;

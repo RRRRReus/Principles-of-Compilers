@@ -69,8 +69,8 @@ int main(int argc, char *argv[])
     unit.output();
   unit.optimize();
   unit.genMachineCode(&mUnit);
-  //LinearScan linearScan(&mUnit);
-  //linearScan.allocateRegisters();
+  LinearScan linearScan(&mUnit);
+  linearScan.allocateRegisters();
   fprintf(stderr, "生成汇编代码结束\n");
   if(dump_type == ASM)
   {

@@ -121,7 +121,7 @@ public:
 class BranchMInstruction : public MachineInstruction
 {
 public:
-    enum opType { B, BL, BX=20 };
+    enum opType { B, BL=80, BX=20 };
     BranchMInstruction(MachineBlock* p, int op, 
                 MachineOperand* dst, 
                 int cond = MachineInstruction::NONE);
