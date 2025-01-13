@@ -348,11 +348,29 @@ MovMInstruction::MovMInstruction(MachineBlock* p, int op,
     int cond)
 {
     // TODO
+
+
+    this->parent = p;
+    this->type = MachineInstruction::MOV;
+    this->op = op;
+    this->cond = cond;
+    this->def_list.push_back(dst);
+    this->use_list.push_back(src);
+    dst->setParent(this);
+    src->setParent(this);
+    
 }
 
 void MovMInstruction::output() 
 {
     // TODO
+    
+    fprintf(yyout, "\tmov ");
+    this->def_list[0]->output();
+    fprintf(yyout, ", ");
+    this->use_list[0]->output();
+    fprintf(yyout, "\n");
+
 }
 
 BranchMInstruction::BranchMInstruction(MachineBlock* p, int op, 
@@ -396,6 +414,9 @@ void BranchMInstruction::output()
         break;
     case MachineInstruction::GE:
         fprintf(yyout, "bge ");
+        break;
+    case BranchMInstruction::BX:
+        fprintf(yyout, "bx ");
         break;
     default:
         fprintf(yyout, "b ");
@@ -444,11 +465,36 @@ StackMInstrcuton::StackMInstrcuton(MachineBlock* p, int op,
     int cond)
 {
     // TODO
+
+    this->parent = p;
+    this->type = MachineInstruction::STACK;
+    this->op = op;
+    this->cond = cond;
+    this->use_list.push_back(src);
+    src->setParent(this);
+
 }
 
 void StackMInstrcuton::output()
 {
     // TODO
+
+
+    fprintf(yyout, "\t");
+    switch (this->op)
+    {
+    case StackMInstrcuton::PUSH:
+        fprintf(yyout, "push ");
+        break;
+    case StackMInstrcuton::POP:
+        fprintf(yyout, "pop ");
+        break;
+    default:
+        break;
+    }
+    this->use_list[0]->output();
+    fprintf(yyout, "\n");
+
 }
 
 MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) 
@@ -484,6 +530,19 @@ void MachineFunction::output()
     
     // Traverse all the block in block_list to print assembly code.
     fprintf(stderr, "MachineFunction::output已输出函数%s\n", func_name);
+    MachineInstruction* inst=nullptr;
+
+    inst = new BinaryMInstruction(this->getBlocks()[0], BinaryMInstruction::SUB, new MachineOperand(MachineOperand::REG, 13), new MachineOperand(MachineOperand::REG, 13), new MachineOperand(MachineOperand::IMM, this->getStackSize()));
+    this->getBlocks()[0]->InsertFront(inst);
+
+
+    inst = new MovMInstruction(this->getBlocks()[0], -1, new MachineOperand(MachineOperand::REG, 11), new MachineOperand(MachineOperand::REG, 13));
+    this->getBlocks()[0]->InsertFront(inst);
+
+
+    // inst = new StackMInstrcuton(this->getBlocks()[0], StackMInstrcuton::PUSH, new MachineOperand(MachineOperand::REG, 11));
+    // this->getBlocks()[0]->InsertFront(inst);
+
     for(auto iter : block_list)
         iter->output();
 
