@@ -19,61 +19,66 @@ dump_type_t dump_type = ASM;
 
 int main(int argc, char *argv[])
 {
-    int opt;
-    while ((opt = getopt(argc, argv, "Siato:")) != -1)
+  int opt;
+  while ((opt = getopt(argc, argv, "Siato:")) != -1)
+  {
+    switch (opt)
     {
-        switch (opt)
-        {
-        case 'o':
-            strcpy(outfile, optarg);
-            break;
-        case 'a':
-            dump_type = AST;
-            break;
-        case 't':
-            dump_type = TOKENS;
-            break;
-        case 'i':
-            dump_type = IR;
-            break;
-        case 'S':
-            dump_type = ASM;
-            break;
-        default:
-            fprintf(stderr, "Usage: %s [-o outfile] infile\n", argv[0]);
-            exit(EXIT_FAILURE);
-            break;
-        }
+    case 'o':
+      strcpy(outfile, optarg);
+      break;
+    case 'a':
+      dump_type = AST;
+      break;
+    case 't':
+      dump_type = TOKENS;
+      break;
+    case 'i':
+      dump_type = IR;
+      break;
+    case 'S':
+      dump_type = ASM;
+      break;
+    default:
+      fprintf(stderr, "Usage: %s [-o outfile] infile\n", argv[0]);
+      exit(EXIT_FAILURE);
+      break;
     }
-    if (optind >= argc)
-    {
-        fprintf(stderr, "no input file\n");
-        exit(EXIT_FAILURE);
-    }
-    if (!(yyin = fopen(argv[optind], "r")))
-    {
-        fprintf(stderr, "%s: No such file or directory\nno input file\n", argv[optind]);
-        exit(EXIT_FAILURE);
-    }
-    if (!(yyout = fopen(outfile, "w")))
-    {
-        fprintf(stderr, "%s: fail to open output file\n", outfile);
-        exit(EXIT_FAILURE);
-    }
-    yyparse();
-    if(dump_type == AST)
-        ast.output();
-    ast.typeCheck();
-    ast.genCode(&unit);
-    //unit.optimize();
+  }
+  if (optind >= argc)
+  {
+    fprintf(stderr, "no input file\n");
+    exit(EXIT_FAILURE);
+  }
+  if (!(yyin = fopen(argv[optind], "r")))
+  {
+    fprintf(stderr, "%s: No such file or directory\nno input file\n", argv[optind]);
+    exit(EXIT_FAILURE);
+  }
+  if (!(yyout = fopen(outfile, "w")))
+  {
+    fprintf(stderr, "%s: fail to open output file\n", outfile);
+    exit(EXIT_FAILURE);
+  }
+  yyparse();
+  if(dump_type == AST)
+    ast.output();
+  ast.typeCheck();
+  ast.genCode(&unit);
+  if(dump_type == IR)
+    unit.output();
+  unit.optimize();
+  unit.genMachineCode(&mUnit);
+  //LinearScan linearScan(&mUnit);
+  //linearScan.allocateRegisters();
+  fprintf(stderr, "生成汇编代码结束\n");
+  if(dump_type == ASM)
+  {
+    mUnit.output();
+    
+  }
 
-    if(dump_type == IR)
-        unit.output();
-    unit.genMachineCode(&mUnit);
-    //LinearScan linearScan(&mUnit);
-    //linearScan.allocateRegisters();
-    fprintf(stderr, "生成汇编代码结束\n");
-    if(dump_type == ASM)
-        mUnit.output();
-    return 0;
+  fprintf(stderr, "输出汇编代码结束\n");
+    
+  return 0;
 }

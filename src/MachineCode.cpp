@@ -92,6 +92,23 @@ void MachineOperand::output()
     }
 }
 
+
+bool MachineOperand::isValidImm() 
+{
+        // ARM 架构中，立即数必须是 0 到 255 之间的数，或者是通过旋转操作得到的数
+        if (val >= 0 && val <= 255) {
+            return true;
+        }
+        // 检查通过旋转操作得到的数
+        for (int i = 0; i < 32; i += 2) {
+            unsigned int rotated = (val >> i) | (val << (32 - i));
+            if (rotated <= 255) {
+                return true;
+            }
+        }
+        return false;
+}
+
 void MachineInstruction::PrintCond()
 {
     // TODO
@@ -129,8 +146,8 @@ BinaryMInstruction::BinaryMInstruction(
 {
     this->parent = p;
     this->type = MachineInstruction::BINARY;
-    this->op = op;
-    this->cond = cond;
+    this->op = op;  //运算符
+    this->cond = cond;      //条件
     this->def_list.push_back(dst);
     this->use_list.push_back(src1);
     this->use_list.push_back(src2);
@@ -141,6 +158,7 @@ BinaryMInstruction::BinaryMInstruction(
 
 void BinaryMInstruction::output() 
 {
+    fprintf(stderr, "已进入BinaryMInstruction::output函数\n");
     // TODO: 
     // Complete other instructions
     switch (this->op)
@@ -155,11 +173,61 @@ void BinaryMInstruction::output()
         this->use_list[1]->output();
         fprintf(yyout, "\n");
         break;
-    case BinaryMInstruction::SUB:
+     case BinaryMInstruction::SUB:
+        fprintf(yyout, "\tsub ");
+        this->PrintCond();
+        this->def_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[1]->output();
+        fprintf(yyout, "\n");
+        break;
+    case BinaryMInstruction::MUL:
+        fprintf(yyout, "\tmul ");
+        this->PrintCond();
+        this->def_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[1]->output();
+        fprintf(yyout, "\n");
+        break;
+    case BinaryMInstruction::DIV:
+        fprintf(yyout, "\tsdiv ");
+        this->PrintCond();
+        this->def_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[1]->output();
+        fprintf(yyout, "\n");
+        break;
+    case BinaryMInstruction::AND:
+        fprintf(yyout, "\tand ");
+        this->PrintCond();
+        this->def_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[1]->output();
+        fprintf(yyout, "\n");
+        break;
+    case BinaryMInstruction::OR:
+        fprintf(yyout, "\torr ");
+        this->PrintCond();
+        this->def_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[1]->output();
+        fprintf(yyout, "\n");
         break;
     default:
         break;
     }
+
+    fprintf(stderr, "已退出BinaryMInstruction::output函数\n");
 }
 
 LoadMInstruction::LoadMInstruction(MachineBlock* p,
@@ -180,8 +248,10 @@ LoadMInstruction::LoadMInstruction(MachineBlock* p,
         src2->setParent(this);
 }
 
+
 void LoadMInstruction::output()
 {
+    fprintf(stderr, "已进入LoadMInstruction::output函数\n");
     fprintf(yyout, "\tldr ");
     this->def_list[0]->output();
     fprintf(yyout, ", ");
@@ -207,6 +277,7 @@ void LoadMInstruction::output()
     if(this->use_list[0]->isReg()||this->use_list[0]->isVReg())
         fprintf(yyout, "]");
     fprintf(yyout, "\n");
+    fprintf(stderr, "已退出LoadMInstruction::output函数\n");
 }
 
 StoreMInstruction::StoreMInstruction(MachineBlock* p,
@@ -388,9 +459,13 @@ MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr)
 
 void MachineBlock::output()
 {
+
     fprintf(yyout, ".L%d:\n", this->no);
+    fprintf(stderr, "MachineBlock::output已输出基本块%d\n", this->no);
     for(auto iter : inst_list)
         iter->output();
+
+    
 }
 
 void MachineFunction::output()
@@ -407,8 +482,11 @@ void MachineFunction::output()
     *  4. Allocate stack space for local variable */
     
     // Traverse all the block in block_list to print assembly code.
+    fprintf(stderr, "MachineFunction::output已输出函数%s\n", func_name);
     for(auto iter : block_list)
         iter->output();
+
+    
 }
 
 void MachineUnit::PrintGlobalDecl()
@@ -430,4 +508,9 @@ void MachineUnit::output()
     PrintGlobalDecl();
     for(auto iter : func_list)
         iter->output();
+
+    fprintf(stderr, "MachineUnit::output已输出\n");
 }
+
+
+

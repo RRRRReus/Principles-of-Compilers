@@ -52,6 +52,12 @@ app:$(LEXER) $(PARSER) $(BINARY)
 
 run:app
 	@$(BINARY) -o example.s -S example.sy
+runi:app
+	@$(BINARY) -o example.ll -i example.sy
+runa:app
+	@$(BINARY) -o example.ast -a example.sy
+runt:app
+	@$(BINARY) -o example.toks -t example.sy
 
 runi:app
 	@$(BINARY) -o example.s -i example.sy

@@ -32,8 +32,6 @@ void Unit::output() const
     fprintf(yyout, "declare void @putfarray(i32, float*)\n");
 
     
-
-
     
     //fprintf(yyout, "declare void @putint(i32) \n");
 
@@ -53,8 +51,8 @@ void Unit::optimize()
         func->optimize();
 
 
-    IRComSubExprElim ircomsubexreli(this);
-    ircomsubexreli.pass();
+    //IRComSubExprElim ircomsubexreli(this);
+    //ircomsubexreli.pass();
 }
 
 Unit::~Unit()
