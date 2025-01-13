@@ -1325,8 +1325,6 @@ void CondBrInstruction::genMachineCode(AsmBuilder* builder)
     cur_inst = new BranchMInstruction(cur_block, -1,false_src);
     cur_block->InsertInst(cur_inst);
 
-
-
 }
 
 void RetInstruction::genMachineCode(AsmBuilder* builder)

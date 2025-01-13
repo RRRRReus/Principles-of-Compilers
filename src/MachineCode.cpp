@@ -1,4 +1,5 @@
 #include "MachineCode.h"
+#include <cstring>
 extern FILE* yyout;
 
 MachineOperand::MachineOperand(int tp, int val)
@@ -493,6 +494,56 @@ void MachineUnit::PrintGlobalDecl()
 {
     // TODO:
     // You need to print global variable/const declarition code;
+
+
+     // 遍历所有全局变量
+    for (auto global : global_list)
+    {
+        if (global->isLabel()) // 确保是全局变量的 LABEL 类型
+        {
+            // 输出类型声明
+            fprintf(yyout, "\t.type\t%s,%%object\t\t@ @%s\n", global->getLabel().c_str(), global->getLabel().c_str());
+
+            // 声明段类型和全局属性
+            fprintf(yyout, "\t.data\n");
+            fprintf(yyout, "\t.globl\t%s\n", global->getLabel().c_str());
+
+            // 获取初始值
+            std::string initValue = global->getInitialValue(); // 假设全局变量直接存储初始值
+
+            // 检查初始值是否是浮点数（十六进制表示）
+            bool isHexFloat = initValue.find("0x") == 0;
+
+            if (isHexFloat)
+            {
+                // 对齐到 8 字节边界
+                fprintf(yyout, "\t.p2align\t3\n");
+
+                // 输出变量标签
+                fprintf(yyout, "%s:\n", global->getLabel().c_str());
+
+                // 输出浮点数初始值
+                fprintf(yyout, "\t.quad\t%s\t\t@ %s\n", initValue.c_str(), initValue.c_str());
+
+                // 输出大小声明
+                fprintf(yyout, "\t.size\t%s, 8\n", global->getLabel().c_str());
+            }
+            else
+            {
+                // 对齐到 4 字节边界
+                fprintf(yyout, "\t.p2align\t2\n");
+
+                // 输出变量标签
+                fprintf(yyout, "%s:\n", global->getLabel().c_str());
+
+                // 输出整数初始值
+                fprintf(yyout, "\t.long\t%s\t\t@ 0x%s\n", initValue.c_str(), initValue.c_str());
+
+                // 输出大小声明
+                fprintf(yyout, "\t.size\t%s, 4\n", global->getLabel().c_str());
+            }
+        }
+    }
 }
 
 void MachineUnit::output()
@@ -508,6 +559,13 @@ void MachineUnit::output()
     PrintGlobalDecl();
     for(auto iter : func_list)
         iter->output();
+    
+    // //打印全局变量
+    // for(auto iter : global_list)
+    //     iter->output();
+
+    
+    //常量呢？？？？
 
     fprintf(stderr, "MachineUnit::output已输出\n");
 }

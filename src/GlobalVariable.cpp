@@ -40,3 +40,51 @@ void GlobalVariable::optimize() const
 {
     fprintf(stderr, "全局变量%s优化\n", se->toStr().c_str());
 }
+
+void GlobalVariable::genMachineCode(AsmBuilder* builder)
+{
+    fprintf(stderr,"进入GlobalVariable::genMachineCode()\n");
+    // 获取当前的 MachineUnit
+    auto cur_unit = builder->getUnit();
+
+    // 获取全局变量的名称，并去掉第一个字符 '@'
+    std::string varName = se->toStr();
+    if (!varName.empty() && varName[0] == '@') {
+        varName = varName.substr(1);
+    }
+
+    // 创建一个 LABEL 类型的 MachineOperand，用于表示全局变量
+    MachineOperand* globalVarOperand = new MachineOperand(varName);
+
+    // 获取全局变量的初始值
+    std::string initialValue = static_cast<IdentifierSymbolEntry*>(se)->getInitialValue();
+    if (initialValue.empty())
+    {
+        initialValue = "0"; // 默认初始值
+    }
+
+    globalVarOperand->setInitialValue(initialValue);
+    fprintf(stderr, "全局变量%s的初始值为%s\n", varName.c_str(), initialValue.c_str());
+    cur_unit->InsertGlobalVar(globalVarOperand);   // 将全局变量插入到 MachineUnit 中
+
+    
+    // auto cur_unit = builder->getUnit();
+    // auto globalVar = new MachineOperand(this->se->toStr()); // 使用全局变量的名称初始化 MachineOperand
+    // cur_unit->InsertGlobalVar(globalVar);
+    // std::string initialValue = static_cast<IdentifierSymbolEntry*>(se)->getInitialValue();
+    // if (initialValue.empty())
+    // {
+    //     initialValue = "0"; // 默认初始值
+    // }
+
+    // // 将初始值转换为相应的类型
+    // int initialValueInt = std::stoi(initialValue); // 假设初始值是整数
+    // // 如果初始值是浮点数，可以使用 std::stof 或 std::stod 进行转换
+
+    // // 生成全局变量的汇编代码
+    // auto cur_block = builder->getBlock();
+    // auto dst = globalVar;
+    // auto src = new MachineOperand(MachineOperand::IMM, initialValueInt);
+
+    fprintf(stderr,"退出GlobalVariable::genMachineCode()\n");
+}

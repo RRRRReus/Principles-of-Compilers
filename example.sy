@@ -1,11 +1,8 @@
 int sss=3;
-int aaa=1;
+float aaa=3.3;
 int main(){
-  int a=1, b=1, c=1, d=1;
-  d = aaa/sss;
-  if(aaa && sss)
-  {
-    
-  }
-  return a;
+  int d=1;
+  d = sss;
+
+  return d;
 }

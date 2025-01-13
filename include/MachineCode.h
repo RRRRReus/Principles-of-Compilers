@@ -31,6 +31,7 @@ private:
     int val;  // value of immediate number
     int reg_no; // register no
     std::string label; // address label
+    std::string globalInitialValue; // 新增全局变量初始值
 public:
     enum { IMM, VREG, REG, LABEL };
     MachineOperand(int tp, int val);
@@ -51,6 +52,19 @@ public:
     void output();
 
     bool isValidImm();
+
+    // 给全局变量提供的函数
+    std::string getInitialValue() const { return globalInitialValue; } // 获取全局变量初始值
+    void setInitialValue(const std::string &value) { 
+        if(!value.empty()){
+            globalInitialValue = value;
+            }
+            else{
+                globalInitialValue = "0";//默认初始值为0！！！
+            } 
+    } // 设置全局变量初始值
+
+
 };
 
 class MachineInstruction
@@ -202,12 +216,19 @@ class MachineUnit
 {
 private:
     std::vector<MachineFunction*> func_list;
+    std::vector<MachineOperand*> global_list;   //新加入全局变量列表
     void PrintGlobalDecl();
 public:
+    //原函数内容操作函数
     std::vector<MachineFunction*>& getFuncs() {return func_list;};
     std::vector<MachineFunction*>::iterator begin() { return func_list.begin(); };
     std::vector<MachineFunction*>::iterator end() { return func_list.end(); };
     void InsertFunc(MachineFunction* func) { func_list.push_back(func);};
+    //新增全局变量内容
+    std::vector<MachineOperand*>& getGlobals() {return global_list;};
+    std::vector<MachineOperand*>::iterator global_begin() { return global_list.begin(); }
+    std::vector<MachineOperand*>::iterator global_end() { return global_list.end(); }
+    void InsertGlobalVar(MachineOperand* global) { global_list.push_back(global); }
     void output();
 };
 

@@ -81,4 +81,8 @@ void Unit::genMachineCode(MachineUnit* munit)
     builder->setUnit(munit);
     for (auto &func : func_list)
         func->genMachineCode(builder);
+        
+    // 生成全局变量的机器码
+    for (auto &global : global_list)
+        global->genMachineCode(builder);
 }

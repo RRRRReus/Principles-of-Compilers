@@ -3,6 +3,7 @@
 
 #include "Type.h"
 #include "SymbolTable.h"
+#include "AsmBuilder.h"
 
 class GlobalVariable
 {
@@ -14,6 +15,7 @@ public:
     GlobalVariable(SymbolEntry *se) : se(se) {}
     void output() const;
     void optimize() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 #endif
