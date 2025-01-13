@@ -49,6 +49,8 @@ public:
     MachineInstruction* getParent() { return this->parent;};
     void PrintReg();
     void output();
+
+    bool isValidImm();
 };
 
 class MachineInstruction

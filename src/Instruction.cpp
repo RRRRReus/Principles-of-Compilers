@@ -1080,7 +1080,7 @@ MachineOperand* Instruction::genMachineOperand(Operand* ope)
     {
         auto id_se = dynamic_cast<IdentifierSymbolEntry*>(se);
         if(id_se->isGlobal())
-            mope = new MachineOperand(id_se->toStr().c_str());
+            mope = new MachineOperand(id_se->toStr().substr(1).c_str());//去掉前面的@
         else
             exit(0);
     }
@@ -1183,15 +1183,42 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     MachineInstruction* cur_inst = nullptr;
     if(src1->isImm())
     {
-        auto internal_reg = genMachineVReg();
-        cur_inst = new LoadMInstruction(cur_block, internal_reg, src1);
-        cur_block->InsertInst(cur_inst);
-        src1 = new MachineOperand(*internal_reg);
+        auto internal_reg = genMachineVReg();   //生成一个新的虚拟寄存器
+        cur_inst = new LoadMInstruction(cur_block, internal_reg, src1); //生成一个load指令
+        cur_block->InsertInst(cur_inst);    //将load指令插入到当前基本块中
+        src1 = new MachineOperand(*internal_reg);   //将src1指向新生成的寄存器
+    }
+    // 处理第二个源操作数是立即数的情况,其数值范围有一定限制
+    if(src2->isImm())
+    {
+        // 检查立即数的范围，如果超出范围则需要将其加载到寄存器中
+        if (!src2->isValidImm())
+        {
+            auto internal_reg = genMachineVReg();   // 生成一个新的虚拟寄存器
+            cur_inst = new LoadMInstruction(cur_block, internal_reg, src2); // 生成一个load指令
+            cur_block->InsertInst(cur_inst);    // 将load指令插入到当前基本块中
+            src2 = new MachineOperand(*internal_reg);   // 将src2指向新生成的寄存器
+        }
     }
     switch (opcode)
     {
     case ADD:
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, src1, src2);
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, src1, src2);  //生成一个add指令
+        break;
+    case SUB:
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::SUB, dst, src1, src2);  //生成一个sub指令
+        break;
+    case MUL:
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::MUL, dst, src1, src2);  //生成一个mul指令
+        break;
+    case DIV:
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::DIV, dst, src1, src2);  //生成一个div指令
+        break;
+    case AND:
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::AND, dst, src1, src2);  //生成一个and指令
+        break;
+    case OR:    
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::OR, dst, src1, src2);  //生成一个or指令
         break;
     default:
         break;

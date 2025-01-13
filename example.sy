@@ -1,9 +1,11 @@
-#include"sysyruntimelibrary/sylib.h"
+int sss=3;
+int aaa=1;
 int main(){
-    int a, b, c, d;
-    a = 10;
-    b = 4;
-    c = 2;
-    d = 2;
-    return (c + a) * (b - d); 
+  int a=1, b=1, c=1, d=1;
+  d = aaa/sss;
+  if(aaa && sss)
+  {
+    
+  }
+  return a;
 }
