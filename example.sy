@@ -1,6 +1,9 @@
-//test global var define
-const int a = 10;
-
 int main(){
-    return a;
+	int a[10];
+	int b[5]={1,2,3,4,5};
+	int c;
+	c=b[1]*b[2]+3;
+	a[0]=0;
+	a[1]=c;
+	return a[1];
 }
