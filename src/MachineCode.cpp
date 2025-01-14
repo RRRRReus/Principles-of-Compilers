@@ -183,8 +183,6 @@ BinaryMInstruction::BinaryMInstruction(
 void BinaryMInstruction::output() 
 {
     fprintf(stderr, "已进入BinaryMInstruction::output函数\n");
-    // TODO: 
-    // Complete other instructions
     switch (this->op)
     {
     case BinaryMInstruction::ADD:
@@ -197,7 +195,7 @@ void BinaryMInstruction::output()
         this->use_list[1]->output();
         fprintf(yyout, "\n");
         break;
-     case BinaryMInstruction::SUB:
+    case BinaryMInstruction::SUB:
         fprintf(yyout, "\tsub ");
         this->PrintCond();
         this->def_list[0]->output();
@@ -217,16 +215,39 @@ void BinaryMInstruction::output()
         this->use_list[1]->output();
         fprintf(yyout, "\n");
         break;
-    case BinaryMInstruction::DIV:
+    case BinaryMInstruction::DIV: {
+        // 使用 SDIV 指令计算商
         fprintf(yyout, "\tsdiv ");
-        this->PrintCond();
-        this->def_list[0]->output();
+        this->def_list[0]->output();  // 目标寄存器存储商值
         fprintf(yyout, ", ");
-        this->use_list[0]->output();
+        this->use_list[0]->output();  // 被除数
         fprintf(yyout, ", ");
-        this->use_list[1]->output();
+        this->use_list[1]->output();  // 除数
         fprintf(yyout, "\n");
         break;
+    }
+    case BinaryMInstruction::MOD: {
+        // 使用 SDIV 和 MUL/SUB 实现取模
+        // 1. 计算商值：temp1 = use_list[0] / use_list[1]
+        fprintf(yyout, "\tsdiv r12, ");
+        this->use_list[0]->output();  // 被除数
+        fprintf(yyout, ", ");
+        this->use_list[1]->output();  // 除数
+        fprintf(yyout, "\n");
+
+        // 2. 计算商乘积：temp2 = temp1 * use_list[1]
+        fprintf(yyout, "\tmul r13, r12, ");
+        this->use_list[1]->output();  // 除数
+        fprintf(yyout, "\n");
+
+        // 3. 计算余数：dst = use_list[0] - temp2
+        fprintf(yyout, "\tsub ");
+        this->def_list[0]->output();  // 存储余数的目标寄存器
+        fprintf(yyout, ", ");
+        this->use_list[0]->output();  // 被除数
+        fprintf(yyout, ", r13\n");
+        break;
+    }
     case BinaryMInstruction::AND:
         fprintf(yyout, "\tand ");
         this->PrintCond();
@@ -260,9 +281,10 @@ void BinaryMInstruction::output()
     default:
         break;
     }
-
     fprintf(stderr, "已退出BinaryMInstruction::output函数\n");
 }
+
+
 
 LoadMInstruction::LoadMInstruction(MachineBlock* p,
     MachineOperand* dst, MachineOperand* src1, MachineOperand* src2,
@@ -668,12 +690,17 @@ void MachineUnit::PrintGlobalDecl()
                 fprintf(yyout, "\t.quad\t%s\t\t@ %s\n", initValue.c_str(), initValue.c_str());
                 fprintf(yyout, "\t.size\t%s, 8\n", varName.c_str());
             }
-            else
+           else
             {
                 // 整数：对齐到 4 字节
                 fprintf(yyout, "\t.p2align\t2\n");
                 fprintf(yyout, "%s:\n", varName.c_str());
-                fprintf(yyout, "\t.long\t%s\t\t@ 0x%s\n", initValue.c_str(), initValue.c_str());
+
+                // 将 initValue 转换为整数
+                int intValue = std::stoi(initValue);
+
+                // 以十六进制格式输出
+                fprintf(yyout, "\t.long\t%d\t\t@ 0x%x\n", intValue, intValue);
                 fprintf(yyout, "\t.size\t%s, 4\n", varName.c_str());
             }
 

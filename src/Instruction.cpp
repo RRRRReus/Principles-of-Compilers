@@ -1278,8 +1278,6 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
 
 void BinaryInstruction::genMachineCode(AsmBuilder* builder)
 {
-    // TODO:
-    // complete other instructions
     auto cur_block = builder->getBlock();
     auto dst = genMachineOperand(operands[0]);  // 目标操作数
     auto src1 = genMachineOperand(operands[1]); // 第一个源操作数
@@ -1290,11 +1288,10 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     // 处理第一个源操作数是立即数的情况
     if (src1->isImm())
     {
-        // 对于 SUB 和其他需要寄存器作为第一个操作数的指令
-        if (!src1->isValidImm() || opcode == SUB || opcode == MUL || opcode == DIV)
+        if (!src1->isValidImm() || opcode == SUB || opcode == MUL || opcode == DIV || opcode == MOD)
         {
             auto internal_reg = genMachineVReg();   // 生成虚拟寄存器
-            cur_inst = new LoadMInstruction(cur_block, internal_reg, src1); // 将立即数加载到寄存器
+            cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, internal_reg, src1); // 将立即数加载到寄存器
             cur_block->InsertInst(cur_inst);    // 插入指令到当前块
             src1 = new MachineOperand(*internal_reg); // 将 src1 更新为寄存器操作数
         }
@@ -1303,11 +1300,10 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     // 处理第二个源操作数是立即数的情况
     if (src2->isImm())
     {
-        // 检查立即数的范围
-        if (!src2->isValidImm() || opcode == MUL || opcode == DIV)
+        if (!src2->isValidImm() || opcode == MUL || opcode == DIV || opcode == MOD)
         {
             auto internal_reg = genMachineVReg();   // 生成虚拟寄存器
-            cur_inst = new LoadMInstruction(cur_block, internal_reg, src2); // 将立即数加载到寄存器
+            cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, internal_reg, src2); // 将立即数加载到寄存器
             cur_block->InsertInst(cur_inst);    // 插入指令到当前块
             src2 = new MachineOperand(*internal_reg); // 将 src2 更新为寄存器操作数
         }
@@ -1325,9 +1321,27 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     case MUL:
         cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::MUL, dst, src1, src2);
         break;
-    case DIV:
+    case DIV: {
+        // 使用 SDIV 指令进行除法
         cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::DIV, dst, src1, src2);
         break;
+    }
+    case MOD: {
+        // MOD 的实现：使用 SDIV 和 SUB
+        // 1. 计算商值：temp1 = src1 / src2
+        auto temp1 = genMachineVReg(); // 用于存储商值
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::DIV, temp1, src1, src2);
+        cur_block->InsertInst(cur_inst);
+
+        // 2. 计算商乘积：temp2 = temp1 * src2
+        auto temp2 = genMachineVReg(); // 用于存储商乘积
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::MUL, temp2, temp1, src2);
+        cur_block->InsertInst(cur_inst);
+
+        // 3. 计算余数：dst = src1 - temp2
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::SUB, dst, src1, temp2);
+        break;
+    }
     case AND:
         cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::AND, dst, src1, src2);
         break;
@@ -1335,7 +1349,7 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
         cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::OR, dst, src1, src2);
         break;
     case XOR:
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::XOR, dst, src1, src2);  //生成一个xor指令
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::XOR, dst, src1, src2);
         break;
     default:
         break;
@@ -1344,6 +1358,7 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     // 将生成的指令插入到当前块中
     cur_block->InsertInst(cur_inst);
 }
+
 
 void CmpInstruction::genMachineCode(AsmBuilder* builder)
 {
