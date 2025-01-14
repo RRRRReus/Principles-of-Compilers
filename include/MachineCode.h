@@ -102,7 +102,7 @@ public:
 class BinaryMInstruction : public MachineInstruction
 {
 public:
-    enum opType { ADD, SUB, MUL, DIV, AND, OR };
+    enum opType { ADD, SUB, MUL, DIV, AND, OR, XOR };
     BinaryMInstruction(MachineBlock* p, int op, 
                     MachineOperand* dst, MachineOperand* src1, MachineOperand* src2, 
                     int cond = MachineInstruction::NONE);
@@ -131,7 +131,7 @@ public:
 class MovMInstruction : public MachineInstruction
 {
 public:
-    enum opType { MOV, MVN };
+    enum opType { MOV, MVN ,MVE};
     MovMInstruction(MachineBlock* p, int op, 
                 MachineOperand* dst, MachineOperand* src,
                 int cond = MachineInstruction::NONE);

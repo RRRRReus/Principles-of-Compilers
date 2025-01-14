@@ -1228,6 +1228,16 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
         cur_inst = new LoadMInstruction(cur_block, internal_reg1, src);
         cur_block->InsertInst(cur_inst);
         // example: Store r1, [r0]
+
+
+        if(operands[1]->getEntry()->isConstant())
+        {
+            auto internal_reg = genMachineVReg();
+            cur_inst = new MovMInstruction(cur_block,-1, internal_reg, dst);
+            cur_block->InsertInst(cur_inst);
+            dst = new MachineOperand(*internal_reg);
+        }
+
         cur_inst = new StoreMInstruction(cur_block, dst, internal_reg2);
         cur_block->InsertInst(cur_inst);
     }
@@ -1238,7 +1248,15 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
     {
         fprintf(stderr,"StoreInstruction::genMachineCode函数中的局部变量\n");
         // example: load r1, [r0, #4]
-        auto dst = genMachineOperand(operands[0]);
+        MachineOperand* dst = genMachineOperand(operands[1]);
+        if(operands[1]->getEntry()->isConstant())
+        {
+            auto internal_reg = genMachineVReg();
+            cur_inst = new MovMInstruction(cur_block,-1, internal_reg, dst);
+            cur_block->InsertInst(cur_inst);
+            dst = new MachineOperand(*internal_reg);
+        }
+            
         auto src1 = genMachineReg(11);
         auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
                 fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
@@ -1314,6 +1332,9 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     case OR:
         cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::OR, dst, src1, src2);
         break;
+    case XOR:
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::XOR, dst, src1, src2);  //生成一个xor指令
+        break;
     default:
         break;
     }
@@ -1332,6 +1353,10 @@ void CmpInstruction::genMachineCode(AsmBuilder* builder)
     auto src2 = genMachineOperand(operands[2]);
     MachineInstruction* cur_inst = nullptr;
     cur_inst = new CmpMInstruction(cur_block, src1, src2);
+    cur_block->InsertInst(cur_inst);
+    cur_inst = new MovMInstruction(cur_block, MovMInstruction::MVN, genMachineOperand(operands[0]), genMachineImm(0));
+    cur_block->InsertInst(cur_inst);
+    cur_inst = new MovMInstruction(cur_block, MovMInstruction::MVE, genMachineOperand(operands[0]), genMachineImm(1));
     cur_block->InsertInst(cur_inst);
     builder->setCmpOpcode(opcode);
 
@@ -1368,9 +1393,9 @@ void CondBrInstruction::genMachineCode(AsmBuilder* builder)
     std::string false_label = ".L" + std::to_string(false_branch->getNo());
     MachineOperand* true_src = new MachineOperand(true_label);
     MachineOperand* false_src = new MachineOperand(false_label);
-    cur_inst = new BranchMInstruction(cur_block, opcode, true_src);
+    cur_inst = new BranchMInstruction(cur_block, opcode, false_src);
     cur_block->InsertInst(cur_inst);
-    cur_inst = new BranchMInstruction(cur_block, -1,false_src);
+    cur_inst = new BranchMInstruction(cur_block, -1,true_src);
     cur_block->InsertInst(cur_inst);
 
 }

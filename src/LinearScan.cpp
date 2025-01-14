@@ -45,6 +45,8 @@ void LinearScan::makeDuChains()
         no = i = bb->getInsts().size() + i;
         for (auto inst = bb->getInsts().rbegin(); inst != bb->getInsts().rend(); inst++)
         {
+            if(*inst == nullptr)
+                continue;
             (*inst)->setNo(no--);
             for (auto &def : (*inst)->getDef())
             {

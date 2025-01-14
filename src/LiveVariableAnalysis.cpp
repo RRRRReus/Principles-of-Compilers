@@ -25,6 +25,8 @@ void LiveVariableAnalysis::computeDefUse(MachineFunction *func)
     {
         for (auto inst = block->getInsts().begin(); inst != block->getInsts().end(); inst++)
         {
+            if (*inst == nullptr)
+                continue;
             auto user = (*inst)->getUse();
             std::set<MachineOperand *> temp(user.begin(), user.end());
             set_difference(temp.begin(), temp.end(),
@@ -67,6 +69,8 @@ void LiveVariableAnalysis::computeUsePos(MachineFunction *func)
     {
         for (auto &inst : block->getInsts())
         {
+            if(inst==nullptr)
+                continue;   
             auto uses = inst->getUse();
             for (auto &use : uses)
                 all_uses[*use].insert(use);
