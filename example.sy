@@ -1,7 +1,7 @@
+//test global var define
+int a = 3;
+int b = 5;
 
-#include"sysyruntimelibrary/sylib.h"
-int main() {
-    putint(-!!!!!(-1)); putch(10); 
-    putint(!!-1); putch(10);
-    return 0;
+int main(){
+    return a + b;
 }

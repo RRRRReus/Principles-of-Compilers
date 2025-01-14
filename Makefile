@@ -59,9 +59,6 @@ runa:app
 runt:app
 	@$(BINARY) -o example.toks -t example.sy
 
-runi:app
-	@$(BINARY) -o example.s -i example.sy
-
 gdb:app
 	@gdb $(BINARY)
 

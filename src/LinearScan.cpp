@@ -173,7 +173,73 @@ bool LinearScan::linearScanRegisterAllocation()
                 add i to active, sorted by increasing end point
     */
 
-    return true;
+//    //初始化 active 列表
+//     active.clear();//？？？？？？？？？？？？？需要吗？？？？？
+
+//     // 遍历 intervals 列表，按照开始位置递增排序
+//     for (auto interval : intervals)
+//     {
+//         // 1. 遍历 active 列表，移除结束时间早于当前区间开始时间的 interval
+//         expireOldIntervals(interval);
+
+//         // 2. 判断 active 列表中 interval 的数目和可用的物理寄存器数目是否相等
+//         if (active.size() == regs.size())
+//         {
+//             // (a) 若相等，进行寄存器溢出操作
+//             Interval* spill = active.back(); // 获取 active 列表中最后一个 interval
+
+//             if (spill->end > interval->end)
+//             {
+//                 // 如果 active 列表中的活跃区间结束时间更晚
+//                 spill->spill = true; // 置位其 spill 标志位
+//                 interval->rreg = spill->rreg; // 将其占用的寄存器分配给当前区间
+//                 active.pop_back(); // 从 active 列表中移除
+//                 active.push_back(interval); // 将当前区间插入到 active 列表中
+//                 std::sort(active.begin(), active.end(), [](Interval* a, Interval* b) { return a->end < b->end; }); // 按结束时间排序
+//             }
+//             else
+//             {
+//                 // 如果当前区间的结束时间更晚
+//                 interval->spill = true; // 置位其 spill 标志位
+//             }
+//         }
+//         else
+//         {
+//             // (b) 若不相等，为当前区间分配物理寄存器
+//             interval->rreg = regs.back(); // 从空闲寄存器池中获取一个寄存器
+//             regs.pop_back(); // 移除已分配的寄存器
+//             active.push_back(interval); // 将当前区间插入到 active 列表中
+//             std::sort(active.begin(), active.end(), [](Interval* a, Interval* b) { return a->end < b->end; }); // 按结束时间排序
+//         }
+//     }
+
+     //return true;
+
+    bool success = true;
+    active.clear();
+    regs.clear();
+    for (int i = 4; i < 11; i++)
+    {
+        regs.push_back(i);
+    }
+    for (auto &i : intervals)
+    {
+        expireOldIntervals(i);
+        if (regs.empty())
+        {
+            spillAtInterval(i);
+            success = false;
+        }
+        else
+        {
+            i->rreg = regs.front();
+            regs.erase(regs.begin());
+            active.push_back(i);
+            sort(active.begin(), active.end(), compareEnd);
+        }
+    }
+    return success;
+
 }
 
 void LinearScan::modifyCode()
@@ -200,7 +266,73 @@ void LinearScan::genSpillCode()
          * 1. insert ldr inst before the use of vreg
          * 2. insert str inst after the def of vreg
          */ 
+
+        // // 1. 遍历其 USE 指令的列表，在 USE 指令前插入 ldr 指令
+        // for (auto use : interval->uses)
+        // {
+        //     MachineOperand* spillOperand = new MachineOperand(MachineOperand::REG, interval->rreg);
+        //     MachineOperand* stackOperand = new MachineOperand(MachineOperand::MEM, interval->disp);
+        //     MachineInstruction* loadInst = new LoadMInstruction(use->getBlock(), spillOperand, stackOperand);
+        //     use->getBlock()->InsertBefore(use, loadInst);
+        // }
+
+        // // 2. 遍历其 DEF 指令的列表，在 DEF 指令后插入 str 指令
+        // for (auto def : interval->defs)
+        // {
+        //     MachineOperand* spillOperand = new MachineOperand(MachineOperand::REG, interval->rreg);
+        //     MachineOperand* stackOperand = new MachineOperand(MachineOperand::MEM, interval->disp);
+        //     MachineInstruction* storeInst = new StoreMInstruction(def->getBlock(), spillOperand, stackOperand);
+        //     def->getBlock()->InsertAfter(def, storeInst);
+        // }
+
+
+        interval->disp = -func->AllocSpace(4);
+        auto off = new MachineOperand(MachineOperand::IMM, interval->disp);
+        auto fp = new MachineOperand(MachineOperand::REG, 11);
+        for (auto use : interval->uses)
+        {
+            auto temp = new MachineOperand(*use);
+            MachineOperand *operand = nullptr;
+            if (operand)
+            {
+                auto inst = new LoadMInstruction(use->getParent()->getParent(), temp, fp, new MachineOperand(*operand));
+                use->getParent()->insertBefore(inst);
+            }
+            else
+            {
+                auto inst = new LoadMInstruction(use->getParent()->getParent(), temp, fp, off);
+                use->getParent()->insertBefore(inst);
+            }
+        }
+         for (auto def : interval->defs)
+        {
+            auto temp = new MachineOperand(*def);
+            MachineOperand *operand = nullptr;
+            MachineInstruction *inst1 = nullptr, *inst = nullptr;
+            if (operand)
+            {
+                inst = new StoreMInstruction(def->getParent()->getParent(), temp, fp, new MachineOperand(*operand));
+            }
+            else
+            {
+                inst = new StoreMInstruction(def->getParent()->getParent(), temp, fp, off);
+            }
+            if (inst1)
+            {
+                inst1->insertAfter(inst);
+            }
+            else
+            {
+                def->getParent()->insertAfter(inst);
+            }
+        }
+
+
     }
+    
+
+    
+
 }
 
 void LinearScan::expireOldIntervals(Interval *interval)
@@ -213,6 +345,18 @@ void LinearScan::expireOldIntervals(Interval *interval)
             remove j from active
             add register[j] to pool of free registers
     */
+   auto it = active.begin();
+    while (it != active.end())
+    {
+        if ((*it)->end >= interval->start)
+        {
+            return;
+        }
+        regs.push_back((*it)->rreg);
+        it = active.erase(find(active.begin(), active.end(), *it));
+        sort(regs.begin(), regs.end());
+    }
+
 }
 
 void LinearScan::spillAtInterval(Interval *interval)
@@ -229,9 +373,37 @@ void LinearScan::spillAtInterval(Interval *interval)
             location[i] ← new stack location
 
     */
+
+   auto spill = active.back();
+    if (spill->end > interval->end)
+    {
+        spill->spill = true;
+        interval->rreg = spill->rreg;
+        active.push_back(interval);
+        sort(active.begin(), active.end(), compareEnd);
+    }
+    else
+    {
+        interval->spill = true;
+    }
+
+
 }
 
 bool LinearScan::compareStart(Interval *a, Interval *b)
 {
     return a->start < b->start;
+}
+
+bool LinearScan::compareEnd(Interval *a, Interval *b)
+{
+    return a->end < b->end;
+}
+
+int LinearScan::allocateStackSpace()
+{
+    // 实现栈空间分配逻辑
+    static int stackOffset = 0;
+    stackOffset -= 4; // 每次分配 4 字节的栈空间
+    return stackOffset;
 }
