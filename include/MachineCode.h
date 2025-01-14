@@ -32,6 +32,7 @@ private:
     int reg_no; // register no
     std::string label; // address label
     std::string globalInitialValue; // 新增全局变量初始值
+    bool isGlobalConstFlag = false; // 是否是全局常量
 public:
     enum { IMM, VREG, REG, LABEL };
     MachineOperand(int tp, int val);
@@ -64,6 +65,8 @@ public:
             } 
     } // 设置全局变量初始值
 
+    bool isGlobalConst() { return isGlobalConstFlag; } // 是否是全局常量
+    void setGlobalConst(bool isconst) { isGlobalConstFlag = isconst; } // 设置为全局常量
 
 };
 

@@ -84,10 +84,12 @@ void MachineOperand::output()
         PrintReg();
         break;
     case LABEL:
-        if (this->label.substr(0, 2) == ".L")
-            fprintf(yyout, "%s", this->label.c_str());
-        else
-            fprintf(yyout, "addr_%s", this->label.c_str());
+            // 变量输出 addr_<变量名>
+            if (this->label.substr(0, 2) == ".L")
+                fprintf(yyout, "%s", this->label.c_str());
+            else
+                fprintf(yyout, "addr_%s", this->label.c_str());
+        break;
     default:
         break;
     }
@@ -597,61 +599,66 @@ void MachineUnit::PrintGlobalDecl()
     // You need to print global variable/const declarition code;
 
 
-    // 遍历所有全局变量
+     // 遍历所有全局变量和常量
     for (auto global : global_list)
     {
+        fprintf(stderr,"当前%s是否为全局常量：%d\n",global->getLabel().c_str(),global->isGlobalConst());
         if (global->isLabel()) // 确保是全局变量的 LABEL 类型
         {
-            // 获取全局变量的名称
+            // 获取全局变量/常量的名称
             std::string varName = global->getLabel();
 
-            // 输出类型声明
-            fprintf(yyout, "\t.type\t%s,%%object\t\t@ @%s\n", varName.c_str(), varName.c_str());
-
-            // 声明段类型和全局属性
-            fprintf(yyout, "\t.data\n");
-            fprintf(yyout, "\t.global\t%s\n", varName.c_str());
+            // 判断是否为常量
+            bool isConst = global->isGlobalConst(); // 假设 `MachineOperand` 有 `isConst()` 方法
 
             // 获取初始值
             std::string initValue = global->getInitialValue(); // 假设全局变量直接存储初始值
+            if (initValue.empty()) {
+                initValue = "0"; // 默认初始值
+            }
 
-            // 检查初始值是否是浮点数（十六进制表示）
+            // 检查初始值是否是浮点数（假设浮点数用十六进制表示）
             bool isHexFloat = initValue.find("0x") == 0;
 
+            // 根据是否为常量选择段类型
+            if (isConst)
+            {
+                fprintf(yyout, "\t.section\t.rodata\n"); // 常量放在只读数据段
+            }
+            else
+            {
+                fprintf(yyout, "\t.data\n"); // 变量放在数据段
+            }
+
+            // 输出类型声明和全局符号
+            fprintf(yyout, "\t.type\t%s,%%object\t\t@ @%s\n", varName.c_str(), varName.c_str());
+            fprintf(yyout, "\t.global\t%s\n", varName.c_str());
+
+            // 输出对齐和初值
             if (isHexFloat)
             {
-                // 对齐到 8 字节边界
+                // 浮点数：对齐到 8 字节
                 fprintf(yyout, "\t.p2align\t3\n");
-
-                // 输出变量标签
                 fprintf(yyout, "%s:\n", varName.c_str());
-
-                // 输出浮点数初始值
                 fprintf(yyout, "\t.quad\t%s\t\t@ %s\n", initValue.c_str(), initValue.c_str());
-
-                // 输出大小声明
                 fprintf(yyout, "\t.size\t%s, 8\n", varName.c_str());
             }
             else
             {
-                // 对齐到 4 字节边界
+                // 整数：对齐到 4 字节
                 fprintf(yyout, "\t.p2align\t2\n");
-
-                // 输出变量标签
                 fprintf(yyout, "%s:\n", varName.c_str());
-
-                // 输出整数初始值
                 fprintf(yyout, "\t.long\t%s\t\t@ 0x%s\n", initValue.c_str(), initValue.c_str());
-
-                // 输出大小声明
                 fprintf(yyout, "\t.size\t%s, 4\n", varName.c_str());
             }
 
-            // 输出地址符号
-            std::string addrName = "addr_" + varName;
-            fprintf(yyout, "\t.global\t%s\n", addrName.c_str());
-            fprintf(yyout, "%s:\n", addrName.c_str());
-            fprintf(yyout, "\t.word\t%s\n", varName.c_str());
+            // 如果是变量，生成地址符号
+                std::string addrName = "addr_" + varName;
+                fprintf(yyout, "\t.global\t%s\n", addrName.c_str());
+                fprintf(yyout, "%s:\n", addrName.c_str());
+                fprintf(yyout, "\t.word\t%s\n", varName.c_str());
+
+            // 空行分隔
             fprintf(yyout, "\n");
         }
     }
