@@ -1424,7 +1424,7 @@ void RetInstruction::genMachineCode(AsmBuilder* builder)
     * 1. Generate mov instruction to save return value in r0
     * 2. Restore callee saved registers and sp, fp
     * 3. Generate bx instruction */
-    auto cur_block = builder->getBlock();   
+    auto cur_block = builder->getBlock();  
     MachineInstruction* cur_inst = nullptr;
     if(operands.empty())
     {
