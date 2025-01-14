@@ -1290,7 +1290,8 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     // 处理第一个源操作数是立即数的情况
     if (src1->isImm())
     {
-        if (!src1->isValidImm() || opcode == MUL || opcode == DIV) // 如果立即数超出范围或操作码是 MUL/DIV
+        // 对于 SUB 和其他需要寄存器作为第一个操作数的指令
+        if (!src1->isValidImm() || opcode == SUB || opcode == MUL || opcode == DIV)
         {
             auto internal_reg = genMachineVReg();   // 生成虚拟寄存器
             cur_inst = new LoadMInstruction(cur_block, internal_reg, src1); // 将立即数加载到寄存器
@@ -1302,7 +1303,8 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     // 处理第二个源操作数是立即数的情况
     if (src2->isImm())
     {
-        if (!src2->isValidImm() || opcode == MUL || opcode == DIV) // 如果立即数超出范围或操作码是 MUL/DIV
+        // 检查立即数的范围
+        if (!src2->isValidImm() || opcode == MUL || opcode == DIV)
         {
             auto internal_reg = genMachineVReg();   // 生成虚拟寄存器
             cur_inst = new LoadMInstruction(cur_block, internal_reg, src2); // 将立即数加载到寄存器
