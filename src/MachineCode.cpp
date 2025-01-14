@@ -442,6 +442,18 @@ void BranchMInstruction::output()
     // TODO
 
     fprintf(stderr, "已进入BranchMInstruction::output函数\n");
+
+    if(this->op==BranchMInstruction::BX)
+    {
+        std::vector<MachineOperand*> stack_list;
+        for (int regno : this->parent->getParent()->getSavedRegs())
+        {
+            stack_list.push_back(new MachineOperand(MachineOperand::REG, regno));
+        }
+        MachineInstruction* cur_inst = new StackMInstrcuton(nullptr, StackMInstrcuton::POP, stack_list);
+        cur_inst->output();
+    }
+
     fprintf(yyout, "\t");
     switch (this->op)
     {
@@ -535,10 +547,24 @@ StackMInstrcuton::StackMInstrcuton(MachineBlock* p, int op,
 
 }
 
+StackMInstrcuton::StackMInstrcuton(MachineBlock *p, int op, std::vector<MachineOperand *> stack_list, int cond)
+{
+    this->parent = p;
+    this->type = MachineInstruction::STACK;
+    this->op = op;
+    this->cond = cond;
+    this->use_list = stack_list;
+    for (auto src : stack_list)
+    {
+        src->setParent(this);
+    }
+}
+
 void StackMInstrcuton::output()
 {
     // TODO
-
+    if(use_list.size()==0)
+        return;
     fprintf(stderr, "已进入StackMInstrcuton::output函数\n");
 
     fprintf(yyout, "\t");
@@ -553,8 +579,15 @@ void StackMInstrcuton::output()
     default:
         break;
     }
-    this->use_list[0]->output();
-    fprintf(yyout, "\n");
+    fprintf(yyout, "{");
+    int len = int(this->use_list.size());
+    for (int i = 0; i < len; i++)
+    {
+        this->use_list[i]->output();
+        if (i != len - 1)
+            fprintf(yyout, ", ");
+    }
+    fprintf(yyout, "}\n");
 
 }
 
@@ -563,6 +596,7 @@ MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr)
     this->parent = p; 
     this->sym_ptr = sym_ptr; 
     this->stack_size = 0;
+    this->saved_regs = {11, 14};
 };
 
 void MachineBlock::output()
@@ -608,6 +642,13 @@ void MachineFunction::output()
     inst = new MovMInstruction(this->getBlocks()[0], -1, new MachineOperand(MachineOperand::REG, 11), new MachineOperand(MachineOperand::REG, 13));
     this->getBlocks()[0]->InsertFront(inst);
 
+    std::vector<MachineOperand*> stack_list;
+    for (int regno : saved_regs)
+    {
+        stack_list.push_back(new MachineOperand(MachineOperand::REG, regno));
+    }
+    inst = new StackMInstrcuton(this->getBlocks()[0], StackMInstrcuton::PUSH, stack_list);
+    this->getBlocks()[0]->InsertFront(inst);
 
     // inst = new StackMInstrcuton(this->getBlocks()[0], StackMInstrcuton::PUSH, new MachineOperand(MachineOperand::REG, 11));
     // this->getBlocks()[0]->InsertFront(inst);
@@ -713,32 +754,66 @@ void MachineUnit::output()
 
 
     // fprintf(yyout, "\t.global getint\n");
-    // fprintf(yyout, "\t.type getint, %%function\n");
+    // //fprintf(yyout, "\t.type getint, %%function\n");
 
     // fprintf(yyout, "\t.global putint\n");
-    // fprintf(yyout, "\t.type putint, %%function\n");
+    // //fprintf(yyout, "\t.type putint, %%function\n");
 
     // fprintf(yyout, "\t.global putch\n");
-    // fprintf(yyout, "\t.type putch, %%function\n");
+    // //fprintf(yyout, "\t.type putch, %%function\n");
 
     // fprintf(yyout, "\t.global putarray\n");
-    // fprintf(yyout, "\t.type putarray, %%function\n");
+    // //fprintf(yyout, "\t.type putarray, %%function\n");
 
     // fprintf(yyout, "\t.global getfarray\n");
 
-    // fprintf(yyout, "\t.type getfarray, %%function\n");
+    // //fprintf(yyout, "\t.type getfarray, %%function\n");
 
     // fprintf(yyout, "\t.global putfarray\n");
-    // fprintf(yyout, "\t.type putfarray, %%function\n");
+    // //fprintf(yyout, "\t.type putfarray, %%function\n");
 
     // fprintf(yyout, "\t.global getch\n");
-    // fprintf(yyout, "\t.type getch, %%function\n");
+    // //fprintf(yyout, "\t.type getch, %%function\n");
 
     // fprintf(yyout, "\t.global putfloat\n");
-    // fprintf(yyout, "\t.type putfloat, %%function\n");
+    // //fprintf(yyout, "\t.type putfloat, %%function\n");
 
     // fprintf(yyout, "\t.global getfloat\n");
-    // fprintf(yyout, "\t.type getfloat, %%function\n");
+    // //fprintf(yyout, "\t.type getfloat, %%function\n");
+
+
+    // fprintf(yyout, "\t.extern getint\n");
+    // //fprintf(yyout, "\t.type getint, %%function\n");
+
+    // fprintf(yyout, "\t.extern putint\n");
+    // //fprintf(yyout, "\t.type putint, %%function\n");
+
+    // fprintf(yyout, "\t.extern putch\n");
+    // //fprintf(yyout, "\t.type putch, %%function\n");
+
+    // fprintf(yyout, "\t.extern putarray\n");
+    // //fprintf(yyout, "\t.type putarray, %%function\n");
+
+    // fprintf(yyout, "\t.extern getfarray\n");
+
+    // //fprintf(yyout, "\t.type getfarray, %%function\n");
+
+    // fprintf(yyout, "\t.extern putfarray\n");
+    // //fprintf(yyout, "\t.type putfarray, %%function\n");
+
+    // fprintf(yyout, "\t.extern getch\n");
+    // //fprintf(yyout, "\t.type getch, %%function\n");
+
+    // fprintf(yyout, "\t.extern putfloat\n");
+    // //fprintf(yyout, "\t.type putfloat, %%function\n");
+
+    // fprintf(yyout, "\t.extern getfloat\n");
+    // //fprintf(yyout, "\t.type getfloat, %%function\n");
+
+
+
+
+
 
 	// fprintf(yyout,".ident	\"Ubuntu clang version 14.0.0-1ubuntu1.1\"\n");
 	// fprintf(yyout,".section	\".note.GNU-stack\",\"\",%%progbits\n");

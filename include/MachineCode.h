@@ -161,10 +161,15 @@ public:
 class StackMInstrcuton : public MachineInstruction
 {
 public:
+    std::vector<MachineOperand*> stack_list;
     enum opType { PUSH, POP };
     StackMInstrcuton(MachineBlock* p, int op, 
                 MachineOperand* src,
                 int cond = MachineInstruction::NONE);
+    StackMInstrcuton(MachineBlock* p, int op, 
+                std::vector<MachineOperand*> stack_list,
+                int cond = MachineInstruction::NONE);
+
     void output();
 };
 
@@ -178,6 +183,7 @@ private:
     std::set<MachineOperand*> live_in;
     std::set<MachineOperand*> live_out;
 public:
+    MachineFunction* getParent() {return parent;};
     std::vector<MachineInstruction*>& getInsts() {return inst_list;};
     std::vector<MachineInstruction*>::iterator begin() { return inst_list.begin(); };
     std::vector<MachineInstruction*>::reverse_iterator rbegin() { return inst_list.rbegin(); };
@@ -204,6 +210,7 @@ private:
     std::set<int> saved_regs;
     SymbolEntry* sym_ptr;
 public:
+    std::set<int>& getSavedRegs() {return saved_regs;};
     std::vector<MachineBlock*>& getBlocks() {return block_list;};
     std::vector<MachineBlock*>::iterator begin() { return block_list.begin(); };
     std::vector<MachineBlock*>::iterator end() { return block_list.end(); };
