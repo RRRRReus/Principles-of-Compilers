@@ -32,7 +32,10 @@ private:
     std::vector<int> regs;
     std::map<MachineOperand *, std::set<MachineOperand *>> du_chains;
     std::vector<Interval*> intervals;
+    std::vector<Interval*> active; // 定义 active 列表
+
     static bool compareStart(Interval*a, Interval*b);
+    static bool compareEnd(Interval *a, Interval *b);
     void expireOldIntervals(Interval *interval);
     void spillAtInterval(Interval *interval);
     void makeDuChains();
@@ -40,6 +43,7 @@ private:
     bool linearScanRegisterAllocation();
     void modifyCode();
     void genSpillCode();
+    int allocateStackSpace();
 public:
     LinearScan(MachineUnit *unit);
     void allocateRegisters();

@@ -91,6 +91,9 @@ public:
     std::vector<MachineOperand*>& getDef() {return def_list;};
     std::vector<MachineOperand*>& getUse() {return use_list;};
     MachineBlock* getParent() {return this->parent;};
+
+    void insertBefore(MachineInstruction *);    // 在当前指令之前插入一条指令  //linearscan处使用
+    void insertAfter(MachineInstruction *);     // 在当前指令之后插入一条指令
 };
 
 class BinaryMInstruction : public MachineInstruction

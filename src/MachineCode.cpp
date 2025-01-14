@@ -140,6 +140,27 @@ void MachineInstruction::PrintCond()
     }
 }
 
+
+
+//在指令列表中的当前指令之前插入一个新的指令
+void MachineInstruction::insertBefore(MachineInstruction *inst)
+{
+    auto &instructions = parent->getInsts();
+    auto it = std::find(instructions.begin(), instructions.end(), this);
+    instructions.insert(it, inst);
+}
+//在指令列表中的当前指令之后插入一个新的指令
+void MachineInstruction::insertAfter(MachineInstruction *inst)
+{
+    auto &instructions = parent->getInsts();
+    auto it = std::find(instructions.begin(), instructions.end(), this);
+    instructions.insert(++it, inst);
+}
+
+
+
+
+
 BinaryMInstruction::BinaryMInstruction(
     MachineBlock* p, int op, 
     MachineOperand* dst, MachineOperand* src1, MachineOperand* src2, 
@@ -561,17 +582,20 @@ void MachineUnit::PrintGlobalDecl()
     // You need to print global variable/const declarition code;
 
 
-     // 遍历所有全局变量
+    // 遍历所有全局变量
     for (auto global : global_list)
     {
         if (global->isLabel()) // 确保是全局变量的 LABEL 类型
         {
+            // 获取全局变量的名称
+            std::string varName = global->getLabel();
+
             // 输出类型声明
-            fprintf(yyout, "\t.type\t%s,%%object\t\t@ @%s\n", global->getLabel().c_str(), global->getLabel().c_str());
+            fprintf(yyout, "\t.type\t%s,%%object\t\t@ @%s\n", varName.c_str(), varName.c_str());
 
             // 声明段类型和全局属性
             fprintf(yyout, "\t.data\n");
-            fprintf(yyout, "\t.globl\t%s\n", global->getLabel().c_str());
+            fprintf(yyout, "\t.global\t%s\n", varName.c_str());
 
             // 获取初始值
             std::string initValue = global->getInitialValue(); // 假设全局变量直接存储初始值
@@ -585,13 +609,13 @@ void MachineUnit::PrintGlobalDecl()
                 fprintf(yyout, "\t.p2align\t3\n");
 
                 // 输出变量标签
-                fprintf(yyout, "%s:\n", global->getLabel().c_str());
+                fprintf(yyout, "%s:\n", varName.c_str());
 
                 // 输出浮点数初始值
                 fprintf(yyout, "\t.quad\t%s\t\t@ %s\n", initValue.c_str(), initValue.c_str());
 
                 // 输出大小声明
-                fprintf(yyout, "\t.size\t%s, 8\n", global->getLabel().c_str());
+                fprintf(yyout, "\t.size\t%s, 8\n", varName.c_str());
             }
             else
             {
@@ -599,14 +623,21 @@ void MachineUnit::PrintGlobalDecl()
                 fprintf(yyout, "\t.p2align\t2\n");
 
                 // 输出变量标签
-                fprintf(yyout, "%s:\n", global->getLabel().c_str());
+                fprintf(yyout, "%s:\n", varName.c_str());
 
                 // 输出整数初始值
                 fprintf(yyout, "\t.long\t%s\t\t@ 0x%s\n", initValue.c_str(), initValue.c_str());
 
                 // 输出大小声明
-                fprintf(yyout, "\t.size\t%s, 4\n", global->getLabel().c_str());
+                fprintf(yyout, "\t.size\t%s, 4\n", varName.c_str());
             }
+
+            // 输出地址符号
+            std::string addrName = "addr_" + varName;
+            fprintf(yyout, "\t.global\t%s\n", addrName.c_str());
+            fprintf(yyout, "%s:\n", addrName.c_str());
+            fprintf(yyout, "\t.word\t%s\n", varName.c_str());
+            fprintf(yyout, "\n");
         }
     }
 }
