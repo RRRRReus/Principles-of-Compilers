@@ -1281,53 +1281,56 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     // TODO:
     // complete other instructions
     auto cur_block = builder->getBlock();
-    auto dst = genMachineOperand(operands[0]);
-    auto src1 = genMachineOperand(operands[1]);
-    auto src2 = genMachineOperand(operands[2]);
-    /* HINT:
-    * The source operands of ADD instruction in ir code both can be immediate num.
-    * However, it's not allowed in assembly code.
-    * So you need to insert LOAD/MOV instrucrion to load immediate num into register.
-    * As to other instructions, such as MUL, CMP, you need to deal with this situation, too.*/
+    auto dst = genMachineOperand(operands[0]);  // 目标操作数
+    auto src1 = genMachineOperand(operands[1]); // 第一个源操作数
+    auto src2 = genMachineOperand(operands[2]); // 第二个源操作数
+
     MachineInstruction* cur_inst = nullptr;
-    if(src1->isImm())
+
+    // 处理第一个源操作数是立即数的情况
+    if (src1->isImm())
     {
-        auto internal_reg = genMachineVReg();   //生成一个新的虚拟寄存器
-        cur_inst = new LoadMInstruction(cur_block, internal_reg, src1); //生成一个load指令
-        cur_block->InsertInst(cur_inst);    //将load指令插入到当前基本块中
-        src1 = new MachineOperand(*internal_reg);   //将src1指向新生成的寄存器
-    }
-    // 处理第二个源操作数是立即数的情况,其数值范围有一定限制
-    if(src2->isImm())
-    {
-        // 检查立即数的范围，如果超出范围则需要将其加载到寄存器中
-        if (!src2->isValidImm())
+        if (!src1->isValidImm() || opcode == MUL || opcode == DIV) // 如果立即数超出范围或操作码是 MUL/DIV
         {
-            auto internal_reg = genMachineVReg();   // 生成一个新的虚拟寄存器
-            cur_inst = new LoadMInstruction(cur_block, internal_reg, src2); // 生成一个load指令
-            cur_block->InsertInst(cur_inst);    // 将load指令插入到当前基本块中
-            src2 = new MachineOperand(*internal_reg);   // 将src2指向新生成的寄存器
+            auto internal_reg = genMachineVReg();   // 生成虚拟寄存器
+            cur_inst = new LoadMInstruction(cur_block, internal_reg, src1); // 将立即数加载到寄存器
+            cur_block->InsertInst(cur_inst);    // 插入指令到当前块
+            src1 = new MachineOperand(*internal_reg); // 将 src1 更新为寄存器操作数
         }
     }
+
+    // 处理第二个源操作数是立即数的情况
+    if (src2->isImm())
+    {
+        if (!src2->isValidImm() || opcode == MUL || opcode == DIV) // 如果立即数超出范围或操作码是 MUL/DIV
+        {
+            auto internal_reg = genMachineVReg();   // 生成虚拟寄存器
+            cur_inst = new LoadMInstruction(cur_block, internal_reg, src2); // 将立即数加载到寄存器
+            cur_block->InsertInst(cur_inst);    // 插入指令到当前块
+            src2 = new MachineOperand(*internal_reg); // 将 src2 更新为寄存器操作数
+        }
+    }
+
+    // 根据操作码生成对应的机器指令
     switch (opcode)
     {
     case ADD:
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, src1, src2);  //生成一个add指令
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, src1, src2);
         break;
     case SUB:
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::SUB, dst, src1, src2);  //生成一个sub指令
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::SUB, dst, src1, src2);
         break;
     case MUL:
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::MUL, dst, src1, src2);  //生成一个mul指令
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::MUL, dst, src1, src2);
         break;
     case DIV:
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::DIV, dst, src1, src2);  //生成一个div指令
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::DIV, dst, src1, src2);
         break;
     case AND:
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::AND, dst, src1, src2);  //生成一个and指令
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::AND, dst, src1, src2);
         break;
-    case OR:    
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::OR, dst, src1, src2);  //生成一个or指令
+    case OR:
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::OR, dst, src1, src2);
         break;
     case XOR:
         cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::XOR, dst, src1, src2);  //生成一个xor指令
@@ -1335,6 +1338,8 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     default:
         break;
     }
+
+    // 将生成的指令插入到当前块中
     cur_block->InsertInst(cur_inst);
 }
 
