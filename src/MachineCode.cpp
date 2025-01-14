@@ -313,7 +313,7 @@ void StoreMInstruction::output()
 
 
 
-
+fprintf(stderr, "已进入StoreMInstruction::output函数\n");
 
     fprintf(yyout, "\tstr ");
     this->use_list[0]->output();
@@ -393,7 +393,7 @@ void BranchMInstruction::output()
 {
     // TODO
 
-
+    fprintf(stderr, "已进入BranchMInstruction::output函数\n");
     fprintf(yyout, "\t");
     switch (this->op)
     {
@@ -457,12 +457,18 @@ void CmpMInstruction::output()
     // Jsut for reg alloca test
     // delete it after test
 
-
+    fprintf(stderr, "已进入CmpMInstruction::output函数\n");
+    fprintf(stderr,"use_list[0]->val:%d\n",this->use_list[0]->getVal());
+    fprintf(stderr,"use_list[1]->val:%d\n",this->use_list[1]->getVal());
+    
     fprintf(yyout, "\tcmp ");
     this->use_list[0]->output();
+    fprintf(stderr, "已输出第一个操作数\n");
     fprintf(yyout, ", ");
     this->use_list[1]->output();
+    fprintf(stderr, "已输出第二个操作数\n");
     fprintf(yyout, "\n");
+    fprintf(stderr, "已退出CmpMInstruction::output函数\n");
 
 }
 
@@ -471,7 +477,7 @@ StackMInstrcuton::StackMInstrcuton(MachineBlock* p, int op,
     int cond)
 {
     // TODO
-
+    fprintf(stderr, "已进入StackMInstrcuton::StackMInstrcuton函数\n");
     this->parent = p;
     this->type = MachineInstruction::STACK;
     this->op = op;
@@ -485,6 +491,7 @@ void StackMInstrcuton::output()
 {
     // TODO
 
+    fprintf(stderr, "已进入StackMInstrcuton::output函数\n");
 
     fprintf(yyout, "\t");
     switch (this->op)
@@ -516,7 +523,15 @@ void MachineBlock::output()
     fprintf(yyout, ".L%d:\n", this->no);
     fprintf(stderr, "MachineBlock::output已输出基本块%d\n", this->no);
     for(auto iter : inst_list)
-        iter->output();
+    {
+        if(iter==nullptr)
+            fprintf(stderr, "iter为空\n");
+        else
+            iter->output();
+            
+      
+        
+    }
 
     
 }
@@ -634,15 +649,40 @@ void MachineUnit::output()
 
 
 
-    fprintf(yyout, "\t.extern getint\n");
-    fprintf(yyout, "\t.extern putint\n");
-    fprintf(yyout, "\t.extern putch\n");
-    fprintf(yyout, "\t.extern putarray\n");
-    fprintf(yyout, "\t.extern getfarray\n");
-    fprintf(yyout, "\t.extern putfarray\n");
-    fprintf(yyout, "\t.extern getch\n");
-    fprintf(yyout, "\t.extern putfloat\n");
-    fprintf(yyout, "\t.extern getfloat\n");
+    // fprintf(yyout, "\t.global getint\n");
+    // fprintf(yyout, "\t.type getint, %%function\n");
+
+    // fprintf(yyout, "\t.global putint\n");
+    // fprintf(yyout, "\t.type putint, %%function\n");
+
+    // fprintf(yyout, "\t.global putch\n");
+    // fprintf(yyout, "\t.type putch, %%function\n");
+
+    // fprintf(yyout, "\t.global putarray\n");
+    // fprintf(yyout, "\t.type putarray, %%function\n");
+
+    // fprintf(yyout, "\t.global getfarray\n");
+
+    // fprintf(yyout, "\t.type getfarray, %%function\n");
+
+    // fprintf(yyout, "\t.global putfarray\n");
+    // fprintf(yyout, "\t.type putfarray, %%function\n");
+
+    // fprintf(yyout, "\t.global getch\n");
+    // fprintf(yyout, "\t.type getch, %%function\n");
+
+    // fprintf(yyout, "\t.global putfloat\n");
+    // fprintf(yyout, "\t.type putfloat, %%function\n");
+
+    // fprintf(yyout, "\t.global getfloat\n");
+    // fprintf(yyout, "\t.type getfloat, %%function\n");
+
+	// fprintf(yyout,".ident	\"Ubuntu clang version 14.0.0-1ubuntu1.1\"\n");
+	// fprintf(yyout,".section	\".note.GNU-stack\",\"\",%%progbits\n");
+	// fprintf(yyout,".addrsig\n");
+	// fprintf(yyout,".addrsig_sym putint\n");
+	// fprintf(yyout,".addrsig_sym putch\n");
+	// fprintf(yyout,".eabi_attribute	30, 6	@ Tag_ABI_optimization_goals\n");
 
 
 

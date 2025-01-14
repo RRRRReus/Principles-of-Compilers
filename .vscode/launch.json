@@ -12,7 +12,7 @@
             "args": [
                 "-o",
                 "example.s",
-                "-i",
+                "-S",
                 "example.sy",
             ],
             "stopAtEntry": false,

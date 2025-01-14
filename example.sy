@@ -1,10 +1,7 @@
 
 #include"sysyruntimelibrary/sylib.h"
-int sss=3;
-float aaa=3.3;
-int main(){
-  int d=1;
-  d = sss;
-
-  return d;
+int main() {
+    putint(-!!!!!(-1)); putch(10); 
+    putint(!!-1); putch(10);
+    return 0;
 }

@@ -749,7 +749,7 @@ void CallInstruction::genMachineCode(AsmBuilder *builder)
 
         for(int i=0;i<int(this->operands.size()-1);i++)
         {
-            call_inst =new MovMInstruction(cur_bb,-1,genMachineOperand(this->operands[i+1]),genMachineReg(i));
+            call_inst =new MovMInstruction(cur_bb,-1,genMachineReg(i),genMachineOperand(this->operands[i+1]));
             cur_bb->InsertInst(call_inst);
         }
         std::string funcname;
@@ -766,7 +766,7 @@ void CallInstruction::genMachineCode(AsmBuilder *builder)
         if(!(this->getDef()->getSymbolEntry()->getType()->isFuncVoid()))
         {
 
-            call_inst = new MovMInstruction(cur_bb,-1,genMachineReg(0),genMachineOperand(this->getDef()));
+            call_inst = new MovMInstruction(cur_bb,-1,genMachineOperand(this->getDef()),genMachineReg(0));
             cur_bb->InsertInst(call_inst);
         }
 
@@ -1390,7 +1390,8 @@ void RetInstruction::genMachineCode(AsmBuilder* builder)
         cur_block->InsertInst(cur_inst);
         cur_inst = new MovMInstruction(cur_block,-1, genMachineReg(13), genMachineReg(11));
         cur_block->InsertInst(cur_inst);
-        cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::BX, genMachineReg(13));
+        cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::BX, genMachineReg(14));
+        cur_block->InsertInst(cur_inst);
 
     }
 
