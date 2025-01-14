@@ -245,6 +245,16 @@ void BinaryMInstruction::output()
         this->use_list[1]->output();
         fprintf(yyout, "\n");
         break;
+    case BinaryMInstruction::XOR:
+        fprintf(yyout, "\teor ");
+        this->PrintCond();
+        this->def_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[0]->output();
+        fprintf(yyout, ", ");
+        this->use_list[1]->output();
+        fprintf(yyout, "\n");
+        break;
     default:
         break;
     }
@@ -385,8 +395,23 @@ MovMInstruction::MovMInstruction(MachineBlock* p, int op,
 void MovMInstruction::output() 
 {
     // TODO
-    
-    fprintf(yyout, "\tmov ");
+    switch (op)
+    {
+    case MovMInstruction::MOV:
+        fprintf(yyout, "\tmov ");
+        break;
+    case MovMInstruction::MVN:
+        fprintf(yyout, "\tmovne ");
+        break;
+    case MovMInstruction::MVE:
+        fprintf(yyout, "\tmoveq ");
+        break;
+    default:
+        fprintf(yyout, "\tmov ");
+
+        break;
+    }
+
     this->def_list[0]->output();
     fprintf(yyout, ", ");
     this->use_list[0]->output();

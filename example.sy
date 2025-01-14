@@ -1,7 +1,9 @@
-//test global var define
-int a = 3;
-int b = 5;
+int a;
 
 int main(){
-    return a + b;
+	a = 10;
+	if( a>0 ){
+		return 1;
+	}
+	return 0;
 }
