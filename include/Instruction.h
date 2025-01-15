@@ -403,7 +403,7 @@ public:
     std::vector<Operand *> getUse() override;
     bool canBeCalculated();//是否可以计算
     Operand *CalculatedResult();//计算结果
-    void genMachineCode(AsmBuilder*) {};
+    void genMachineCode(AsmBuilder*);
     
 };
 class GetElementPtrInstruction : public Instruction

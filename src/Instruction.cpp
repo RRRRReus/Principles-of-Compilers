@@ -851,6 +851,15 @@ Operand *ZextInstruction::CalculatedResult()
     return nullptr;
 }
 
+void ZextInstruction::genMachineCode(AsmBuilder *builder)
+{
+    auto cur_bb = builder->getBlock();
+    MachineInstruction *zext_inst = nullptr;
+    zext_inst = new MovMInstruction(cur_bb,-1,genMachineOperand(this->operands[0]),genMachineOperand(this->operands[1]));
+    cur_bb->InsertInst(zext_inst);
+    //这样真的不会出问题吗？？？直接移过去
+}
+
 /**
  * @brief 构造一个新的 GetElementPtrInstruction 对象。
  * @param dst 目标操作数。
@@ -1369,11 +1378,22 @@ void CmpInstruction::genMachineCode(AsmBuilder* builder)
     auto src1 = genMachineOperand(operands[1]);
     auto src2 = genMachineOperand(operands[2]);
     MachineInstruction* cur_inst = nullptr;
+
+
+    if(operands[1]->getEntry()->isConstant())
+        {
+            auto internal_reg = genMachineVReg();
+            cur_inst = new MovMInstruction(cur_block,-1, internal_reg, src1);
+            cur_block->InsertInst(cur_inst);
+            src1 = new MachineOperand(*internal_reg);
+        }
+
     cur_inst = new CmpMInstruction(cur_block, src1, src2);
     cur_block->InsertInst(cur_inst);
-    cur_inst = new MovMInstruction(cur_block, MovMInstruction::MVN, genMachineOperand(operands[0]), genMachineImm(0));
+    cur_inst = new MovMInstruction(cur_block, -1, genMachineOperand(operands[0]), genMachineImm(0));
     cur_block->InsertInst(cur_inst);
-    cur_inst = new MovMInstruction(cur_block, MovMInstruction::MVE, genMachineOperand(operands[0]), genMachineImm(1));
+
+    cur_inst = new MovMInstruction(cur_block, opcode, genMachineOperand(operands[0]), genMachineImm(1));
     cur_block->InsertInst(cur_inst);
     builder->setCmpOpcode(opcode);
 
@@ -1410,9 +1430,9 @@ void CondBrInstruction::genMachineCode(AsmBuilder* builder)
     std::string false_label = ".L" + std::to_string(false_branch->getNo());
     MachineOperand* true_src = new MachineOperand(true_label);
     MachineOperand* false_src = new MachineOperand(false_label);
-    cur_inst = new BranchMInstruction(cur_block, opcode, false_src);
+    cur_inst = new BranchMInstruction(cur_block, opcode, true_src);
     cur_block->InsertInst(cur_inst);
-    cur_inst = new BranchMInstruction(cur_block, -1,true_src);
+    cur_inst = new BranchMInstruction(cur_block, -1,false_src);
     cur_block->InsertInst(cur_inst);
 
 }

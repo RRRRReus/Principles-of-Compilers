@@ -65,9 +65,10 @@ int main(int argc, char *argv[])
     ast.output();
   ast.typeCheck();
   ast.genCode(&unit);
+  //unit.optimize();
   if(dump_type == IR)
     unit.output();
-  unit.optimize();
+  
   unit.genMachineCode(&mUnit);
   LinearScan linearScan(&mUnit);
   linearScan.allocateRegisters();

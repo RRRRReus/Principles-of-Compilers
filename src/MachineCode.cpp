@@ -424,12 +424,25 @@ void MovMInstruction::output()
     case MovMInstruction::MOV:
         fprintf(yyout, "\tmov ");
         break;
-    case MovMInstruction::MVN:
-        fprintf(yyout, "\tmovne ");
-        break;
-    case MovMInstruction::MVE:
+    case MovMInstruction::EQ:
         fprintf(yyout, "\tmoveq ");
         break;
+    case MovMInstruction::NE:
+        fprintf(yyout, "\tmovne ");
+        break;
+    case MovMInstruction::LT:
+        fprintf(yyout, "\tmovlt ");
+        break;
+    case MovMInstruction::LE:
+        fprintf(yyout, "\tmovle ");
+        break;
+    case MovMInstruction::GT:
+        fprintf(yyout, "\tmovgt ");
+        break;
+    case MovMInstruction::GE:
+        fprintf(yyout, "\tmovge ");
+        break;
+
     default:
         fprintf(yyout, "\tmov ");
 
