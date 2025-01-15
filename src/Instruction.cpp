@@ -1297,7 +1297,7 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     // 处理第一个源操作数是立即数的情况
     if (src1->isImm())
     {
-        if (!src1->isValidImm() || opcode == SUB || opcode == MUL || opcode == DIV || opcode == MOD)
+        if (!src1->isValidImm() || opcode == SUB || opcode == MUL || opcode == DIV || opcode == MOD|| opcode == AND || opcode == OR || opcode == XOR|| opcode ==ADD)
         {
             auto internal_reg = genMachineVReg();   // 生成虚拟寄存器
             cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, internal_reg, src1); // 将立即数加载到寄存器
@@ -1309,7 +1309,7 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder)
     // 处理第二个源操作数是立即数的情况
     if (src2->isImm())
     {
-        if (!src2->isValidImm() || opcode == MUL || opcode == DIV || opcode == MOD)
+        if (!src2->isValidImm() || opcode == MUL || opcode == DIV || opcode == MOD|| opcode == MOD|| opcode == AND || opcode == OR || opcode == XOR||opcode ==ADD)
         {
             auto internal_reg = genMachineVReg();   // 生成虚拟寄存器
             cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, internal_reg, src2); // 将立即数加载到寄存器
