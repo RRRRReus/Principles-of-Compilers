@@ -927,6 +927,24 @@ std::vector<Operand *> GetElementPtrInstruction::getUse()
     return std::vector<Operand *>(operands.begin() + 1, operands.end());
 }
 
+void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
+{
+    // auto cur_bb = builder->getBlock();
+    // Operand *dst = this->operands[0];
+    // Operand *src = this->operands[1];
+    // Type *InSrc=dynamic_cast<PointerType*>(src->getType())->getValueType();
+    // MachineInstruction *gep_inst = nullptr;
+
+    // if(InSrc->isIntArray()||InSrc->isFloatArray())
+    // {
+
+    //     MachineOperand *reg1 = genMachineVReg();
+        
+    // }
+    // else
+    // {
+    // }
+}
 
 /**
  * @brief 构造一个新的 BitcastInstruction 对象。
@@ -1442,9 +1460,12 @@ void UncondBrInstruction::genMachineCode(AsmBuilder* builder)
 
 
     auto cur_block = builder->getBlock();
+
+    MachineInstruction* cur_inst = nullptr;
+
     std::string true_label = ".L" + std::to_string(branch->getNo());
     MachineOperand* true_src = new MachineOperand(true_label);
-    MachineInstruction* cur_inst = new BranchMInstruction(cur_block, -1, true_src);
+    cur_inst = new BranchMInstruction(cur_block, -1, true_src);
     cur_block->InsertInst(cur_inst);
     
 
@@ -1456,13 +1477,18 @@ void CondBrInstruction::genMachineCode(AsmBuilder* builder)
 
 
     auto cur_block = builder->getBlock();
-    int opcode = builder->getCmpOpcode();
+    //int opcode = builder->getCmpOpcode();
     MachineInstruction* cur_inst = nullptr;
+
+    cur_inst = new CmpMInstruction(cur_block, genMachineOperand(operands[0]), genMachineImm(1));
+    cur_block->InsertInst(cur_inst);
+
+
     std::string true_label = ".L" + std::to_string(true_branch->getNo());
     std::string false_label = ".L" + std::to_string(false_branch->getNo());
     MachineOperand* true_src = new MachineOperand(true_label);
     MachineOperand* false_src = new MachineOperand(false_label);
-    cur_inst = new BranchMInstruction(cur_block, opcode, true_src);
+    cur_inst = new BranchMInstruction(cur_block, MachineInstruction::EQ, true_src);
     cur_block->InsertInst(cur_inst);
     cur_inst = new BranchMInstruction(cur_block, -1,false_src);
     cur_block->InsertInst(cur_inst);

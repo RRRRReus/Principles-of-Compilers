@@ -51,6 +51,7 @@ public:
     MachineInstruction* getParent() { return this->parent;};
     void PrintReg();
     void output();
+    std::string outputDebug();
 
     bool isValidImm();
 
@@ -183,6 +184,7 @@ private:
     std::set<MachineOperand*> live_in;
     std::set<MachineOperand*> live_out;
 public:
+    int getNo() {return no;};
     MachineFunction* getParent() {return parent;};
     std::vector<MachineInstruction*>& getInsts() {return inst_list;};
     std::vector<MachineInstruction*>::iterator begin() { return inst_list.begin(); };

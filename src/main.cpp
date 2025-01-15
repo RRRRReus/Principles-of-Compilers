@@ -65,13 +65,13 @@ int main(int argc, char *argv[])
     ast.output();
   ast.typeCheck();
   ast.genCode(&unit);
-  //unit.optimize();
+  unit.optimize();
   if(dump_type == IR)
     unit.output();
   
   unit.genMachineCode(&mUnit);
-  //LinearScan linearScan(&mUnit);
-  //linearScan.allocateRegisters();
+  LinearScan linearScan(&mUnit);
+  linearScan.allocateRegisters();
   fprintf(stderr, "生成汇编代码结束\n");
   if(dump_type == ASM)
   {

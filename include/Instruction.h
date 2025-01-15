@@ -414,7 +414,7 @@ public:
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
-    void genMachineCode(AsmBuilder*) {};
+    void genMachineCode(AsmBuilder*);
     
 
 private:

@@ -19,8 +19,11 @@ void LinearScan::allocateRegisters()
         success = false;
         while (!success)        // repeat until all vregs can be mapped
         {
+            fprintf(stderr, "allocateRegisters\n");
             computeLiveIntervals();
+            fprintf(stderr, "computeLiveIntervals\n");
             success = linearScanRegisterAllocation();
+            fprintf(stderr, "linearScanRegisterAllocation\n");
             if (success)        // all vregs can be mapped to real regs
                 modifyCode();
             else                // spill vregs that can't be mapped to real regs
@@ -81,6 +84,7 @@ void LinearScan::computeLiveIntervals()
         Interval *interval = new Interval({du_chain.first->getParent()->getNo(), t, false, 0, 0, {du_chain.first}, du_chain.second});
         intervals.push_back(interval);
     }
+    
     for (auto& interval : intervals) {
         auto uses = interval->uses;
         auto begin = interval->start;
