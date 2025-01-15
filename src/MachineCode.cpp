@@ -411,6 +411,7 @@ MovMInstruction::MovMInstruction(MachineBlock* p, int op,
     this->cond = cond;
     this->def_list.push_back(dst);
     this->use_list.push_back(src);
+    fprintf(stderr, "mov的src->val是%d\n",src->getVal());
     dst->setParent(this);
     src->setParent(this);
     

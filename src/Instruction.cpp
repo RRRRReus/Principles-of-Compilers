@@ -749,6 +749,7 @@ void CallInstruction::genMachineCode(AsmBuilder *builder)
 
         for(int i=0;i<int(this->operands.size()-1);i++)
         {
+            fprintf(stderr,"this->operands[i+1]->toStr()是%s\n",this->operands[i+1]->toStr().c_str());
             call_inst =new MovMInstruction(cur_bb,-1,genMachineReg(i),genMachineOperand(this->operands[i+1]));
             cur_bb->InsertInst(call_inst);
         }
@@ -1125,7 +1126,15 @@ MachineOperand* Instruction::genMachineOperand(Operand* ope)
     auto se = ope->getEntry();
     MachineOperand* mope = nullptr;
     if(se->isConstant())
-        mope = new MachineOperand(MachineOperand::IMM, dynamic_cast<ConstantSymbolEntry*>(se)->getValue());
+    {   fprintf(stderr,"se->toStr()是%s\n",se->toStr().c_str());
+        fprintf(stderr,"dynamic_cast<ConstantSymbolEntry*>(se)->toStr()是%s\n",dynamic_cast<ConstantSymbolEntry*>(se)->toStr().c_str());
+        long long LL=dynamic_cast<ConstantSymbolEntry*>(se)->getValue();
+        if(se->toStr()=="-2147483648")
+            LL=-2147483648;
+        fprintf(stderr,"dynamic_cast<ConstantSymbolEntry*>(se)->getValue())是%d\n",dynamic_cast<ConstantSymbolEntry*>(se)->getValue());
+        mope = new MachineOperand(MachineOperand::IMM, LL);
+        fprintf(stderr,"mope->getImm()是%d\n",mope->getVal());
+    }
     else if(se->isTemporary())
         mope = new MachineOperand(MachineOperand::VREG, dynamic_cast<TemporarySymbolEntry*>(se)->getLabel());
     else if(se->isVariable())
@@ -1218,7 +1227,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
 {
     // TODO
 
-     fprintf(stderr,"进入StoreInstruction::genMachineCode函数\n");
+     //fprintf(stderr,"进入StoreInstruction::genMachineCode函数\n");
 
     auto cur_block = builder->getBlock();
     MachineInstruction* cur_inst = nullptr;
@@ -1255,7 +1264,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
     && operands[0]->getDef()
     && operands[0]->getDef()->isAlloc())
     {
-        fprintf(stderr,"StoreInstruction::genMachineCode函数中的局部变量\n");
+        //fprintf(stderr,"StoreInstruction::genMachineCode函数中的局部变量\n");
         // example: load r1, [r0, #4]
         MachineOperand* dst = genMachineOperand(operands[1]);
         if(operands[1]->getEntry()->isConstant())
@@ -1268,7 +1277,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
             
         auto src1 = genMachineReg(11);
         auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
-                fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
+                //fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
 
         cur_inst = new StoreMInstruction(cur_block, dst, src1, src2);
         cur_block->InsertInst(cur_inst);
@@ -1282,7 +1291,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
         cur_inst = new StoreMInstruction(cur_block, dst, src);
         cur_block->InsertInst(cur_inst);
     }
-    fprintf(stderr,"StoreInstruction::genMachineCode函数结束\n");
+    //fprintf(stderr,"StoreInstruction::genMachineCode函数结束\n");
 }
 
 void BinaryInstruction::genMachineCode(AsmBuilder* builder)
@@ -1387,7 +1396,14 @@ void CmpInstruction::genMachineCode(AsmBuilder* builder)
             cur_block->InsertInst(cur_inst);
             src1 = new MachineOperand(*internal_reg);
         }
-
+    if(operands[2]->getEntry()->isConstant()&&dynamic_cast<ConstantSymbolEntry*>(operands[2]->getEntry())->getValue()>255)
+        {
+            auto internal_reg = genMachineVReg();
+            cur_inst = new LoadMInstruction(cur_block, internal_reg, src2);
+            cur_block->InsertInst(cur_inst);
+            src2 = new MachineOperand(*internal_reg);
+        }
+    
     cur_inst = new CmpMInstruction(cur_block, src1, src2);
     cur_block->InsertInst(cur_inst);
     cur_inst = new MovMInstruction(cur_block, -1, genMachineOperand(operands[0]), genMachineImm(0));

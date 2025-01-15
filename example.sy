@@ -1,27 +1,6 @@
-
-
-int main()
-{
-  int a;
-int b;
-int c;
-
-  a=0;
-  b=1;
-  c=1;
-  int flag=0;
-  int d=4;
-  int e=3;
-  if (1) return 2+e;
-  if (c == 2 && d + e > 2) return 3;
-  //if( !a || !b || !c )
-  //if( a<5 )
-  {
-    flag=1;
-  }
-  // flag=1;
-  // flag=!flag;
-  return  8;
+#include "sysyruntimelibrary/sylib.h"
+int main() {
+    putint(-2147483648); putch(10);
+    //putint(2147483647); putch(10);
+    return 0;
 }
-
-
