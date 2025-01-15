@@ -244,7 +244,7 @@ public:
     ~CmpInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
-    enum {E, NE, L, GE, G, LE};
+    enum {E, NE, L, LE, G, GE};
     Operand *getDef() { return operands[0]; }
     std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }
     bool canBeCalculated();//是否可以计算

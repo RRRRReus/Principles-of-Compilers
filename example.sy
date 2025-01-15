@@ -12,7 +12,7 @@ int c;
   int flag=0;
   int d=4;
   int e=3;
-  if ( 1 == 2) return 4;
+  if (1>=2) return 4;
   if (c == 2 && d + e > 2) return 3;
   //if( !a || !b || !c )
   //if( a<5 )
