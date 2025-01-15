@@ -1177,7 +1177,23 @@ void AllocaInstruction::genMachineCode(AsmBuilder* builder)
     * Allocate stack space for local variabel
     * Store frame offset in symbol entry */
     auto cur_func = builder->getFunction();
-    int offset = cur_func->AllocSpace(4);
+    int offset=0;
+    fprintf(stderr,"进入AllocaInstruction::genMachineCode函数\n");
+    fprintf(stderr,"operands[0]->getEntry()->getType()->toStr()是%s\n",operands[0]->getEntry()->getType()->toStr().c_str());
+    if(dynamic_cast<PointerType*>(operands[0]->getEntry()->getType())->getValueType()->isIntArray())
+    {
+        fprintf(stderr,"进入数组分配空间\n");
+        offset = cur_func->AllocSpace(dynamic_cast<IntArrayType*>(dynamic_cast<PointerType*>(operands[0]->getEntry()->getType())->getValueType())->getStackSize());
+        fprintf(stderr,"offset是%d\n",offset);
+    }
+    else if(dynamic_cast<PointerType*>(operands[0]->getEntry()->getType())->getValueType()->isFloatArray())
+    {
+        offset = cur_func->AllocSpace(dynamic_cast<FloatArrayType*>(dynamic_cast<PointerType*>(operands[0]->getEntry()->getType())->getValueType())->getStackSize());
+    }
+    else
+    {
+        offset = cur_func->AllocSpace(4);
+    }
     dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->setOffset(-offset);
 }
 

@@ -1,6 +1,9 @@
-#include "sysyruntimelibrary/sylib.h"
 int main() {
-    putint(-2147483648); putch(10);
-    //putint(2147483647); putch(10);
-    return 0;
+    int a[10];
+    int e=5;
+    int b[5]={1,2,3,4,e};
+    int c=b[1];
+    a[0]=7;
+    return a[0];
+
 }

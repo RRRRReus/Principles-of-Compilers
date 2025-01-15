@@ -113,6 +113,7 @@ private:
 public:
     int getDim(){return dim;}
     std::vector<int> *dimSize=nullptr;
+    int getStackSize();
     IntArrayType(int dim);
     std::string toStr();
 };
@@ -125,6 +126,8 @@ public:
     std::vector<int> *dimSize=nullptr;
     FloatArrayType(int dim);
     std::string toStr();
+    int getStackSize();
+
 };
 
 class TypeSystem

@@ -49,7 +49,18 @@ std::string ConstFloatType::toStr()
     return "const float";
 }
 
-IntArrayType::IntArrayType(int dim):Type(Type::INTARRAY),dim(dim)
+int IntArrayType::getStackSize()
+{
+    int size = 1;
+    for(int i = 0; i < dim; i++)
+    {
+        size *= (*dimSize)[i];
+    }
+    fprintf(stderr,"!!!!!size*4是%d\n",size*4);
+    return size*4;
+}
+
+IntArrayType::IntArrayType(int dim) : Type(Type::INTARRAY), dim(dim)
 {
     fprintf(stderr,"IntArrayType::IntArrayType(int dim)函数被调用\n");
     dimSize = new std::vector<int>();
@@ -128,6 +139,16 @@ std::string FloatArrayType::toStr()
     return buffer.str();
         
     }
+}
+int FloatArrayType::getStackSize()
+{
+    int size = 1;
+    for(int i = 0; i < dim; i++)
+    {
+        size *= (*dimSize)[i];
+    }
+    return size*4;
+
 }
 std::string PointerType::toStr()
 {
