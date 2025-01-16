@@ -938,8 +938,6 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
     if(InSrc->isIntArray()||InSrc->isFloatArray())
     {
 
-        if(src->getEntry()->isTemporary())//局部数组基址
-        {
         MachineOperand *reg1 = genMachineVReg();
         //MachineOperand *reg2 = genMachineVReg();
 
@@ -983,8 +981,11 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
             Imm4
             );
         cur_bb->InsertInst(gep_inst);
-
         MachineOperand *srcOffset=genMachineVReg();
+        if(src->getEntry()->isTemporary())//局部数组基址
+        {
+
+       
         gep_inst=new MovMInstruction(
             cur_bb,
             -1,
@@ -992,7 +993,16 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
             genMachineImm(dynamic_cast<TemporarySymbolEntry*>(src->getEntry())->getOffset())
             );
         cur_bb->InsertInst(gep_inst);
-
+        }
+        else
+        {
+            gep_inst=new LoadMInstruction(
+            cur_bb,       
+            srcOffset,
+            genMachineOperand(src)
+            );
+            cur_bb->InsertInst(gep_inst);
+        }
         gep_inst = new BinaryMInstruction(
             cur_bb,
             BinaryMInstruction::ADD,
@@ -1000,8 +1010,11 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
             srcOffset,
             Mul4offset
             );
-
         cur_bb->InsertInst(gep_inst);
+        if(src->getEntry()->isTemporary())//局部数组基址
+        {
+
+       
 
         gep_inst = new BinaryMInstruction(
             cur_bb,
@@ -1012,12 +1025,22 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
             );
 
         cur_bb->InsertInst(gep_inst);
+        }
+        else
+        {
+            gep_inst = new MovMInstruction(
+                cur_bb,
+                -1,
+                genMachineOperand(dst),
+                reg1
+                );
 
+            cur_bb->InsertInst(gep_inst);
+        }
 
         // gep_inst = new MovMInstruction(cur_bb,-1,genMachineOperand(dst),reg1);
         // cur_bb->InsertInst(gep_inst);
-        }
-        
+            
     }
     else
     {
