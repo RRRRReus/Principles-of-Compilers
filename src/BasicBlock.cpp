@@ -325,6 +325,7 @@ void BasicBlock::refresh()
 void BasicBlock::genMachineCode(AsmBuilder* builder) 
 {
     auto cur_func = builder->getFunction();
+    builder->setFunction(cur_func);
     auto cur_block = new MachineBlock(cur_func, no);
     builder->setBlock(cur_block);
     for (auto i = head->getNext(); i != head; i = i->getNext())

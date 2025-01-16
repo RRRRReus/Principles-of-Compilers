@@ -5,10 +5,10 @@ extern FILE* yyout;
 MachineOperand::MachineOperand(int tp, int val)
 {
     this->type = tp;
-    if(tp == MachineOperand::IMM)
-        this->val = val;
-    else 
-        this->reg_no = val;
+    if(tp == MachineOperand::IMM)//如果是立即数
+        this->val = val;    //值为val
+    else                    //如果不是立即数
+        this->reg_no = val; //寄存器号为val
 }
 
 MachineOperand::MachineOperand(std::string label)
@@ -88,7 +88,7 @@ void MachineOperand::output()
             if (this->label.substr(0, 2) == ".L")
                 fprintf(yyout, "%s", this->label.c_str());
             else
-                fprintf(yyout, "addr_%s", this->label.c_str());
+                fprintf(yyout, "=%s", this->label.c_str());  //原先是addr_变量名，现在是=变量名，不知道为何只有后者可以通过048
         break;
     default:
         break;
@@ -704,40 +704,78 @@ void MachineFunction::output()
     fprintf(yyout, "\t.global %s\n", func_name);
     fprintf(yyout, "\t.type %s , %%function\n", func_name);
     fprintf(yyout, "%s:\n", func_name);
-    // TODO
-    /* Hint:
-    *  1. Save fp
-    *  2. fp = sp
-    *  3. Save callee saved register
-    *  4. Allocate stack space for local variable */
-    
-    // Traverse all the block in block_list to print assembly code.
-    fprintf(stderr, "MachineFunction::output已输出函数%s\n", func_name);
-    MachineInstruction* inst=nullptr;
 
-    inst = new BinaryMInstruction(this->getBlocks()[0], BinaryMInstruction::SUB, new MachineOperand(MachineOperand::REG, 13), new MachineOperand(MachineOperand::REG, 13), new MachineOperand(MachineOperand::IMM, this->getStackSize()));
-    this->getBlocks()[0]->InsertFront(inst);
-
-
-    inst = new MovMInstruction(this->getBlocks()[0], -1, new MachineOperand(MachineOperand::REG, 11), new MachineOperand(MachineOperand::REG, 13));
-    this->getBlocks()[0]->InsertFront(inst);
-
+        // 保存被调用者保存的寄存器（包括 fp 和 lr）
     std::vector<MachineOperand*> stack_list;
+    MachineInstruction* push_inst = nullptr;
     for (int regno : saved_regs)
     {
+        fprintf(stderr, "正在保存 regno: %d\n", regno);
         stack_list.push_back(new MachineOperand(MachineOperand::REG, regno));
     }
-    inst = new StackMInstrcuton(this->getBlocks()[0], StackMInstrcuton::PUSH, stack_list);
-    this->getBlocks()[0]->InsertFront(inst);
+    if (!stack_list.empty())
+    {
+        push_inst = new StackMInstrcuton(
+            this->getBlocks()[0], StackMInstrcuton::PUSH, stack_list); // push {fp, lr, ...}
+        this->getBlocks()[0]->InsertFront(push_inst);
+    }
+    fprintf(stderr, "stacklist 中现在有 %ld\n", stack_list.size());
 
-    // inst = new StackMInstrcuton(this->getBlocks()[0], StackMInstrcuton::PUSH, new MachineOperand(MachineOperand::REG, 11));
-    // this->getBlocks()[0]->InsertFront(inst);
+    // 更新 fp = sp
+    MachineInstruction* first_inst = new MovMInstruction(
+        this->getBlocks()[0], MovMInstruction::MOV,
+        new MachineOperand(MachineOperand::REG, 11),  // fp
+        new MachineOperand(MachineOperand::REG, 13)); // sp
+    this->getBlocks()[0]->InsertAfter(first_inst, push_inst);
 
-    for(auto iter : block_list)
+    // 分配栈空间 (用于局部变量和溢出的参数)
+    MachineInstruction* sub_inst = nullptr;
+    if (this->stack_size > 0)
+    {
+        sub_inst = new BinaryMInstruction(
+            this->getBlocks()[0], BinaryMInstruction::SUB,
+            new MachineOperand(MachineOperand::REG, 13), // sp
+            new MachineOperand(MachineOperand::REG, 13), // sp
+            new MachineOperand(MachineOperand::IMM, this->getStackSize()));
+        this->getBlocks()[0]->InsertAfter(sub_inst, first_inst);
+    }
+
+
+
+    // // 处理函数参数，将 `r0-r3` 和栈上的参数存储到分配的局部变量中
+    // int current_offset = 0; // 参数存储的初始偏移量
+    // int param_index = 0;
+
+    // for (long unsigned int i = 0; i < this->params.size(); i++)
+    // {
+    //     if (param_index < 4)
+    //     {
+    //         // 参数在 r0-r3 中，直接存储到栈中
+    //         current_offset -= 4;
+    //         auto store_inst = new StoreMInstruction(
+    //             this->getBlocks()[0],
+    //             new MachineOperand(MachineOperand::REG, param_index),  // r0, r1, r2, r3
+    //             new MachineOperand(MachineOperand::REG, 13),          // sp
+    //             new MachineOperand(MachineOperand::IMM, current_offset));
+    //         this->getBlocks()[0]->InsertAfter(store_inst, push_inst);
+    //         push_inst = store_inst; // 更新插入点
+    //     }
+    //     else
+    //     {
+    //         // 参数已经在栈中，计算其偏移，无需额外存储
+    //         current_offset -= 4;
+    //     }
+    //     param_index++;
+    // }
+
+    // 遍历输出每个基本块
+    for (auto iter : block_list)
         iter->output();
 
-    
+    fprintf(stderr, "MachineFunction::output 已输出函数 %s\n", func_name);
 }
+
+
 
 void MachineUnit::PrintGlobalDecl()
 {
