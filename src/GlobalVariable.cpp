@@ -71,6 +71,7 @@ void GlobalVariable::genMachineCode(AsmBuilder* builder)
     }
 
     globalVarOperand->setInitialValue(initialValue);
+    globalVarOperand->setSymbolEntry(se);
     fprintf(stderr, "全局变量%s的初始值为%s\n", varName.c_str(), initialValue.c_str());
     cur_unit->InsertGlobalVar(globalVarOperand);   // 将全局变量插入到 MachineUnit 中
 
