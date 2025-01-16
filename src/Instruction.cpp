@@ -1021,6 +1021,16 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
     }
     else
     {
+
+
+        gep_inst=new BinaryMInstruction(
+            cur_bb,
+            BinaryMInstruction::ADD,
+            genMachineOperand(dst),
+            genMachineOperand(src),
+            genMachineImm(4)//这真行吗？？？
+            );
+        cur_bb->InsertInst(gep_inst);
     }
 }
 
