@@ -1204,6 +1204,9 @@ MachineOperand* Instruction::genMachineOperand(Operand* ope)
         else
             exit(0);
     }
+
+    mope->setSymbolEntry(se);
+    
     return mope;
 }
 
@@ -1324,7 +1327,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
         // example: Store r1, [r0]
 
 
-        if(operands[1]->getEntry()->isConstant())
+        if(operands[1]->getEntry()->isConstant()) // 如果目标是常量，则需要移动到寄存器
         {
             auto internal_reg = genMachineVReg();
             cur_inst = new MovMInstruction(cur_block,-1, internal_reg, dst);
@@ -1354,7 +1357,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
         if(!isParam)
         {
             IdentifierSymbolEntry* id_se = dynamic_cast<IdentifierSymbolEntry*>(operands[1]->getEntry());
-            if(id_se!=nullptr)
+             if(id_se!=nullptr)
             {
                 fprintf(stderr,"啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊？\n");
                 fprintf(stderr,"一就是一，二就是二 %d\n",id_se->isParam());
@@ -1362,19 +1365,19 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
             fprintf(stderr,"StoreInstruction::genMachineCode函数中的局部变量\n");
             fprintf(stderr,"Temporary操作数operands[0]是%s\n",operands[0]->toStr().c_str());
             fprintf(stderr,"Temporary操作数operands[1]是%s\n",operands[1]->toStr().c_str());
-        // example: load r1, [r0, #4]
-        MachineOperand* dst = genMachineOperand(operands[1]);
-        if(operands[1]->getEntry()->isConstant())
-        {
-            auto internal_reg = genMachineVReg();
-            cur_inst = new MovMInstruction(cur_block,-1, internal_reg, dst);
-            cur_block->InsertInst(cur_inst);
-            dst = new MachineOperand(*internal_reg);
-        }
+            // example: load r1, [r0, #4]
+            MachineOperand* dst = genMachineOperand(operands[1]);//
+            if(operands[1]->getEntry()->isConstant())
+            {
+                auto internal_reg = genMachineVReg();
+                cur_inst = new MovMInstruction(cur_block,-1, internal_reg, dst);
+                cur_block->InsertInst(cur_inst);
+                dst = new MachineOperand(*internal_reg);
+            }
             
-        auto src1 = genMachineReg(11);
-        auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
-                //fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
+            auto src1 = genMachineReg(11);
+            auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
+            //fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
 
             cur_inst = new StoreMInstruction(cur_block, dst, src1, src2);
             cur_block->InsertInst(cur_inst);
@@ -1423,6 +1426,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
         cur_inst = new StoreMInstruction(cur_block, dst, src);
         cur_block->InsertInst(cur_inst);
     }
+
     //fprintf(stderr,"StoreInstruction::genMachineCode函数结束\n");
 }
 

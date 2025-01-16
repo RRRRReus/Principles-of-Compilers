@@ -1,4 +1,5 @@
 #include "MachineCode.h"
+#include "Type.h"
 #include <cstring>
 extern FILE* yyout;
 
@@ -384,8 +385,6 @@ StoreMInstruction::StoreMInstruction(MachineBlock* p,
 {
     // TODO
 
-
-
     this->parent = p;
     this->type = MachineInstruction::LOAD;
     this->op = -1;
@@ -410,9 +409,18 @@ void StoreMInstruction::output()
 
 
 
-fprintf(stderr, "已进入StoreMInstruction::output函数\n");
+    fprintf(stderr, "已进入StoreMInstruction::output函数\n");
 
-    fprintf(yyout, "\tstr ");
+    // 判断是否为浮点数存储
+    //if (use_list[0]->getSymbolEntry()->getType()->isAllFloat()) {
+        // 如果是浮点数类型，使用 FST 指令
+   //     fprintf(yyout, "\tfst ");
+    //} else {
+        // 否则，使用 STR 指令
+        fprintf(yyout, "\tstr ");
+    //}
+
+
     this->use_list[0]->output();
     fprintf(yyout, ", ");
 

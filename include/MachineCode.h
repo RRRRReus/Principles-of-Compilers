@@ -33,6 +33,8 @@ private:
     std::string label; // address label
     std::string globalInitialValue; // 新增全局变量初始值
     bool isGlobalConstFlag = false; // 是否是全局常量
+    bool isFloat = false; // 是否是浮点数
+    SymbolEntry* se;
 public:
     enum { IMM, VREG, REG, LABEL };
     MachineOperand(int tp, int val);
@@ -68,6 +70,10 @@ public:
 
     bool isGlobalConst() { return isGlobalConstFlag; } // 是否是全局常量
     void setGlobalConst(bool isconst) { isGlobalConstFlag = isconst; } // 设置为全局常量
+    bool IsFLoat() { return isFloat; } // 是否是浮点数
+    void SetFloat(bool isfloat) { isFloat = isfloat; } // 设置为浮点数
+    SymbolEntry* getSymbolEntry() { return se; };
+    void setSymbolEntry(SymbolEntry* se) { this->se = se; };
 
 };
 
