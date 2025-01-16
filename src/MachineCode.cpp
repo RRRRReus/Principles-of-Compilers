@@ -1,6 +1,9 @@
 #include "MachineCode.h"
 #include "Type.h"
 #include <cstring>
+#include <sstream>
+#include <vector>
+#include <iomanip>
 extern FILE* yyout;
 
 MachineOperand::MachineOperand(int tp, int val)
@@ -788,7 +791,29 @@ void MachineFunction::output()
 }
 
 
+std::string convertToLongFormat(const std::string& initValue) {
+    std::istringstream iss(initValue);
+    std::string token;
+    std::string result;
+    
+    // 解析字符串并处理每个元素
+    while (std::getline(iss, token, ',')) {
+        fprintf(stderr, "当前token是%s\n",token.c_str());
+        // 提取整数值
+        size_t pos = token.find("i32");
+        if (pos != std::string::npos) {
+            std::string value = token.substr(pos + 3); // 获取 i32 后的数字
+            int num = std::stoi(value);
+            
+            // 格式化输出并添加到结果字符串中
+            std::ostringstream formatted;
+            formatted << "\t.long\t" << num << "\t\t@ 0x" << std::hex << num << std::dec;
+            result += formatted.str() + "\n";
+        }
+    }
 
+    return result;
+}
 void MachineUnit::PrintGlobalDecl()
 {
     // TODO:
@@ -844,13 +869,26 @@ void MachineUnit::PrintGlobalDecl()
                 // 整数：对齐到 4 字节
                 fprintf(yyout, "\t.p2align\t2\n");
                 fprintf(yyout, "%s:\n", varName.c_str());
+                if(global->getSymbolEntry()->getType()->isInt())
+                {
+                    // 将 initValue 转换为整数
+                    int intValue = std::stoi(initValue);
 
-                // 将 initValue 转换为整数
-                int intValue = std::stoi(initValue);
+                    // 以十六进制格式输出
+                    fprintf(yyout, "\t.long\t%d\t\t@ 0x%x\n", intValue, intValue);
+                    fprintf(yyout, "\t.size\t%s, 4\n", varName.c_str());
+                }
+                else
+                {
+                    if(initValue=="zeroinitializer")
+                    {
+                        fprintf(yyout, "\t.zero\t%d\n",dynamic_cast<IntArrayType*>(global->getSymbolEntry()->getType())->getStackSize());
+                    }
+                    else
+                        fprintf(yyout, "%s", convertToLongFormat(initValue).c_str());
+                    fprintf(yyout, "\t.size\t%s, %d\n", varName.c_str(),dynamic_cast<IntArrayType*>(global->getSymbolEntry()->getType())->getStackSize());
+                }
 
-                // 以十六进制格式输出
-                fprintf(yyout, "\t.long\t%d\t\t@ 0x%x\n", intValue, intValue);
-                fprintf(yyout, "\t.size\t%s, 4\n", varName.c_str());
             }
 
             // 如果是变量，生成地址符号
