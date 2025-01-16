@@ -244,7 +244,7 @@ public:
     ~CmpInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
-    enum {E, NE, L, GE, G, LE};
+    enum {E, NE, L, LE, G, GE};
     Operand *getDef() { return operands[0]; }
     std::vector<Operand *> getUse() { return {operands[1], operands[2]}; }
     bool canBeCalculated();//是否可以计算
@@ -403,7 +403,7 @@ public:
     std::vector<Operand *> getUse() override;
     bool canBeCalculated();//是否可以计算
     Operand *CalculatedResult();//计算结果
-    void genMachineCode(AsmBuilder*) {};
+    void genMachineCode(AsmBuilder*);
     
 };
 class GetElementPtrInstruction : public Instruction
@@ -414,7 +414,7 @@ public:
     void output() const override;
     Operand *getDef() override;
     std::vector<Operand *> getUse() override;
-    void genMachineCode(AsmBuilder*) {};
+    void genMachineCode(AsmBuilder*);
     
 
 private:

@@ -80,6 +80,5 @@ int main(int argc, char *argv[])
   }
 
   fprintf(stderr, "输出汇编代码结束\n");
-    
   return 0;
 }

@@ -95,6 +95,48 @@ void MachineOperand::output()
     }
 }
 
+std::string MachineOperand::outputDebug()
+{
+    std::string result;
+    switch (this->type)
+    {
+    case IMM:
+        result = "#" + std::to_string(this->val);
+        break;
+    case VREG:
+        result = "v" + std::to_string(this->reg_no);
+        break;
+    case REG:
+        switch (reg_no)
+        {
+        case 11:
+            result = "fp";
+            break;
+        case 13:
+            result = "sp";
+            break;
+        case 14:
+            result = "lr";
+            break;
+        case 15:
+            result = "pc";
+            break;
+        default:
+            result = "r" + std::to_string(reg_no);
+            break;
+        }
+        break;
+    case LABEL:
+        if (this->label.substr(0, 2) == ".L")
+            result = this->label;
+        else
+            result = "addr_" + this->label;
+        break;
+    default:
+        break;
+    }
+    return result;
+}
 
 bool MachineOperand::isValidImm() 
 {
@@ -411,6 +453,9 @@ MovMInstruction::MovMInstruction(MachineBlock* p, int op,
     this->cond = cond;
     this->def_list.push_back(dst);
     this->use_list.push_back(src);
+    fprintf(stderr, "mov的src->val是%d\n",src->getVal());
+    fprintf(stderr, "mov的dst->val是%d\n",dst->getVal());
+
     dst->setParent(this);
     src->setParent(this);
     
@@ -424,12 +469,25 @@ void MovMInstruction::output()
     case MovMInstruction::MOV:
         fprintf(yyout, "\tmov ");
         break;
-    case MovMInstruction::MVN:
-        fprintf(yyout, "\tmovne ");
-        break;
-    case MovMInstruction::MVE:
+    case MovMInstruction::EQ:
         fprintf(yyout, "\tmoveq ");
         break;
+    case MovMInstruction::NE:
+        fprintf(yyout, "\tmovne ");
+        break;
+    case MovMInstruction::LT:
+        fprintf(yyout, "\tmovlt ");
+        break;
+    case MovMInstruction::LE:
+        fprintf(yyout, "\tmovle ");
+        break;
+    case MovMInstruction::GT:
+        fprintf(yyout, "\tmovgt ");
+        break;
+    case MovMInstruction::GE:
+        fprintf(yyout, "\tmovge ");
+        break;
+
     default:
         fprintf(yyout, "\tmov ");
 

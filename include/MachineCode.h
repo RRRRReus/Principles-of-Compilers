@@ -51,6 +51,7 @@ public:
     MachineInstruction* getParent() { return this->parent;};
     void PrintReg();
     void output();
+    std::string outputDebug();
 
     bool isValidImm();
 
@@ -131,7 +132,7 @@ public:
 class MovMInstruction : public MachineInstruction
 {
 public:
-    enum opType { MOV, MVN ,MVE};
+    enum opType { MOV=99, MVN ,MVE};
     MovMInstruction(MachineBlock* p, int op, 
                 MachineOperand* dst, MachineOperand* src,
                 int cond = MachineInstruction::NONE);
@@ -183,6 +184,7 @@ private:
     std::set<MachineOperand*> live_in;
     std::set<MachineOperand*> live_out;
 public:
+    int getNo() {return no;};
     MachineFunction* getParent() {return parent;};
     std::vector<MachineInstruction*>& getInsts() {return inst_list;};
     std::vector<MachineInstruction*>::iterator begin() { return inst_list.begin(); };
@@ -202,7 +204,6 @@ public:
     std::set<MachineOperand*>& getLiveOut() {return live_out;};
     std::vector<MachineBlock*>& getPreds() {return pred;};
     std::vector<MachineBlock*>& getSuccs() {return succ;};
-    int getNo() {return no;};//添加函数参数用于获取基本块编号
     void output();
 };
 
