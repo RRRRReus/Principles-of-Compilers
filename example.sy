@@ -1,84 +1,74 @@
  # include"sysyruntimelibrary/sylib.h"
-int A[100] = {};
-int B[100] = {};
-int C[100] = {};
-int D[100] = {};
-const int p = 234145;
-void f(int A[],int B[],int C[],int D[],int n)
-{
-    // if(n == 0){
-    //     return;
-    // }
-    int i = 0;
-    while(i < 1){
-        putint(44);
-        putint(C[i]);
-        putch(10);
-        putint(D[i]);
-        putch(10);
-        putint(D[i]);
-        putch(10);
-        A[i] = C[i] + B[i] + D[i]+22123;
-        putint(A[i]);
-        putch(10);
-        // B[i] = A[i] + C[i] + D[i];
-        // C[i] = B[i] + A[i] + D[i];
-        // A[i] = A[i]%p;
-        // B[i] = B[i]%p;
-        // C[i] = C[i]%p;
-        i = i + 1;
-    }
-    //f(B,C,A,D,n-1);
-}
-// int sum(int A[])
+int x[3] = {2344,1232,3435};
+int y[3] = {234,566,127378};
+int d;
+// void modx()
 // {
-//     int i = 0;
-//     int S = 0;
-//     while(i < 100){
-//         S = S + A[i];
-//         i = i + 1;
-//     }
-//     return S;
+//   x[0] = x[0] + 2;
+//   x[1] = x[1] + 2;
+//   x[2] = x[2] + 2;
 // }
-// int main()
+// void mody()
 // {
-//     int i = 0;
-//     while(i < 100){
-//         A[i] = 1 + i/4;
-//         B[i] = 2 + i/3;
-//         C[i] = 3 + i/2;
-//         D[i] = 4 + i;
-//         i = i + 1;
-//     }
-//     int ans = 0;
-//      ans = ans + sum(D);
-//     f(A,B,C,D,10);
-//     // ans = ans + sum(D);
-//     // f(A,A,A,D,10);
-//     // ans = ans + sum(D);
-//     // ans = ans + sum(A);
-//     // f(D,D,D,A,10);
-//     // ans = ans + sum(A);
-//     // ans = ans + sum(D);
-
-//     // putint(ans);
-//     // putch(10);
-//     // putarray(100,A);
-//     // putarray(100,B);
-//     // putarray(100,C);
-//     // putarray(100,D);
-//     return 0;
+//   y[0] = y[0] + 2;
+//   y[1] = y[1] + 2;
+//   y[2] = y[2] + 2;
 // }
 
-int ff(int A[],int B[],int C[],int D[],int n)
+// void refx()
+// {
+//   d = x[0] + x[1] + x[2];
+// }
+
+void refy()
 {
-    putint(44);
-    putch(10);
+  d = y[0] + y[1] + y[2];
 }
+
+// void modxrefy()
+// {
+//   x[0] = y[0] + 3;
+//   x[1] = y[1] + 4;
+//   x[2] = y[2] + 5;
+// }
+
+// void modyrefx()
+// {
+//   y[0] = x[0] + 5;
+//   y[1] = x[1] + 6;
+//   y[2] = x[2] + 7;
+// }
+
 int main()
 {
-    ff(A,B,C,D,10);
-    f(A,B,C,D,10);
+  int t = x[2];
+  y[2] = 3;
+  t = t + x[2];
+  x[2] = 3;
+  t = t + x[2] + d;
+  d = 5;
+  t = t + x[2] + d + d;
+  //refx();
+  t = t + x[2] + d;
+  //modx();
+  t = t + x[2] + d;
+  //mody();
+  t = t + x[2] + d;
+  //modyrefx();
+  t = t + x[2] + y[2] + d;
+  //modxrefy();
+  t = t + x[2] + d;
+  t = t + y[1] + y[2] + d;
+  //modyrefx();
+  t = t + y[1] + y[2] + d;
+  refy();
+  t = t + y[1] + y[2] + d;
+  putint(t);
+  putch(10);
+  putarray(3,x);
+  putarray(3,y);
+  putint(d);
+  putch(10);
 
-    return 0;
+  return 0;
 }

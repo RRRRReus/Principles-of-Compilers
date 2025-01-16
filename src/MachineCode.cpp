@@ -786,7 +786,6 @@ void MachineFunction::output()
     // 遍历输出每个基本块
     for (auto iter : block_list)
         iter->output();
-
     fprintf(stderr, "MachineFunction::output 已输出函数 %s\n", func_name);
 }
 

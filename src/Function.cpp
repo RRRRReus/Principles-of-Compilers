@@ -1470,7 +1470,14 @@ void Function::genMachineCode(AsmBuilder* builder)
     for(auto block : block_list)
     {
         block->genMachineCode(builder);
+        if(this->return_val==nullptr)
+        {
+            auto bx_inst = new BranchMInstruction(builder->getBlock(), BranchMInstruction::BX, new MachineOperand(MachineOperand::REG, 14));
+            builder->getBlock()->InsertInst(bx_inst);
+        }
+
         map[block] = builder->getBlock();
+
     }
 
 
