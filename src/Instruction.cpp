@@ -929,21 +929,153 @@ std::vector<Operand *> GetElementPtrInstruction::getUse()
 
 void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
 {
-    // auto cur_bb = builder->getBlock();
-    // Operand *dst = this->operands[0];
-    // Operand *src = this->operands[1];
-    // Type *InSrc=dynamic_cast<PointerType*>(src->getType())->getValueType();
-    // MachineInstruction *gep_inst = nullptr;
+    auto cur_bb = builder->getBlock();
+    Operand *dst = this->operands[0];
+    Operand *src = this->operands[1];
+    Type *InSrc=dynamic_cast<PointerType*>(src->getType())->getValueType();
+    MachineInstruction *gep_inst = nullptr;
 
-    // if(InSrc->isIntArray()||InSrc->isFloatArray())
-    // {
+    if(InSrc->isIntArray()||InSrc->isFloatArray())
+    {
 
-    //     MachineOperand *reg1 = genMachineVReg();
+        if(src->getEntry()->isTemporary())//局部数组基址
+        {
+        MachineOperand *reg1 = genMachineVReg();
+        //MachineOperand *reg2 = genMachineVReg();
+
+
+        MachineOperand *IndexOffset=nullptr;
+        if(this->operands[3]->getSymbolEntry()->isConstant())
+        {
+
+            IndexOffset=genMachineReg(6);
+            IndexOffset=genMachineVReg();
+            // IndexOffset=genMachineVReg();
+            gep_inst=new MovMInstruction(
+                cur_bb,
+                -1,
+                IndexOffset,
+                genMachineOperand(this->operands[3])
+                );
+            cur_bb->InsertInst(gep_inst);
+
+        }
+        else
+        {
+            IndexOffset=genMachineOperand(this->operands[3]);
+        }
         
-    // }
-    // else
-    // {
-    // }
+        MachineOperand *Imm4=genMachineVReg();
+        gep_inst=new MovMInstruction(
+            cur_bb,
+            -1,
+            Imm4,
+            genMachineImm(4)
+            );
+        cur_bb->InsertInst(gep_inst);
+
+        MachineOperand *Mul4offset=genMachineVReg();    
+        gep_inst=new BinaryMInstruction(
+            cur_bb,
+            BinaryMInstruction::MUL,
+            Mul4offset,
+            IndexOffset,
+            Imm4
+            );
+        cur_bb->InsertInst(gep_inst);
+
+        MachineOperand *srcOffset=genMachineVReg();
+        gep_inst=new MovMInstruction(
+            cur_bb,
+            -1,
+            srcOffset,
+            genMachineImm(dynamic_cast<TemporarySymbolEntry*>(src->getEntry())->getOffset())
+            );
+        cur_bb->InsertInst(gep_inst);
+
+        gep_inst = new BinaryMInstruction(
+            cur_bb,
+            BinaryMInstruction::ADD,
+            reg1,
+            srcOffset,
+            Mul4offset
+            );
+
+        cur_bb->InsertInst(gep_inst);
+
+        gep_inst = new BinaryMInstruction(
+            cur_bb,
+            BinaryMInstruction::ADD,
+            genMachineOperand(dst),
+            genMachineReg(11),
+            reg1
+            );
+
+        cur_bb->InsertInst(gep_inst);
+
+
+        // gep_inst = new MovMInstruction(cur_bb,-1,genMachineOperand(dst),reg1);
+        // cur_bb->InsertInst(gep_inst);
+        }
+        
+    }
+    else
+    {
+
+
+        MachineOperand *IndexOffset=nullptr;
+        if(this->operands[3]->getSymbolEntry()->isConstant())
+        {
+
+            IndexOffset=genMachineReg(6);
+            IndexOffset=genMachineVReg();
+            // IndexOffset=genMachineVReg();
+            gep_inst=new MovMInstruction(
+                cur_bb,
+                -1,
+                IndexOffset,
+                genMachineOperand(this->operands[3])
+                );
+            cur_bb->InsertInst(gep_inst);
+
+        }
+        else
+        {
+            IndexOffset=genMachineOperand(this->operands[3]);
+        }
+        
+        MachineOperand *Imm4=genMachineVReg();
+        gep_inst=new MovMInstruction(
+            cur_bb,
+            -1,
+            Imm4,
+            genMachineImm(4)
+            );
+        cur_bb->InsertInst(gep_inst);
+
+        MachineOperand *Mul4offset=genMachineVReg();    
+        gep_inst=new BinaryMInstruction(
+            cur_bb,
+            BinaryMInstruction::MUL,
+            Mul4offset,
+            IndexOffset,
+            Imm4
+            );
+        cur_bb->InsertInst(gep_inst);
+
+
+
+
+
+        gep_inst=new BinaryMInstruction(
+            cur_bb,
+            BinaryMInstruction::ADD,
+            genMachineOperand(dst),
+            genMachineOperand(src),
+            Mul4offset
+            );
+        cur_bb->InsertInst(gep_inst);
+    }
 }
 
 /**
@@ -1421,8 +1553,17 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
     else
     {
         // example: load r1, [r0]
-        auto dst = genMachineOperand(operands[0]);
-        auto src = genMachineOperand(operands[1]);
+        auto dst = genMachineOperand(operands[1]);
+        auto src = genMachineOperand(operands[0]);
+
+        if(operands[1]->getEntry()->isConstant())
+        {
+            auto internal_reg = genMachineVReg();
+            cur_inst = new MovMInstruction(cur_block,-1, internal_reg, dst);
+            cur_block->InsertInst(cur_inst);
+            dst = new MachineOperand(*internal_reg);
+        }
+
         cur_inst = new StoreMInstruction(cur_block, dst, src);
         cur_block->InsertInst(cur_inst);
     }
