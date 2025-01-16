@@ -88,7 +88,7 @@ void MachineOperand::output()
             if (this->label.substr(0, 2) == ".L")
                 fprintf(yyout, "%s", this->label.c_str());
             else
-                fprintf(yyout, "addr_%s", this->label.c_str());
+                fprintf(yyout, "=%s", this->label.c_str());  //原先是addr_变量名，现在是=变量名，不知道为何只有后者可以通过048
         break;
     default:
         break;
