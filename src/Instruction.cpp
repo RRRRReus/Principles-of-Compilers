@@ -749,7 +749,7 @@ void CallInstruction::genMachineCode(AsmBuilder *builder)
 
         for(int i=0;i<int(this->operands.size()-1);i++)
         {
-            call_inst =new MovMInstruction(cur_bb,-1,genMachineReg(i),genMachineOperand(this->operands[i+1]));
+            call_inst =new MovMInstruction(cur_bb,-1,genMachineReg(i),genMachineOperand(this->operands[i+1]));  //将参数存入r0-r3
             cur_bb->InsertInst(call_inst);
         }
         std::string funcname;
@@ -759,14 +759,14 @@ void CallInstruction::genMachineCode(AsmBuilder *builder)
         {
             funcname=library_funcSE->getName();
         }
-        call_inst = new BranchMInstruction(cur_bb,BranchMInstruction::BL,new MachineOperand(funcname));
+        call_inst = new BranchMInstruction(cur_bb,BranchMInstruction::BL,new MachineOperand(funcname)); //  bl 函数名
         cur_bb->InsertInst(call_inst);
         fprintf(stderr,"this->getDef()->getSymbolEntry()->getType()是%s\n",this->getDef()->getSymbolEntry()->getType()->toStr().c_str());
         fprintf(stderr,"this->getDef()->getSymbolEntry()->getType()->isVoid()是%d\n",this->getDef()->getSymbolEntry()->getType()->isVoid());
-        if(!(this->getDef()->getSymbolEntry()->getType()->isFuncVoid()))
+        if(!(this->getDef()->getSymbolEntry()->getType()->isFuncVoid()))//如果返回值不为空
         {
 
-            call_inst = new MovMInstruction(cur_bb,-1,genMachineOperand(this->getDef()),genMachineReg(0));
+            call_inst = new MovMInstruction(cur_bb,-1,genMachineOperand(this->getDef()),genMachineReg(0));//将返回值存入r0
             cur_bb->InsertInst(call_inst);
         }
 
@@ -1118,7 +1118,48 @@ MachineOperand* Instruction::genMachineOperand(Operand* ope)
     if(se->isConstant())
         mope = new MachineOperand(MachineOperand::IMM, dynamic_cast<ConstantSymbolEntry*>(se)->getValue());
     else if(se->isTemporary())
-        mope = new MachineOperand(MachineOperand::VREG, dynamic_cast<TemporarySymbolEntry*>(se)->getLabel());
+    {
+        fprintf(stderr,"当前operand是%s\n",ope->toStr().c_str());
+        Function* parent_func = nullptr;
+        if(ope->getDef()==nullptr)
+        {
+            parent_func = ope->getUse()[0]->getParent()->getParent();
+        }
+        else
+        {
+            parent_func = ope->getDef()->getParent()->getParent();
+        }
+        fprintf(stderr,"parent_func是%s\n",parent_func->getSymPtr()->toStr().c_str());
+        std::vector<Operand*> params = parent_func->getParams();
+        bool isParam = false;
+        for(long unsigned int i=0 ; i<params.size() ; i++)
+        {
+            if(ope->toStr()==params[i]->toStr())
+            {
+                isParam=true;
+                break;
+            }
+        }
+        //参数情况
+        fprintf(stderr,"isParam是%d\n",isParam);
+        if(isParam)
+        {
+            for(long unsigned int i=0;i<params.size();i++)
+            {
+                if(ope->toStr()==params[i]->toStr())
+                {
+                    mope = new MachineOperand(MachineOperand::REG, i);
+                    break;
+                }
+            }
+
+        }
+        else{
+            
+            mope = new MachineOperand(MachineOperand::VREG, dynamic_cast<TemporarySymbolEntry*>(se)->getLabel());
+        }
+        
+    }
     else if(se->isVariable())
     {
         auto id_se = dynamic_cast<IdentifierSymbolEntry*>(se);
@@ -1218,6 +1259,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
     && dynamic_cast<IdentifierSymbolEntry*>(operands[0]->getEntry())->isGlobal())
     {
         fprintf(stderr,"StoreInstruction::genMachineCode函数中的全局变量\n");
+        fprintf(stderr,"Variable操作数是%s\n",operands[0]->toStr().c_str());
         auto dst = genMachineOperand(operands[1]);
         auto internal_reg1 = genMachineVReg();
         auto internal_reg2 = new MachineOperand(*internal_reg1);
@@ -1246,23 +1288,78 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
     && operands[0]->getDef()
     && operands[0]->getDef()->isAlloc())
     {
-        fprintf(stderr,"StoreInstruction::genMachineCode函数中的局部变量\n");
-        // example: load r1, [r0, #4]
-        MachineOperand* dst = genMachineOperand(operands[1]);
-        if(operands[1]->getEntry()->isConstant())
+        Function* parent_func = operands[0]->getDef()->getParent()->getParent();
+        std::vector<Operand*> params = parent_func->getParams();
+        bool isParam = false;
+        for(long unsigned int i=0;i<params.size();i++)
         {
-            auto internal_reg = genMachineVReg();
-            cur_inst = new MovMInstruction(cur_block,-1, internal_reg, dst);
-            cur_block->InsertInst(cur_inst);
-            dst = new MachineOperand(*internal_reg);
+            if(operands[1]->toStr()==params[i]->toStr())
+            {
+                isParam=true;
+                break;
+            }
         }
-            
-        auto src1 = genMachineReg(11);
-        auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
-                fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
+        if(!isParam)
+        {
+            IdentifierSymbolEntry* id_se = dynamic_cast<IdentifierSymbolEntry*>(operands[1]->getEntry());
+            if(id_se!=nullptr)
+            {
+                fprintf(stderr,"啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊？\n");
+                fprintf(stderr,"一就是一，二就是二 %d\n",id_se->isParam());
+            }
+            fprintf(stderr,"StoreInstruction::genMachineCode函数中的局部变量\n");
+            fprintf(stderr,"Temporary操作数operands[0]是%s\n",operands[0]->toStr().c_str());
+            fprintf(stderr,"Temporary操作数operands[1]是%s\n",operands[1]->toStr().c_str());
+            // example: load r1, [r0, #4]
+            MachineOperand* dst = genMachineOperand(operands[1]);
+            if(operands[1]->getEntry()->isConstant())
+            {
+                auto internal_reg = genMachineVReg();
+                cur_inst = new MovMInstruction(cur_block,-1, internal_reg, dst);
+                cur_block->InsertInst(cur_inst);
+                dst = new MachineOperand(*internal_reg);
+            }
+                
+            auto src1 = genMachineReg(11);
+            auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
+                    fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
 
-        cur_inst = new StoreMInstruction(cur_block, dst, src1, src2);
-        cur_block->InsertInst(cur_inst);
+            cur_inst = new StoreMInstruction(cur_block, dst, src1, src2);
+            cur_block->InsertInst(cur_inst);
+       }
+        else{
+            
+                fprintf(stderr, "StoreInstruction::genMachineCode函数中的函数参数\n");
+                fprintf(stderr,"Temporary操作数operands[1]是%s\n",operands[1]->toStr().c_str());
+                Function* parent_func = operands[0]->getDef()->getParent()->getParent();
+                int param_num = parent_func->getParams().size();
+
+                if (param_num < 4) {
+                    // 参数在 r0-r3 中，将寄存器值存储到栈中对应偏移位置
+                    int offset = dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset();
+                    fprintf(stderr, "参数在 r0-r3 中，存储到栈中，偏移量：%d\n", offset);
+                    for(int i=0;i<param_num;i++)
+                    {
+                        if(operands[1]->toStr()==parent_func->getParams()[i]->toStr())
+                        {
+                            fprintf(stderr, "参数在 r0-r3 中，存储到栈中，偏移量：%d\n", i*4);
+                            auto reg = new MachineOperand(MachineOperand::REG, i); // r0, r1, r2, r3
+                            auto src1 = genMachineReg(11);                                   // 假设 fp 为 r11
+                            auto src2 = genMachineImm(offset);
+                            cur_inst = new StoreMInstruction(cur_block, reg, src1, src2);   // 将 r0 存入栈
+                            cur_block->InsertInst(cur_inst);
+                        }
+                    }
+
+                
+                } 
+                else {
+                    // 参数已在栈中，直接跳过
+                    fprintf(stderr, "参数已在栈中，无需进一步处理。\n");
+                }
+        }
+
+        
     }
     // Load operand from temporary variable
     else

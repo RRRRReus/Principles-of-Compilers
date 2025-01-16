@@ -1448,12 +1448,32 @@ void Function::genMachineCode(AsmBuilder* builder)
     auto cur_unit = builder->getUnit();
     auto cur_func = new MachineFunction(cur_unit, this->sym_ptr);
     builder->setFunction(cur_func);
+
+    // 处理函数参数
+    for (long unsigned int param_index = 0; param_index < this->params.size(); param_index++) {
+        MachineOperand* machine_param;
+        if (param_index < 4) {
+            // 前四个参数依次放入 r0, r1, r2, r3
+            machine_param = new MachineOperand(MachineOperand::REG, param_index);
+        } else {
+            // 超过四个参数的部分可以根据需要处理
+            // 这里假设超过四个参数的部分不需要处理
+            
+        }
+        cur_func->addParam(machine_param);
+    }
+
+
+    
+    // 遍历所有基本块，生成机器码
     std::map<BasicBlock*, MachineBlock*> map;
     for(auto block : block_list)
     {
         block->genMachineCode(builder);
         map[block] = builder->getBlock();
     }
+
+
     // Add pred and succ for every block
     for(auto block : block_list)
     {
@@ -1464,5 +1484,56 @@ void Function::genMachineCode(AsmBuilder* builder)
             mblock->addSucc(map[*succ]);
     }
     cur_unit->InsertFunc(cur_func);
+
+    
+
+
+    // // 创建第一个基本块
+    // //auto entry_block = new MachineBlock(cur_func, entry->getNo()); // 假设基本块编号为 0
+    // MachineBlock* entry_block = cur_func->getBlockByNo(entry->getNo());  //拿出entry机器块
+    // fprintf(stderr,"entry_block的编号是%d\n",entry_block->getNo());
+    // builder->setBlock(entry_block); // 将 entry_block 设置为当前基本块
+    // cur_func->InsertBlock(entry_block); // 插入到当前函数的基本块列表中
+    
+    // int vreg_counter = 0;  // 用于直接分配虚拟寄存器编号
+
+    // // 处理函数参数
+    // for (long unsigned int param_index = 0; param_index < this->params.size(); param_index++) // 基于索引的循环
+    // {
+    //     // 如果参数在 r0-r3 中，用寄存器直接传递
+    //     MachineOperand* param_operand;
+    //     if (param_index < 4) {
+    //         param_operand = new MachineOperand(MachineOperand::REG, param_index); // r0, r1, r2, r3
+    //     } else {
+    //         // 超过 r3 的参数从栈中加载
+    //         int stack_offset = (param_index - 4) * 4;
+    //         param_operand = new MachineOperand(MachineOperand::IMM, stack_offset);
+    //     }
+
+    //     // 分配虚拟寄存器
+    //     auto param_vreg = new MachineOperand(MachineOperand::VREG, vreg_counter++); // 可以直接++，C++支持后置++
+    //     auto cur_block = builder->getBlock();
+    //     fprintf(stderr,"当前cur_block是%s\n",cur_block->getParent()->getSymbolEntry()->toStr().c_str());
+
+    //     if (param_index < 4) {
+    //         // 参数在寄存器中，直接生成 MOV 指令
+    //         fprintf(stderr,"参数在寄存器中\n");
+    //         auto mov_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, param_vreg, param_operand);
+    //         fprintf(stderr,"是在这里吗\n");
+    //         fprintf(stderr,"当前cur_block是%s\n",cur_block->getParent()->getSymbolEntry()->toStr().c_str());
+    //         cur_block->InsertFront(mov_inst);
+    //         fprintf(stderr,"在寄存器中参数已放入\n");
+    //     } else {
+    //         // 参数在栈中，生成 LOAD 指令
+    //         fprintf(stderr,"参数已超过3个，剩下的参数在栈中\n");
+    //         auto load_inst = new LoadMInstruction(cur_block, param_vreg, new MachineOperand(MachineOperand::REG, 13), param_operand); //  sp 在 r13
+    //         cur_block->InsertFront(load_inst);
+    //     }
+
+    //     // 将虚拟寄存器存储到函数参数映射
+    //     cur_func->addParam(param_vreg);
+    // }
+
+
 
 }

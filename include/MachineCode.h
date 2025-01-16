@@ -192,12 +192,17 @@ public:
     MachineBlock(MachineFunction* p, int no) { this->parent = p; this->no = no; };
     void InsertInst(MachineInstruction* inst) { this->inst_list.push_back(inst); };
     void InsertFront(MachineInstruction* inst) { this->inst_list.insert(inst_list.begin(), inst); };
+    void InsertAfter(MachineInstruction* inst, MachineInstruction* pos) { 
+        auto it = std::find(inst_list.begin(), inst_list.end(), pos);
+        inst_list.insert(++it, inst);
+    };//在指令列表中的特定指令之后插入一个新的指令
     void addPred(MachineBlock* p) { this->pred.push_back(p); };
     void addSucc(MachineBlock* s) { this->succ.push_back(s); };
     std::set<MachineOperand*>& getLiveIn() {return live_in;};
     std::set<MachineOperand*>& getLiveOut() {return live_out;};
     std::vector<MachineBlock*>& getPreds() {return pred;};
     std::vector<MachineBlock*>& getSuccs() {return succ;};
+    int getNo() {return no;};//添加函数参数用于获取基本块编号
     void output();
 };
 
@@ -209,6 +214,7 @@ private:
     int stack_size;
     std::set<int> saved_regs;
     SymbolEntry* sym_ptr;
+    std::vector<MachineOperand*> params; // 存储函数参数
 public:
     std::set<int>& getSavedRegs() {return saved_regs;};
     std::vector<MachineBlock*>& getBlocks() {return block_list;};
@@ -224,6 +230,19 @@ public:
     int AllocSpace(int size) { this->stack_size += size; return this->stack_size; };
     void InsertBlock(MachineBlock* block) { this->block_list.push_back(block); };
     void addSavedRegs(int regno) {saved_regs.insert(regno);};
+    void addParam(MachineOperand* param) { params.push_back(param); } // 添加函数参数
+    std::vector<MachineOperand*>& getParams() { return params; } // 获取函数参数
+
+    SymbolEntry* getSymbolEntry() { return sym_ptr; };
+    // 根据编号查找基本块
+    MachineBlock* getBlockByNo(int no) {
+        for (auto block : block_list) {
+            if (block->getNo() == no) {
+                return block;
+            }
+        }
+        return nullptr;
+    }
     void output();
 };
 

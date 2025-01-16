@@ -4,6 +4,7 @@
 #include <string.h>
 #include "BasicBlock.h"
 #include "Instruction.h"
+#include "Function.h"
 
 std::string Operand::toStr() const
 {
@@ -47,3 +48,27 @@ void Operand::removeUse(Instruction *inst)
         uses.erase(i);
 }
 
+bool Operand::isFuncParam()
+{
+        Function* parent_func = nullptr;
+        if(this->getDef()==nullptr)
+        {
+            parent_func = this->getUse()[0]->getParent()->getParent();
+        }
+        else
+        {
+            parent_func = this->getDef()->getParent()->getParent();
+        }
+        fprintf(stderr,"parent_func是%s\n",parent_func->getSymPtr()->toStr().c_str());
+        std::vector<Operand*> params = parent_func->getParams();
+        bool isParam = false;
+        for(long unsigned int i=0 ; i<params.size() ; i++)
+        {
+            if(this->toStr()==params[i]->toStr())
+            {
+                isParam=true;
+                break;
+            }
+        }
+        return isParam;
+}

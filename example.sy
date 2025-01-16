@@ -1,20 +1,56 @@
+// #include"sysyruntimelibrary/sylib.h"
+// int a;
+// int b;
+// int c;
+// int d;
+// int e;
+// int main()
+// {
+// 	a=getint();
+// 	b=getint();
+// 	c=getint();
+// 	d=getint();
+// 	e=getint();
+// 	int flag=0;
+// 	if(a-b*c!=d-a/c||a*b/c==e+d||a+b+c==d+e)
+// 	{
+// 		flag=1;
+// 	}
+// 	return flag;
+// }
+
+
+
+// int main()
+// {
+//     int a;
+//     int b;
+//     int c;
+//     a=0;
+//     b=1;
+//     c=1;
+//     int flag = 0;
+//     if( a!=0 )
+//     {
+//         flag=1;
+//     }
+
+//     return !b;
+// }
+
+
+
+int sum(int a, int b)
+{
+    return a+b;
+}
 
 int main()
 {
-    //newline=10;
-    int i;
-    int sum;
-    sum=0;
-    //m = 1478;
-    //int t;
-    i=0;
-    while(i<21)
-    {
-        sum=sum+i;
-        i=i+1;
-    }
-    
-    putint(sum);
+    int a=1;
+    int b=2;
+    a=sum(a,b);
 
-    return 0;
+    return a;
 }
+

@@ -45,6 +45,9 @@ public:
 
     void replaceAllUsesWith(Operand *newOperand);//替换所有使用
     SymbolEntry * getEntry() { return se; };
+
+
+    bool isFuncParam();//判断当前operand是否是参数
 };
 
 #endif
