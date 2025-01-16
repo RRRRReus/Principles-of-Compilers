@@ -414,11 +414,15 @@ void StoreMInstruction::output()
 
     fprintf(stderr, "已进入StoreMInstruction::output函数\n");
 
+    SymbolEntry* se = this->use_list[1]->getSymbolEntry();
+    fprintf(stderr, "se是不是空指针 %d\n",se==nullptr);
     // 判断是否为浮点数存储
-    //if (use_list[0]->getSymbolEntry()->getType()->isAllFloat()) {
+    //if (use_list[0]->getSymbolEntry()->getType()->isAllFloat()) 
+    //{
         // 如果是浮点数类型，使用 FST 指令
-   //     fprintf(yyout, "\tfst ");
-    //} else {
+        //fprintf(yyout, "\tfst ");
+    //} 
+    //else {
         // 否则，使用 STR 指令
         fprintf(yyout, "\tstr ");
     //}

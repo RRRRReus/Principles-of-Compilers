@@ -1361,6 +1361,10 @@ MachineOperand* Instruction::genMachineOperand(Operand* ope)
     }
 
     mope->setSymbolEntry(se);
+
+    fprintf(stderr,"se是！！！！！！！%s\n",se->toStr().c_str());
+    fprintf(stderr,"mope->getSymbolEntry()->toStr()是%s\n",mope->getSymbolEntry()->toStr().c_str());
+    
     
     return mope;
 }
