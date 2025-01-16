@@ -1023,12 +1023,56 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
     {
 
 
+        MachineOperand *IndexOffset=nullptr;
+        if(this->operands[3]->getSymbolEntry()->isConstant())
+        {
+
+            IndexOffset=genMachineReg(6);
+            IndexOffset=genMachineVReg();
+            // IndexOffset=genMachineVReg();
+            gep_inst=new MovMInstruction(
+                cur_bb,
+                -1,
+                IndexOffset,
+                genMachineOperand(this->operands[3])
+                );
+            cur_bb->InsertInst(gep_inst);
+
+        }
+        else
+        {
+            IndexOffset=genMachineOperand(this->operands[3]);
+        }
+        
+        MachineOperand *Imm4=genMachineVReg();
+        gep_inst=new MovMInstruction(
+            cur_bb,
+            -1,
+            Imm4,
+            genMachineImm(4)
+            );
+        cur_bb->InsertInst(gep_inst);
+
+        MachineOperand *Mul4offset=genMachineVReg();    
+        gep_inst=new BinaryMInstruction(
+            cur_bb,
+            BinaryMInstruction::MUL,
+            Mul4offset,
+            IndexOffset,
+            Imm4
+            );
+        cur_bb->InsertInst(gep_inst);
+
+
+
+
+
         gep_inst=new BinaryMInstruction(
             cur_bb,
             BinaryMInstruction::ADD,
             genMachineOperand(dst),
             genMachineOperand(src),
-            genMachineImm(4)//这真行吗？？？
+            Mul4offset
             );
         cur_bb->InsertInst(gep_inst);
     }

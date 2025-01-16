@@ -1,10 +1,24 @@
 # include"sysyruntimelibrary/sylib.h"
+
+int sum(int n, int a[])
+{
+    int i=0;
+    int s=0;
+    while(i<n)
+    {
+        s=s+a[i];
+        i=i+1;
+    }
+    return s;
+}
 int main()
 {
      int a[10];
     int c=345;
     int b[5]={1,2,3,4,c};
     int i=0;
+
+    putarray(5,b);
     while(i<5)
     {
         //return 15;
@@ -68,6 +82,6 @@ int main()
     // // a[0];
     // // putint(a[0]);putch(10);
     // // putint(a[0]);putch(10);
-     return 0;
+     return sum(5,b);
 }
 
