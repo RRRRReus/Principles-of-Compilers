@@ -480,7 +480,7 @@ void MovMInstruction::output()
 {
     bool fenjie = op==MovMInstruction::MOV||op==-1;
 
-    if(fenjie&&(this->use_list[0]->getVal()<-257))
+    if(fenjie&&(this->use_list[0]->getVal()<-257||this->use_list[0]->getVal()>50000))
     {
         int high = (this->use_list[0]->getVal()>>16)& 0xFFFF;
         int low = this->use_list[0]->getVal()&0xFFFF;
@@ -759,13 +759,20 @@ void MachineFunction::output()
         this->getBlocks()[0], MovMInstruction::MOV,
         new MachineOperand(MachineOperand::REG, 11),  // fp
         new MachineOperand(MachineOperand::REG, 13)); // sp
-    this->getBlocks()[0]->InsertAfter(first_inst, push_inst);//如果以后不再用first_inst！！！
+    this->getBlocks()[0]->InsertAfter(first_inst, push_inst);
 
     // 分配栈空间 (用于局部变量和溢出的参数)
     MachineInstruction* sub_inst = nullptr;
-    for(int i=0;i<=this->stack_size/256;i++)
+    int ok_stack_size = this->stack_size;
+   while(ok_stack_size>0)
     {
-        int stack_size_i=(this->stack_size-256*i)%256;
+        int stack_size_i=256;
+        if(ok_stack_size<256)
+            stack_size_i=ok_stack_size;
+        
+        ok_stack_size-=256;
+        
+
         sub_inst = new BinaryMInstruction(
             this->getBlocks()[0], BinaryMInstruction::SUB,
             new MachineOperand(MachineOperand::REG, 13), // sp
