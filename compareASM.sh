@@ -14,7 +14,7 @@ make run
 echo "生成自己的汇编代码完成，开始生成clang的汇编代码"
 
 # 使用 clang 生成 ARM 汇编代码
-clang -target arm-linux-gnueabihf -mcpu=cortex-a8 -mfloat-abi=hard -x c -S example.sy -o exampleOK.s #-fno-pic
+clang -target arm-linux-gnueabihf -mcpu=cortex-a8 -mfloat-abi=hard -x c -S example.sy -o exampleOK.s -fno-pic
 echo "开始运行生成的汇编代码"
 
 

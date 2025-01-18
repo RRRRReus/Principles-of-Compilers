@@ -6,7 +6,7 @@
 LinearScan::LinearScan(MachineUnit *unit)
 {
     this->unit = unit;
-    for (int i = 4; i < 11; i++)
+    for (int i = 5; i < 11; i++)   //为了函数参数从5开始分配
         regs.push_back(i);
 }
 

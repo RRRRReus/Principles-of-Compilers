@@ -1452,8 +1452,8 @@ void Function::genMachineCode(AsmBuilder* builder)
     // 处理函数参数
     for (long unsigned int param_index = 0; param_index < this->params.size(); param_index++) {
         MachineOperand* machine_param;
-        if (param_index < 4) {
-            // 前四个参数依次放入 r0, r1, r2, r3
+        if (param_index < 5) {
+            // 前四个参数依次放入 r0, r1, r2, r3   ，r5
             machine_param = new MachineOperand(MachineOperand::REG, param_index);
         } else {
             // 超过四个参数的部分可以根据需要处理

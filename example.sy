@@ -1,12 +1,57 @@
 # include"sysyruntimelibrary/sylib.h"
-int A[10]={};
-int g=5;
-int main()
-{
-	float a;
-	float b;
-	a=1.2;
-	b=1.3;
-	
-	return 0;
+
+const int TOKEN_NUM = 0, TOKEN_OTHER = 1;
+int last_char = 32, num, other;
+int cur_token;
+
+int sum1(){
+	  int a = 1;
+  int b = 2;
+  return a + b;
+}
+
+int sum2(){
+	  int a = 1;
+  int b = 2;
+  return a + b;
+}
+int sum3() {
+ int a = 1;
+  int b = 2;
+  return a + b;
+}
+int sum4() {
+ int a = 1;
+  int b = 2;
+  return a + b;
+}
+int sum5() {
+ int a = 1;
+  int b = 2;
+  return a + b;
+}
+int sum6() {
+ int a = 1;
+  int b = 2;
+  return a + b;
+}
+int sum7() {
+ int a = 1;
+  int b = 2;
+  return a + b;
+}
+int sum8() {
+ int a = 1;
+  int b = 2;
+  return a + b;
+}
+int sum9() {
+ int a = 1;
+  int b = 2;
+  return a + b;
+}
+int main() {
+
+	last_char = TOKEN_NUM + TOKEN_OTHER;
+	return last_char;
 }

@@ -406,26 +406,48 @@ StoreMInstruction::StoreMInstruction(MachineBlock* p,
 
 }
 
+StoreMInstruction::StoreMInstruction(MachineBlock *p, int storeType, MachineOperand *src1, MachineOperand *src2, MachineOperand *src3, int cond)
+{
+        this->parent = p;
+    this->type = MachineInstruction::LOAD;
+    this->op = -1;
+    this->cond = cond;
+    this->use_list.push_back(src1);
+    this->use_list.push_back(src2);
+    src1->setParent(this);
+    src2->setParent(this);
+
+
+    if (src3)
+    {
+        this->use_list.push_back(src3);
+        src3->setParent(this);
+    }
+    this->storeType = storeType;
+
+
+}
+
 void StoreMInstruction::output()
 {
     // TODO
 
-
+    
 
     fprintf(stderr, "已进入StoreMInstruction::output函数\n");
 
-    SymbolEntry* se = this->use_list[1]->getSymbolEntry();
-    fprintf(stderr, "se是不是空指针 %d\n",se==nullptr);
+
     // 判断是否为浮点数存储
-    //if (use_list[0]->getSymbolEntry()->getType()->isAllFloat()) 
-    //{
+    if (this->storeType == StoreMInstruction::FST) 
+    {
         // 如果是浮点数类型，使用 FST 指令
-        //fprintf(yyout, "\tfst ");
-    //} 
-    //else {
+        fprintf(stderr, "有没有进来fst！！！！！\n");
+        fprintf(yyout, "\tfst ");
+    } 
+    else {
         // 否则，使用 STR 指令
         fprintf(yyout, "\tstr ");
-    //}
+    }
 
 
     this->use_list[0]->output();
@@ -913,10 +935,10 @@ void MachineUnit::output()
     fprintf(yyout, "\t.arch armv8-a\n");
     fprintf(yyout, "\t.arch_extension crc\n");
     fprintf(yyout, "\t.arm\n");
-    PrintGlobalDecl();
+   
     for(auto iter : func_list)
         iter->output();
-    
+     PrintGlobalDecl();
     // //打印全局变量
     // for(auto iter : global_list)
     //     iter->output();

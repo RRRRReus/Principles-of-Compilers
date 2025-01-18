@@ -127,10 +127,17 @@ public:
 class StoreMInstruction : public MachineInstruction
 {
 public:
+    int storeType=StoreMInstruction::STR;
+    enum storeType{STR, FST};
     StoreMInstruction(MachineBlock* p,
                     MachineOperand* src1, MachineOperand* src2, MachineOperand* src3 = nullptr, 
                     int cond = MachineInstruction::NONE);
+    StoreMInstruction(MachineBlock* p,int storeType,
+                    MachineOperand* src1, MachineOperand* src2, MachineOperand* src3 = nullptr, 
+                    int cond = MachineInstruction::NONE);
+
     void output();
+    void setStoreType(int storeType) { this->storeType = storeType; }
 };
 
 class MovMInstruction : public MachineInstruction
