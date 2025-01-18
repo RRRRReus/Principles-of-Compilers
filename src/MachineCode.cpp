@@ -500,6 +500,24 @@ MovMInstruction::MovMInstruction(MachineBlock* p, int op,
 
 void MovMInstruction::output() 
 {
+    bool fenjie = op==MovMInstruction::MOV||op==-1;
+
+    if(fenjie&&(this->use_list[0]->getVal()<-257||this->use_list[0]->getVal()>50000))
+    {
+        int high = (this->use_list[0]->getVal()>>16)& 0xFFFF;
+        int low = this->use_list[0]->getVal()&0xFFFF;
+        
+        
+        fprintf(yyout, "\tmovw ");
+        this->def_list[0]->output();
+        fprintf(yyout, ", #0x%x\n",low);
+        fprintf(yyout, "\tmovt ");
+        this->def_list[0]->output();
+        fprintf(yyout, ", #0x%x\n",high);
+        return;
+
+    }
+
     // TODO
     switch (op)
     {
@@ -738,9 +756,9 @@ void MachineBlock::output()
 void MachineFunction::output()
 {
     const char *func_name = this->sym_ptr->toStr().c_str() + 1;
-    fprintf(yyout, "\t.global %s\n", func_name);
-    fprintf(yyout, "\t.type %s , %%function\n", func_name);
-    fprintf(yyout, "%s:\n", func_name);
+    fprintf(yyout, "\t.global %s\n", this->sym_ptr->toStr().substr(1).c_str());
+    fprintf(yyout, "\t.type %s , %%function\n", this->sym_ptr->toStr().substr(1).c_str());
+    fprintf(yyout, "%s:\n", this->sym_ptr->toStr().substr(1).c_str());
 
         // 保存被调用者保存的寄存器（包括 fp 和 lr）
     std::vector<MachineOperand*> stack_list;
@@ -767,14 +785,23 @@ void MachineFunction::output()
 
     // 分配栈空间 (用于局部变量和溢出的参数)
     MachineInstruction* sub_inst = nullptr;
-    if (this->stack_size > 0)
+    int ok_stack_size = this->stack_size;
+   while(ok_stack_size>0)
     {
+        int stack_size_i=256;
+        if(ok_stack_size<256)
+            stack_size_i=ok_stack_size;
+        
+        ok_stack_size-=256;
+        
+
         sub_inst = new BinaryMInstruction(
             this->getBlocks()[0], BinaryMInstruction::SUB,
             new MachineOperand(MachineOperand::REG, 13), // sp
             new MachineOperand(MachineOperand::REG, 13), // sp
-            new MachineOperand(MachineOperand::IMM, this->getStackSize()));
+            new MachineOperand(MachineOperand::IMM, stack_size_i));
         this->getBlocks()[0]->InsertAfter(sub_inst, first_inst);
+        
     }
 
 
@@ -808,7 +835,6 @@ void MachineFunction::output()
     // 遍历输出每个基本块
     for (auto iter : block_list)
         iter->output();
-
     fprintf(stderr, "MachineFunction::output 已输出函数 %s\n", func_name);
 }
 

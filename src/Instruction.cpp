@@ -938,8 +938,6 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
     if(InSrc->isIntArray()||InSrc->isFloatArray())
     {
 
-        if(src->getEntry()->isTemporary())//局部数组基址
-        {
         MachineOperand *reg1 = genMachineVReg();
         //MachineOperand *reg2 = genMachineVReg();
 
@@ -983,8 +981,11 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
             Imm4
             );
         cur_bb->InsertInst(gep_inst);
-
         MachineOperand *srcOffset=genMachineVReg();
+        if(src->getEntry()->isTemporary())//局部数组基址
+        {
+
+       
         gep_inst=new MovMInstruction(
             cur_bb,
             -1,
@@ -992,7 +993,16 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
             genMachineImm(dynamic_cast<TemporarySymbolEntry*>(src->getEntry())->getOffset())
             );
         cur_bb->InsertInst(gep_inst);
-
+        }
+        else
+        {
+            gep_inst=new LoadMInstruction(
+            cur_bb,       
+            srcOffset,
+            genMachineOperand(src)
+            );
+            cur_bb->InsertInst(gep_inst);
+        }
         gep_inst = new BinaryMInstruction(
             cur_bb,
             BinaryMInstruction::ADD,
@@ -1000,8 +1010,11 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
             srcOffset,
             Mul4offset
             );
-
         cur_bb->InsertInst(gep_inst);
+        if(src->getEntry()->isTemporary())//局部数组基址
+        {
+
+       
 
         gep_inst = new BinaryMInstruction(
             cur_bb,
@@ -1012,12 +1025,22 @@ void GetElementPtrInstruction::genMachineCode(AsmBuilder * builder)
             );
 
         cur_bb->InsertInst(gep_inst);
+        }
+        else
+        {
+            gep_inst = new MovMInstruction(
+                cur_bb,
+                -1,
+                genMachineOperand(dst),
+                reg1
+                );
 
+            cur_bb->InsertInst(gep_inst);
+        }
 
         // gep_inst = new MovMInstruction(cur_bb,-1,genMachineOperand(dst),reg1);
         // cur_bb->InsertInst(gep_inst);
-        }
-        
+            
     }
     else
     {
@@ -1427,6 +1450,15 @@ void LoadInstruction::genMachineCode(AsmBuilder* builder)
         auto dst = genMachineOperand(operands[0]);
         auto src1 = genMachineReg(11);
         auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[1]->getEntry())->getOffset());
+
+
+        if(dynamic_cast<TemporarySymbolEntry*>(operands[1]->getEntry())->getOffset()<-255)
+        {
+            auto internal_reg = genMachineVReg();
+            cur_inst = new MovMInstruction(cur_block,-1, internal_reg, src2);
+            cur_block->InsertInst(cur_inst);
+            src2 = new MachineOperand(*internal_reg);
+        }
         cur_inst = new LoadMInstruction(cur_block, dst, src1, src2);
         cur_block->InsertInst(cur_inst);
     }
@@ -1524,6 +1556,15 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
             auto src1 = genMachineReg(11);
             auto src2 = genMachineImm(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
             //fprintf(stderr,"StoreInstruction::genMachineCode局部变量函数结束\n");
+        fprintf(stderr,"dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset()是%d\n",dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset());
+        if(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset()<-255)
+        {
+
+            auto internal_reg = genMachineVReg();
+            cur_inst = new MovMInstruction(cur_block,-1, internal_reg, src2);
+            cur_block->InsertInst(cur_inst);
+            src2 = new MachineOperand(*internal_reg);
+        }
 
             cur_inst = new StoreMInstruction(cur_block, dst, src1, src2);
             cur_block->InsertInst(cur_inst);
@@ -1538,6 +1579,18 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
                 if (param_num < 4) {
                     // 参数在 r0-r3 中，将寄存器值存储到栈中对应偏移位置
                     int offset = dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset();
+                    auto src2 = genMachineImm(offset);
+                if(dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset()<-255)
+                    {
+
+                        auto internal_reg = genMachineVReg();
+                        cur_inst = new MovMInstruction(cur_block,-1, internal_reg, src2);
+                        cur_block->InsertInst(cur_inst);
+                        src2 = new MachineOperand(*internal_reg);
+                    }
+
+
+
                     fprintf(stderr, "参数在 r0-r3 中，存储到栈中，偏移量：%d\n", offset);
                     for(int i=0;i<param_num;i++)
                     {
@@ -1546,8 +1599,8 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
                             fprintf(stderr, "参数在 r0-r3 中，存储到栈中，偏移量：%d\n", i*4);
                             auto dst = new MachineOperand(MachineOperand::REG, i); // r0, r1, r2, r3
                             auto src1 = genMachineReg(11);                                   // 假设 fp 为 r11
-                            auto src2 = genMachineImm(offset);
-                            cur_inst = new StoreMInstruction(cur_block, dst, src1, src2);   // 将 r0 存入栈
+                            //auto src2 = genMachineImm(offset);
+                            cur_inst = new StoreMInstruction(cur_block, reg, src1, src2);   // 将 r0 存入栈
                             cur_block->InsertInst(cur_inst);
                         }
                     }
@@ -1763,7 +1816,8 @@ void RetInstruction::genMachineCode(AsmBuilder* builder)
     MachineInstruction* cur_inst = nullptr;
     if(operands.empty())
     {
-        //空的再说
+        cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::BX, genMachineReg(14));
+        cur_block->InsertInst(cur_inst);
     }
     else
     {

@@ -227,6 +227,7 @@ private:
     std::set<int> saved_regs;
     SymbolEntry* sym_ptr;
     std::vector<MachineOperand*> params; // 存储函数参数
+    bool isRetVoid = false; // 是否是void函数
 public:
     std::set<int>& getSavedRegs() {return saved_regs;};
     std::vector<MachineBlock*>& getBlocks() {return block_list;};

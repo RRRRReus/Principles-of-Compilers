@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     ast.output();
   ast.typeCheck();
   ast.genCode(&unit);
-  //unit.optimize();
+  unit.optimize();
   if(dump_type == IR)
     unit.output();
   
