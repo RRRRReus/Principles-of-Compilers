@@ -6,8 +6,8 @@
 LinearScan::LinearScan(MachineUnit *unit)
 {
     this->unit = unit;
-    for (int i = 5; i < 11; i++)   //为了函数参数从5开始分配
-        regs.push_back(i);
+    for (int i = 4; i < 11; i++)   //为了函数参数从5开始分配
+        regs.push_back(i);        //可用寄存器的列表
 }
 
 void LinearScan::allocateRegisters()
@@ -20,14 +20,14 @@ void LinearScan::allocateRegisters()
         while (!success)        // repeat until all vregs can be mapped
         {
             fprintf(stderr, "allocateRegisters\n");
-            computeLiveIntervals();
+            computeLiveIntervals();//计算活跃区间
             fprintf(stderr, "computeLiveIntervals\n");
-            success = linearScanRegisterAllocation();
+            success = linearScanRegisterAllocation();//线性扫描寄存器分配
             fprintf(stderr, "linearScanRegisterAllocation\n");
             if (success)        // all vregs can be mapped to real regs
-                modifyCode();
+                modifyCode();//如果成功，修改代码以反映寄存器分配 (modifyCode)；否则，生成溢出代码 (genSpillCode)。
             else                // spill vregs that can't be mapped to real regs
-                genSpillCode();
+                genSpillCode();//linearScanRegisterAllocation()发生了spillAtInterval()，生成溢出代码
         }
     }
 }
@@ -165,7 +165,7 @@ void LinearScan::computeLiveIntervals()
     sort(intervals.begin(), intervals.end(), compareStart);
 }
 
-bool LinearScan::linearScanRegisterAllocation()
+bool LinearScan::linearScanRegisterAllocation() //将虚拟寄存器映射到实际的物理寄存器
 {
     // Todo
     /*
@@ -179,67 +179,29 @@ bool LinearScan::linearScanRegisterAllocation()
                 add i to active, sorted by increasing end point
     */
 
-//    //初始化 active 列表
-//     active.clear();//？？？？？？？？？？？？？需要吗？？？？？
-
-//     // 遍历 intervals 列表，按照开始位置递增排序
-//     for (auto interval : intervals)
-//     {
-//         // 1. 遍历 active 列表，移除结束时间早于当前区间开始时间的 interval
-//         expireOldIntervals(interval);
-
-//         // 2. 判断 active 列表中 interval 的数目和可用的物理寄存器数目是否相等
-//         if (active.size() == regs.size())
-//         {
-//             // (a) 若相等，进行寄存器溢出操作
-//             Interval* spill = active.back(); // 获取 active 列表中最后一个 interval
-
-//             if (spill->end > interval->end)
-//             {
-//                 // 如果 active 列表中的活跃区间结束时间更晚
-//                 spill->spill = true; // 置位其 spill 标志位
-//                 interval->rreg = spill->rreg; // 将其占用的寄存器分配给当前区间
-//                 active.pop_back(); // 从 active 列表中移除
-//                 active.push_back(interval); // 将当前区间插入到 active 列表中
-//                 std::sort(active.begin(), active.end(), [](Interval* a, Interval* b) { return a->end < b->end; }); // 按结束时间排序
-//             }
-//             else
-//             {
-//                 // 如果当前区间的结束时间更晚
-//                 interval->spill = true; // 置位其 spill 标志位
-//             }
-//         }
-//         else
-//         {
-//             // (b) 若不相等，为当前区间分配物理寄存器
-//             interval->rreg = regs.back(); // 从空闲寄存器池中获取一个寄存器
-//             regs.pop_back(); // 移除已分配的寄存器
-//             active.push_back(interval); // 将当前区间插入到 active 列表中
-//             std::sort(active.begin(), active.end(), [](Interval* a, Interval* b) { return a->end < b->end; }); // 按结束时间排序
-//         }
-//     }
-
-     //return true;
-
     bool success = true;
     active.clear();
-    regs.clear();
+    regs.clear();   
     for (int i = 4; i < 11; i++)
     {
-        regs.push_back(i);
+        regs.push_back(i);//重新初始化可用寄存器的列表
     }
-    for (auto &i : intervals)
+    for (auto &i : intervals)   //遍历所有的活跃区间
     {
-        expireOldIntervals(i);
+        expireOldIntervals(i);  //解放旧寄存器，过期旧区间
+        //如果活跃区间列表 active 的长度等于可用寄存器的数量 R，则溢出
         if (regs.empty())
         {
-            spillAtInterval(i);
+            spillAtInterval(i);//没有可用寄存器则溢出
             success = false;
         }
         else
         {
-            i->rreg = regs.front();
+            //从可用寄存器列表中取出一个寄存器
+            i->rreg = regs.front(); 
             regs.erase(regs.begin());
+
+            //将区间 i 加入到活跃区间列表中
             active.push_back(i);
             sort(active.begin(), active.end(), compareEnd);
         }
@@ -252,7 +214,7 @@ void LinearScan::modifyCode()
 {
     for (auto &interval : intervals)
     {
-        func->addSavedRegs(interval->rreg);
+        func->addSavedRegs(interval->rreg);//分配指定好的寄存器（这个函数中都用到了哪些寄存器）
         for (auto def : interval->defs)
             def->setReg(interval->rreg);
         for (auto use : interval->uses)
@@ -264,7 +226,7 @@ void LinearScan::genSpillCode()
 {
     for(auto &interval:intervals)
     {
-        if(!interval->spill)
+        if(!interval->spill)//不需要spill的区间
             continue;
         // TODO
         /* HINT:
@@ -293,36 +255,26 @@ void LinearScan::genSpillCode()
 
 
         interval->disp = -func->AllocSpace(4);
+        //并创建相应的操作数 off和fp
         auto off = new MachineOperand(MachineOperand::IMM, interval->disp);
         auto fp = new MachineOperand(MachineOperand::REG, 11);
         for (auto use : interval->uses)
         {
             auto temp = new MachineOperand(*use);
-            MachineOperand *operand = nullptr;
-            if (operand)
-            {
-                auto inst = new LoadMInstruction(use->getParent()->getParent(), temp, fp, new MachineOperand(*operand));
-                use->getParent()->insertBefore(inst);
-            }
-            else
-            {
+
+                // LoadMInstruction格式为    ldr r0, [fp, #4]
                 auto inst = new LoadMInstruction(use->getParent()->getParent(), temp, fp, off);
                 use->getParent()->insertBefore(inst);
-            }
         }
-         for (auto def : interval->defs)
+        
+        for (auto def : interval->defs)
         {
             auto temp = new MachineOperand(*def);
-            MachineOperand *operand = nullptr;
             MachineInstruction *inst1 = nullptr, *inst = nullptr;
-            if (operand)
-            {
-                inst = new StoreMInstruction(def->getParent()->getParent(), temp, fp, new MachineOperand(*operand));
-            }
-            else
-            {
-                inst = new StoreMInstruction(def->getParent()->getParent(), temp, fp, off);
-            }
+
+            // LoadMInstruction格式为    ldr r0, [fp, #4]
+            inst = new StoreMInstruction(def->getParent()->getParent(), temp, fp, off);
+
             if (inst1)
             {
                 inst1->insertAfter(inst);
@@ -351,16 +303,21 @@ void LinearScan::expireOldIntervals(Interval *interval)
             remove j from active
             add register[j] to pool of free registers
     */
+
+   //从活动区间列表 active 中移除那些已经结束的区间，
+   //并将它们占用的寄存器释放回可用寄存器列表 regs 中
    auto it = active.begin();
     while (it != active.end())
     {
+        //如果当前活动区间的结束位置大于等于新区间 interval 的开始位置，
+        //则停止处理，因为后续的区间都不会过期
         if ((*it)->end >= interval->start)
         {
             return;
         }
         regs.push_back((*it)->rreg);
-        it = active.erase(find(active.begin(), active.end(), *it));
-        sort(regs.begin(), regs.end());
+        it = active.erase(find(active.begin(), active.end(), *it));//移除it，并开始下一次迭代
+        sort(regs.begin(), regs.end());//重新排序
     }
 
 }
@@ -381,9 +338,9 @@ void LinearScan::spillAtInterval(Interval *interval)
     */
 
    auto spill = active.back();
-    if (spill->end > interval->end)
+    if (spill->end > interval->end) //如果 spill 区间的结束位置大于 interval 区间的结束位置
     {
-        spill->spill = true;
+        spill->spill = true;    //需要溢出，设置 spill 为 true
         interval->rreg = spill->rreg;
         active.push_back(interval);
         sort(active.begin(), active.end(), compareEnd);

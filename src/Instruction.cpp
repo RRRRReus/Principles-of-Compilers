@@ -1597,7 +1597,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
                         if(operands[1]->toStr()==parent_func->getParams()[i]->toStr())
                         {
                             fprintf(stderr, "参数在 r0-r3 中，存储到栈中，偏移量：%d\n", i*4);
-                            auto dst = new MachineOperand(MachineOperand::REG, i); // r0, r1, r2, r3
+                            auto reg = new MachineOperand(MachineOperand::REG, i); // r0, r1, r2, r3
                             auto src1 = genMachineReg(11);                                   // 假设 fp 为 r11
                             //auto src2 = genMachineImm(offset);
                             cur_inst = new StoreMInstruction(cur_block, reg, src1, src2);   // 将 r0 存入栈
