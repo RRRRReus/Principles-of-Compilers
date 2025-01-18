@@ -734,9 +734,9 @@ void MachineBlock::output()
 void MachineFunction::output()
 {
     const char *func_name = this->sym_ptr->toStr().c_str() + 1;
-    fprintf(yyout, "\t.global %s\n", func_name);
-    fprintf(yyout, "\t.type %s , %%function\n", func_name);
-    fprintf(yyout, "%s:\n", func_name);
+    fprintf(yyout, "\t.global %s\n", this->sym_ptr->toStr().substr(1).c_str());
+    fprintf(yyout, "\t.type %s , %%function\n", this->sym_ptr->toStr().substr(1).c_str());
+    fprintf(yyout, "%s:\n", this->sym_ptr->toStr().substr(1).c_str());
 
         // 保存被调用者保存的寄存器（包括 fp 和 lr）
     std::vector<MachineOperand*> stack_list;
@@ -759,18 +759,20 @@ void MachineFunction::output()
         this->getBlocks()[0], MovMInstruction::MOV,
         new MachineOperand(MachineOperand::REG, 11),  // fp
         new MachineOperand(MachineOperand::REG, 13)); // sp
-    this->getBlocks()[0]->InsertAfter(first_inst, push_inst);
+    this->getBlocks()[0]->InsertAfter(first_inst, push_inst);//如果以后不再用first_inst！！！
 
     // 分配栈空间 (用于局部变量和溢出的参数)
     MachineInstruction* sub_inst = nullptr;
-    if (this->stack_size > 0)
+    for(int i=0;i<=this->stack_size/256;i++)
     {
+        int stack_size_i=(this->stack_size-256*i)%256;
         sub_inst = new BinaryMInstruction(
             this->getBlocks()[0], BinaryMInstruction::SUB,
             new MachineOperand(MachineOperand::REG, 13), // sp
             new MachineOperand(MachineOperand::REG, 13), // sp
-            new MachineOperand(MachineOperand::IMM, this->getStackSize()));
+            new MachineOperand(MachineOperand::IMM, stack_size_i));
         this->getBlocks()[0]->InsertAfter(sub_inst, first_inst);
+        
     }
 
 
