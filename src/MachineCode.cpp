@@ -478,6 +478,24 @@ MovMInstruction::MovMInstruction(MachineBlock* p, int op,
 
 void MovMInstruction::output() 
 {
+    bool fenjie = op==MovMInstruction::MOV||op==-1;
+
+    if(fenjie&&(this->use_list[0]->getVal()<-257))
+    {
+        int high = (this->use_list[0]->getVal()>>16)& 0xFFFF;
+        int low = this->use_list[0]->getVal()&0xFFFF;
+        
+        
+        fprintf(yyout, "\tmovw ");
+        this->def_list[0]->output();
+        fprintf(yyout, ", #0x%x\n",low);
+        fprintf(yyout, "\tmovt ");
+        this->def_list[0]->output();
+        fprintf(yyout, ", #0x%x\n",high);
+        return;
+
+    }
+
     // TODO
     switch (op)
     {
