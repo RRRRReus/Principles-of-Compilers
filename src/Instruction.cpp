@@ -1776,7 +1776,8 @@ void RetInstruction::genMachineCode(AsmBuilder* builder)
     MachineInstruction* cur_inst = nullptr;
     if(operands.empty())
     {
-        //空的再说
+        cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::BX, genMachineReg(14));
+        cur_block->InsertInst(cur_inst);
     }
     else
     {
